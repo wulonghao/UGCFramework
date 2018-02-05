@@ -5,7 +5,7 @@ using XLua;
 [Hotfix]
 public class ConstantUtils
 {
-    public static string httpDownLoadUrl = "http://www.hjintergame.com/menu/" + MiscUtils.GetCurrentPlatform() + "/";
+    public static string httpDownLoadUrl = "http://www.xxxx.com/" + MiscUtils.GetCurrentPlatform() + "/";
     public static string bundleTipsUrl = bundleDownLoadUrl + "Bundle.txt";
     public static string bundleDownLoadUrl
     {
@@ -67,16 +67,7 @@ public class ConstantUtils
     #endregion
 
     #region ...Layer
-    public const int selfLayer = 9;
-    public const int otherLayer = 8;
     #endregion
-}
-
-public enum RoomType
-{
-    Gold,
-    RoomCard,
-    Match,
 }
 
 
