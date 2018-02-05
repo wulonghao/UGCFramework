@@ -231,9 +231,14 @@ public class BundleManager : MonoBehaviour
     /// <returns></returns>
     public GameObject GetGameObject(string gameObjectName, string pageName = commonBundleFolderName)
     {
-        GameObject go = Instantiate(GetBundleFile<GameObject>(gameObjectName, pageName + "/Prefab"));
-        go.name = MiscUtils.GetFileName(gameObjectName);
-        return go;
+        GameObject pre = GetBundleFile<GameObject>(gameObjectName, pageName + "/Prefab");
+        if (pre != null)
+        {
+            GameObject go = Instantiate(pre);
+            go.name = MiscUtils.GetFileName(gameObjectName);
+            return go;
+        }
+        return null;
     }
 
     T GetBundleFile<T>(string fileName, string folder) where T : UnityEngine.Object
