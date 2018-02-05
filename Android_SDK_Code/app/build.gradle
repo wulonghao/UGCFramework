@@ -1,0 +1,31 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 16
+    buildToolsVersion "26.0.2"
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+}
+
+task makeJar(type:Copy){
+    delete 'build/thridsdk.jar'
+    from('build/intermediates/bundles/release/')
+    into('build/')
+    rename('classes.jar','thirdsdk')
+}
+
+makeJar.dependsOn(build)

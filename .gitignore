@@ -33,3 +33,5 @@ sysinfo.txt
 *.apk
 *.unitypackage
 Assets/StreamingAssets/
+iOS_SDK_Code/UnityAppController.mm
+iOS_SDK_Code/UnityAppController.h

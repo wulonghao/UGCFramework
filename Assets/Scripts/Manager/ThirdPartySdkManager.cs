@@ -131,7 +131,7 @@ public class ThirdPartySdkManager : MonoBehaviour
     {
 #if UNITY_EDITOR
 #elif UNITY_IPHONE
-        WechatPay_iOS(ufo.appid, ufo.partnerid, ufo.prepayid, ufo.noncestr, ufo.timestamp, ufo.package, ufo.sign);
+        WechatPay_iOS(ufo.partnerid, ufo.prepayid, ufo.noncestr, ufo.timestamp, ufo.package, ufo.sign);
 #elif UNITY_ANDROID
         AndroidJavaClass utils = new AndroidJavaClass("com.my.ugcf.wechat.WechatTool");
         utils.CallStatic("SendPay", ufo.appid, ufo.partnerid, ufo.prepayid, ufo.noncestr, ufo.timestamp.ToString(), ufo.package, ufo.sign);
