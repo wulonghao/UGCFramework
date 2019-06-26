@@ -1,5 +1,6 @@
 package com.my.ugcf.wechat;
 
+import com.my.ugcf.Tool;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
@@ -18,10 +19,10 @@ public class ShareUtils {
 		req.transaction = BuildTransaction("img");
 		req.message = msg;
 		req.scene = scene;
-		WechatTool.api.sendReq(req);
+		Tool.api.sendReq(req);
 	}
 
-    public static void ShareText(int shareType, String text) {
+    public static void ShareText(int scene, String text) {
 		WXTextObject textObj = new WXTextObject();
 		textObj.text = text;
 
@@ -34,11 +35,11 @@ public class ShareUtils {
 		req.transaction = BuildTransaction("text");
 		req.message = msg;
 
-		req.scene = shareType;
-		WechatTool.api.sendReq(req);
+		req.scene = scene;
+		Tool.api.sendReq(req);
 	}
 
-    public static void ShareWebPage(int shareType, String url, String title, String content, byte[] thumb) {
+    public static void ShareUrl(int scene, String url, String title, String content, byte[] thumb) {
 		WXWebpageObject webpage = new WXWebpageObject();
 		webpage.webpageUrl = url;
 		WXMediaMessage msg = new WXMediaMessage(webpage);
@@ -49,8 +50,8 @@ public class ShareUtils {
 		SendMessageToWX.Req req = new SendMessageToWX.Req();
 		req.transaction = BuildTransaction("webpage");
 		req.message = msg;
-		req.scene = shareType;
-		WechatTool.api.sendReq(req);
+		req.scene = scene;
+		Tool.api.sendReq(req);
 	}
 
     static String BuildTransaction(final String type) {
