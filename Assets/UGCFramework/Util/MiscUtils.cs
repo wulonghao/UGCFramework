@@ -607,10 +607,14 @@ public class MiscUtils
     }
 
     #region ...定位功能
+    /// <summary>
+    /// 根据IP获取大致定位
+    /// </summary>
+    /// <param name="ua"></param>
     public static void GetLocationByIP(UnityAction<object> ua)
     {
         WWWForm wwwf = new WWWForm();
-        wwwf.AddField("ak", "mW4aUCRrRZIMM8mKWXdlVHq8pOdYEt2o");
+        wwwf.AddField("ak", "你的百度ak");
         wwwf.AddField("coor", "bd09ll");
         SendHttpPostRequest("https://api.map.baidu.com/location/ip", wwwf, (uwr) =>
         {
@@ -633,6 +637,95 @@ public class MiscUtils
                 LogUtils.Log("获取定位信息失败:" + e.ToString());
             }
         });
+    }
+
+    /// <summary>
+    /// 获取用户定位，数组内为{经度,纬度},获取成功后关闭定位
+    /// </summary>
+    /// <returns>{经度,纬度}</returns>
+    public static float[] GetLatitudeAndLongitude()
+    {
+        float[] fs = null;
+        if (Input.location.status == LocationServiceStatus.Running)
+        {
+            fs = new float[] { Input.location.lastData.longitude, Input.location.lastData.latitude };
+            Input.location.Stop();
+        }
+        return fs;
+    }
+
+    public static void StartGPS(float desiredAccuracyInMeters = 10, float updateDistanceInMeters = 10)
+    {
+        PageManager.Instance.StartCoroutine(StartGPSAc(desiredAccuracyInMeters, updateDistanceInMeters));
+    }
+
+    /// <summary> 开启定位</summary>
+    private static IEnumerator StartGPSAc(float desiredAccuracyInMeters, float updateDistanceInMeters)
+    {
+        if (!Input.location.isEnabledByUser)
+        {
+            TipManager.Instance.OpenTip(TipType.SimpleTip, "无法获取到定位，需要设置GPS权限");
+            yield break;
+        }
+        Input.location.Start(desiredAccuracyInMeters, updateDistanceInMeters);
+        int maxWait = 20;
+        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+        {
+            yield return new WaitForSeconds(1);
+            maxWait--;
+        }
+
+        if (maxWait < 1)
+        {
+            LogUtils.Log("初始化GPS超时");
+            yield break;
+        }
+
+        if (Input.location.status == LocationServiceStatus.Failed)
+        {
+            LogUtils.Log("启用GPS定位失败");
+            yield break;
+        }
+        else
+        {
+            LogUtils.Log("开启定位成功");
+        }
+    }
+
+    public static void GetLocation(UnityAction<string> ua)
+    {
+        PageManager.Instance.StartCoroutine(GetLocationAc(ua));
+    }
+
+    /// <summary> 获取大致定位地址 </summary>
+    public static IEnumerator GetLocationAc(UnityAction<string> ua)
+    {
+        float[] latAndlng = GetLatitudeAndLongitude();
+        while (latAndlng == null)
+        {
+            yield return new WaitForSecondsRealtime(3);
+            latAndlng = GetLatitudeAndLongitude();
+        }
+
+        WWWForm wwwf = new WWWForm();
+        wwwf.AddField("ak", "你的百度ak");
+        wwwf.AddField("location", latAndlng[1] + "," + latAndlng[0]);
+        wwwf.AddField("output", "json");
+        wwwf.AddField("pois", "0");
+        SendHttpPostRequest("http://api.map.baidu.com/geocoder/v2", wwwf,
+            (request) =>
+            {
+                try
+                {
+                    JsonData jd = JsonMapper.ToObject(Regex.Unescape(request.downloadHandler.text));
+                    string location = jd["result"]["addressComponent"].TryGetString("city");
+                    ua(location);
+                }
+                catch
+                {
+                    TipManager.Instance.OpenTip(TipType.SimpleTip, "获取定位信息失败");
+                }
+            });
     }
     #endregion
 }
