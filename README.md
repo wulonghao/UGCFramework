@@ -1,6 +1,6 @@
 # UGCFramework（Unity Game Client Framework）
 unity-xlua客户端框架1.0版(UGUI+C#+protocol+xlua)</p>
-注：因UGCF-ILRuntime版更改过大，所以该版本暂未优化，建议使用UGCF-ILRuntime分支的版本，UGC-Xlua2.0版后续会补上</p>
+<b>注：因UGCF-ILRuntime版更改过大，所以该版本暂未优化，建议使用UGCF-ILRuntime分支的版本，UGC-Xlua2.0版后续会补上</b></p>
 
 这是一个基于C＃语言的unity客户端框架，少部分工具基于UGUI，大部分工具不限制UI类型</p>
 代码热更新方面使用的是xlua热补丁技术</p>
