@@ -4,37 +4,50 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class CombinedChildScrollRect : ScrollRect
+namespace UGCF.UGUIExtend
 {
-    public ScrollRect parentScroll;
-
-    bool isScrollSelf = false;
-
-    public override void OnBeginDrag(PointerEventData eventData)
+    public class CombinedChildScrollRect : ScrollRect
     {
-        Vector2 touchDeltaPosition = InputUtils.GetTouchDeltaPosition();
-        bool isVertical = Mathf.Abs(touchDeltaPosition.x) < Mathf.Abs(touchDeltaPosition.y);
+        public ScrollRect parentScroll;
+        public PanelScrollRectCenter panelScrollRect;
 
-        isScrollSelf = (vertical && isVertical) || (horizontal && !isVertical);
-        if (isScrollSelf)
-            base.OnBeginDrag(eventData);
-        else
-            if (parentScroll) parentScroll.OnBeginDrag(eventData);
-    }
+        bool isScrollSelf = false;
 
-    public override void OnDrag(PointerEventData eventData)
-    {
-        if (isScrollSelf)
-            base.OnDrag(eventData);
-        else
-            if (parentScroll) parentScroll.OnDrag(eventData);
-    }
+        public override void OnBeginDrag(PointerEventData eventData)
+        {
+            Vector2 touchDeltaPosition = InputUtils.GetTouchDeltaPosition();
+            bool isVertical = Mathf.Abs(touchDeltaPosition.x) < Mathf.Abs(touchDeltaPosition.y);
 
-    public override void OnEndDrag(PointerEventData eventData)
-    {
-        if (isScrollSelf)
-            base.OnEndDrag(eventData);
-        else
-            if (parentScroll) parentScroll.OnEndDrag(eventData);
+            isScrollSelf = (vertical && isVertical) || (horizontal && !isVertical);
+            if (isScrollSelf)
+                base.OnBeginDrag(eventData);
+            else
+            {
+                if (panelScrollRect) panelScrollRect.OnBeginDrag(eventData);
+                if (parentScroll) parentScroll.OnBeginDrag(eventData);
+            }
+        }
+
+        public override void OnDrag(PointerEventData eventData)
+        {
+            if (isScrollSelf)
+                base.OnDrag(eventData);
+            else
+            {
+                if (panelScrollRect) panelScrollRect.OnDrag(eventData);
+                if (parentScroll) parentScroll.OnDrag(eventData);
+            }
+        }
+
+        public override void OnEndDrag(PointerEventData eventData)
+        {
+            if (isScrollSelf)
+                base.OnEndDrag(eventData);
+            else
+            {
+                if (panelScrollRect) panelScrollRect.OnEndDrag(eventData);
+                if (parentScroll) parentScroll.OnEndDrag(eventData);
+            }
+        }
     }
 }

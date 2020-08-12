@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-namespace UiEffect
+namespace UGCF.UGUIExtend
 {
     [AddComponentMenu("UI/Effects/Gradient Color"), RequireComponent(typeof(Graphic))]
 #if USE_BASE_VERTEX_EFFECT

@@ -1,10 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class TabGroup : ToggleGroup
+namespace UGCF.UGUIExtend
 {
-    [HideInInspector]
-    public GameObject currentActivityPage;
-    [HideInInspector]
-    public Tab currentSelectTab;
+    public class TabGroup : ToggleGroup
+    {
+        [HideInInspector]
+        public GameObject currentActivityPage;
+        [HideInInspector]
+        public Tab currentSelectTab;
+    }
 }
