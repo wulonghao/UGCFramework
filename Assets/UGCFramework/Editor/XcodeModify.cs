@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 #if UNITY_IOS
 using UnityEditor.iOS.Xcode;
@@ -19,23 +21,20 @@ public class XcodeModify
         string target = proj.TargetGuidByName("Unity-iPhone");
 
         //添加xcode默认framework引用
-        proj.AddFrameworkToProject(target, "libiconv.dylib", false);
+        proj.AddFrameworkToProject(target, "libiconv.dylib", false);//QQ需要
+        proj.AddFrameworkToProject(target, "libsqlite3.dylib", false);//QQ需要
+        proj.AddFrameworkToProject(target, "libstdc++.dylib", false);//QQ需要
+        proj.AddFrameworkToProject(target, "libz.1.1.3.dylib", false);//QQ需要
+
         proj.AddFrameworkToProject(target, "libresolv.tbd", false);
-        proj.AddFrameworkToProject(target, "libz.tbd", false);
-        proj.AddFrameworkToProject(target, "libsqlite3.0.tbd", false);
         proj.AddFrameworkToProject(target, "libc++.tbd", false);
-        proj.AddFrameworkToProject(target, "libstdc++.6.0.9.tbd", false);
-        proj.AddFrameworkToProject(target, "UserNotifications.framework", false);
-        proj.AddFrameworkToProject(target, "AddressBook.framework", false);
-        proj.AddFrameworkToProject(target, "Contacts.framework", false);
 
         File.Delete(Path.Combine(path, "Classes/UnityAppController.h"));
         File.Delete(Path.Combine(path, "Classes/UnityAppController.mm"));
-        File.Copy(Application.dataPath.Replace("Assets", "iOS/UnityAppController.h"), Path.Combine(path, "Classes/UnityAppController.h"));
-        File.Copy(Application.dataPath.Replace("Assets", "iOS/UnityAppController.mm"), Path.Combine(path, "Classes/UnityAppController.mm"));
+        File.Copy(Application.dataPath.Replace("UnityProject/Assets", "iOS/UnityAppController.h"), Path.Combine(path, "Classes/UnityAppController.h"));
+        File.Copy(Application.dataPath.Replace("UnityProject/Assets", "iOS/UnityAppController.mm"), Path.Combine(path, "Classes/UnityAppController.mm"));
 
-        proj.UpdateBuildProperty(target, "OTHER_LDFLAGS", new List<string>() { "-Objc", "-force_load", "$(SRCROOT)/Classes/libWeChatSDK.a" }, new List<string>() { "-Objc" });
-        proj.SetBuildProperty(target, "IPHONEOS_DEPLOYMENT_TARGET", "12.0");
+        proj.UpdateBuildProperty(target, "OTHER_LDFLAGS", new List<string>() { "-ObjC", "-all_load"}, null);
         proj.SetBuildProperty(target, "ENABLE_BITCODE", "NO");
         proj.WriteToFile(projPath);
 
@@ -45,23 +44,24 @@ public class XcodeModify
         plist.ReadFromString(File.ReadAllText(plistPath));
         PlistElementDict rootDict = plist.root;
 
+        rootDict.SetBoolean("UIViewControllerBasedStatusBarAppearance", false);
+
         PlistElementDict security = rootDict.CreateDict("NSAppTransportSecurity");
         security.SetBoolean("NSAllowsArbitraryLoads", true);
-
-        AddUrlType(rootDict, "Editor", "weixin", "这里填微信appid");
-        AddUrlType(rootDict, "Editor", "qq", "tencent" + "这里填QQappid");
-        AddUrlType(rootDict, "Editor", "zhifubao", "这里填支付宝appid");
-
+        //微信
+        AddUrlType(rootDict, "Editor", "weixin", ThirdPartySdkManager.WXAppID);
+        AddSchemes(rootDict, "weixin");
+        AddSchemes(rootDict, "weixinULAPI");
+        //QQ
+        AddUrlType(rootDict, "Editor", "qq", "tencent" + ThirdPartySdkManager.QQAppID);
+        AddSchemes(rootDict, "tim");
         AddSchemes(rootDict, "mqq");
         AddSchemes(rootDict, "mqqapi");
-        AddSchemes(rootDict, "mqqwpa");
         AddSchemes(rootDict, "mqqbrowser");
         AddSchemes(rootDict, "mttbrowser");
         AddSchemes(rootDict, "mqqOpensdkSSoLogin");
         AddSchemes(rootDict, "mqqopensdkapiV2");
-        AddSchemes(rootDict, "mqqopensdkapiV3");
         AddSchemes(rootDict, "mqqopensdkapiV4");
-        AddSchemes(rootDict, "wtloginmqq2");
         AddSchemes(rootDict, "mqzone");
         AddSchemes(rootDict, "mqzoneopensdk");
         AddSchemes(rootDict, "mqzoneopensdkapi");
@@ -69,11 +69,16 @@ public class XcodeModify
         AddSchemes(rootDict, "mqzoneopensdkapiV2");
         AddSchemes(rootDict, "mqqapiwallet");
         AddSchemes(rootDict, "mqqopensdkfriend");
+        AddSchemes(rootDict, "mqqopensdkavatar");
+        AddSchemes(rootDict, "mqqopensdkminiapp");
         AddSchemes(rootDict, "mqqopensdkdataline");
-        AddSchemes(rootDict, "mqqgamebindinggroup");
+        AddSchemes(rootDict, "mqqgamebindinggroup"); 
         AddSchemes(rootDict, "mqqopensdkgrouptribeshare");
         AddSchemes(rootDict, "tencentapi.qq.reqContent");
         AddSchemes(rootDict, "tencentapi.qzone.reqContent");
+        AddSchemes(rootDict, "mqqthirdappgroup");
+        AddSchemes(rootDict, "mqqopensdklaunchminiapp");
+
         plist.WriteToFile(plistPath);
 #endif
     }
@@ -94,7 +99,6 @@ public class XcodeModify
         elementDict.CreateArray("CFBundleURLSchemes").AddString(scheme);
 
         URLTypes.values.Add(elementDict);
-        AddSchemes(dict, name);
     }
 
     //添加LSApplicationQueriesSchemes
