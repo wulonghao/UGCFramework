@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UGCF.Manager;
 using UGCF.UnityExtend;
+using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -67,7 +69,7 @@ namespace UGCF.UGUIExtend
                     lg.padding.top = Mathf.Max(0, (int)((rectHeight - rtfs[1].rect.height) / 2));
                     lg.padding.bottom = Mathf.Max(0, (int)((rectHeight - rtfs[rtfs.Length - 1].rect.height) / 2));
                 }
-            EternalGameObject.Instance.StartCoroutine(MoveCheck());
+            UGCFMain.Instance.StartCoroutine(MoveCheck());
         }
 
         IEnumerator MoveCheck()
@@ -79,7 +81,7 @@ namespace UGCF.UGUIExtend
                     || (scrollRect.vertical && Mathf.Abs(scrollRect.velocity.y) < minSpeed))
                 {
                     if (src) src.isDraging = true;
-                    EternalGameObject.Instance.StartCoroutine(SetChildCenter());
+                    UGCFMain.Instance.StartCoroutine(SetChildCenter());
                     break;
                 }
             }

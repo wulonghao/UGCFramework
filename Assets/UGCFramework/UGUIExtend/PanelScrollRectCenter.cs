@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using UGCF.Manager;
+using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -20,13 +22,15 @@ namespace UGCF.UGUIExtend
         public int speed = 10;//拖拽检测时间阈值，低于阈值取最后一帧操作判断行为，否则以最近元素为目标元素
         public RectTransform content;
         float startDragTime;
+        float screenToCanvasScale;
         int currentIndex = -1;
         Coroutine coroutine;
 
         void Start()
         {
             if (isAutoLoop)
-                coroutine = EternalGameObject.Instance.StartCoroutine(LoopPlay());
+                coroutine = UGCFMain.Instance.StartCoroutine(LoopPlay());
+            screenToCanvasScale = FindObjectOfType<Canvas>().GetComponent<RectTransform>().localScale.x;
         }
 
         void OnEnable()
@@ -55,12 +59,12 @@ namespace UGCF.UGUIExtend
             {
                 if (horizontal)
                 {
-                    content.localPosition += Vector3.right * eventData.delta.x / EternalGameObject.screenToCanvasScale;
+                    content.localPosition += Vector3.right * eventData.delta.x / screenToCanvasScale;
                     ValueChange(eventData.delta.x);
                 }
                 if (vertical)
                 {
-                    content.localPosition += Vector3.up * eventData.delta.y / EternalGameObject.screenToCanvasScale;
+                    content.localPosition += Vector3.up * eventData.delta.y / screenToCanvasScale;
                     ValueChange(eventData.delta.y);
                 }
 
@@ -75,8 +79,7 @@ namespace UGCF.UGUIExtend
                         scale = Mathf.Abs(diff.y) / crtf.rect.height;
                     if (scale > 1)
                         scale = 1;
-                    if (onValueChanged != null)
-                        onValueChanged(crtf.gameObject, scale);
+                    onValueChanged?.Invoke(crtf.gameObject, scale);
                 }
             }
         }
@@ -116,7 +119,7 @@ namespace UGCF.UGUIExtend
                 SetCenter(centerTf);
             }
             if (coroutine != null)
-                coroutine = EternalGameObject.Instance.StartCoroutine(LoopPlay());
+                coroutine = UGCFMain.Instance.StartCoroutine(LoopPlay());
         }
 
         void ValueChange(float scaleSpaceToCenter)
@@ -129,12 +132,12 @@ namespace UGCF.UGUIExtend
             RectTransform rtfLast = content.GetChild(content.childCount - 1).GetComponent<RectTransform>();
             if (horizontal)
             {
-                if (scaleSpaceToCenter < 0 && Mathf.Abs(rtfFirst.transform.position.x - transform.position.x) * EternalGameObject.screenToCanvasScale > rtfFirst.rect.width)
+                if (scaleSpaceToCenter < 0 && Mathf.Abs(rtfFirst.transform.position.x - transform.position.x) * screenToCanvasScale > rtfFirst.rect.width)
                 {
                     rtfFirst.SetAsLastSibling();
                     content.localPosition += Vector3.right * rtfFirst.rect.width;
                 }
-                else if (scaleSpaceToCenter > 0 && Mathf.Abs(rtfLast.transform.position.x - transform.position.x) * EternalGameObject.screenToCanvasScale > rtfLast.rect.width)
+                else if (scaleSpaceToCenter > 0 && Mathf.Abs(rtfLast.transform.position.x - transform.position.x) * screenToCanvasScale > rtfLast.rect.width)
                 {
                     rtfLast.SetAsFirstSibling();
                     content.localPosition += Vector3.left * rtfLast.rect.width;
@@ -142,12 +145,12 @@ namespace UGCF.UGUIExtend
             }
             else if (vertical)
             {
-                if (scaleSpaceToCenter > 0 && Mathf.Abs(rtfFirst.transform.position.y - transform.position.y) * EternalGameObject.screenToCanvasScale > rtfFirst.rect.height)
+                if (scaleSpaceToCenter > 0 && Mathf.Abs(rtfFirst.transform.position.y - transform.position.y) * screenToCanvasScale > rtfFirst.rect.height)
                 {
                     rtfFirst.SetAsLastSibling();
                     content.localPosition += Vector3.down * rtfLast.rect.height;
                 }
-                else if (scaleSpaceToCenter < 0 && Mathf.Abs(rtfLast.transform.position.y - transform.position.y) * EternalGameObject.screenToCanvasScale > rtfLast.rect.height)
+                else if (scaleSpaceToCenter < 0 && Mathf.Abs(rtfLast.transform.position.y - transform.position.y) * screenToCanvasScale > rtfLast.rect.height)
                 {
                     rtfLast.SetAsFirstSibling();
                     content.localPosition += Vector3.up * rtfFirst.rect.height;
@@ -220,11 +223,10 @@ namespace UGCF.UGUIExtend
             if (vertical)
                 targetMovingPosition = new Vector2(startMovingPosition.x, -center.localPosition.y);
             if (isPlayAnimation)
-                EternalGameObject.Instance.StartCoroutine(Moving());
+                UGCFMain.Instance.StartCoroutine(Moving());
             else
                 content.localPosition = targetMovingPosition;
-            if (onItemChanged != null)
-                onItemChanged(center.gameObject);
+            onItemChanged?.Invoke(center.gameObject);
             currentIndex = center.GetSiblingIndex();
             return true;
         }
