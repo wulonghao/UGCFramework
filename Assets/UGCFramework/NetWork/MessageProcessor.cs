@@ -16,7 +16,7 @@ public class MessageProcessor
     {
         if (!SocketClient.Instance)
             return;
-        msg.token = UserInfoModel.Instance.currentToken;
+        msg.token = "";
         SocketClient.Instance.AddSendMessageQueue(msg);
     }
 
@@ -30,7 +30,7 @@ public class MessageProcessor
             return;
         SocketClient.Instance.AddSendMessageQueue(new Msg_C2S()
         {
-            token = UserInfoModel.Instance.currentToken,
+            token = "",
             protoId = protoId
         });
     }
