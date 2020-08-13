@@ -19,6 +19,7 @@ unity-ILRuntime客户端框架1.0(UGUI+C#+protocol+ILRuntime)
   11、UGUI扩展组件(Tab、RadioButton、计时器、动画、各种特殊图片组件等)</p>
   12、ILRuntime热更机制</p>
 
+
 2020.8.13更新日志</p>
   1、优化网络框架，优化在网络不稳定情况下的处理，优化网络重连逻辑</p>
   2、更新UI框架，优化跳转流程</p>
