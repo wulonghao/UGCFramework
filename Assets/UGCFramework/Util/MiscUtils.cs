@@ -4,17 +4,50 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.Events;
+#if UNITY_IOS
+using UnityEngine.iOS;
+#endif
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class MiscUtils
+public partial class MiscUtils
 {
-    /// <summary> 双线性插值法缩放图片，等比缩放</summary>
+    /// <summary> 初始化目标的UI属性 </summary>
+    public static void AttachAndReset(GameObject go, Transform parent, GameObject prefab = null)
+    {
+        RectTransform rectTrans = go.transform as RectTransform;
+        if (rectTrans)
+        {
+            rectTrans.SetParent(parent);
+            rectTrans.localPosition = Vector3.zero;
+            rectTrans.localScale = Vector3.one;
+            if (prefab == null)
+            {
+                rectTrans.sizeDelta = Vector2.zero;
+                rectTrans.localPosition = Vector2.zero;
+                rectTrans.offsetMax = Vector2.zero;
+                rectTrans.offsetMin = Vector2.zero;
+            }
+            else
+            {
+                RectTransform prefabRectTrans = prefab.transform as RectTransform;
+                if (prefabRectTrans)
+                {
+                    rectTrans.sizeDelta = prefabRectTrans.sizeDelta;
+                    rectTrans.localPosition = prefabRectTrans.localPosition;
+                    rectTrans.offsetMax = prefabRectTrans.offsetMax;
+                    rectTrans.offsetMin = prefabRectTrans.offsetMin;
+                }
+            }
+        }
+    }
+
+    /// <summary> 双线性插值法缩放图片，等比缩放 </summary>
     public static Texture2D ScaleTextureBilinear(Texture2D originalTexture, float scaleFactor)
     {
         Texture2D newTexture = new Texture2D(Mathf.CeilToInt(originalTexture.width * scaleFactor), Mathf.CeilToInt(originalTexture.height * scaleFactor));
@@ -56,7 +89,7 @@ public class MiscUtils
         return newTexture;
     }
 
-    /// <summary>将图片缩放为指定尺寸</summary>
+    /// <summary> 双线性插值法缩放图片为指定尺寸 </summary>
     public static Texture2D SizeTextureBilinear(Texture2D originalTexture, Vector2 size)
     {
         Texture2D newTexture = new Texture2D(Mathf.CeilToInt(size.x), Mathf.CeilToInt(size.y));
@@ -126,32 +159,76 @@ public class MiscUtils
         return Convert.ToInt64(ts.TotalMilliseconds);
     }
 
-    /// <summary>获取指定文件夹下文件信息</summary>
-    public static List<FileInfo> GetFileInfoFromFolder(string folderPath, SearchOption option, string searchPattern = "*")
+    /// <summary> 数字转换中文 工具 </summary>
+    public static string NumToString(int num)
     {
-        List<FileInfo> fileInfos = new List<FileInfo>();
-        DirectoryInfo dirInfo = new DirectoryInfo(folderPath);
-        if (dirInfo.Exists)
+        string unit = "零十百千万";
+        string[] numStr = new string[] { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十" };
+        char[] ns = num.ToString().ToCharArray();
+        int zeroCount = 0;
+        bool isZ = false;
+        bool isInsertZero = false;
+        StringBuilder sbNum = new StringBuilder();
+        for (int i = ns.Length - 1; i >= 0; i--)
         {
-            FileInfo[] fis = dirInfo.GetFiles(searchPattern, option);
-            if (fis.Length > 0)
+            if (ns[i] == '0')
             {
-                for (int i = 0; i < fis.Length; i++)
+                isZ = true;
+                zeroCount++;
+                continue;
+            }
+            else
+            {
+                if (isZ)
                 {
-                    if (!fis[i].Name.EndsWith(".DS_Store") && !fis[i].Name.EndsWith(".meta"))
+                    if (isInsertZero)
                     {
-                        fileInfos.Add(fis[i]);
+                        sbNum.Append(unit[0]);
+                        isInsertZero = false;
                     }
+                    sbNum.Append(unit[zeroCount]);
+                }
+                sbNum.Append(numStr[int.Parse(ns[i].ToString())]);
+                if (i != 0)
+                {
+                    if (ns[i - 1] != '0')
+                    {
+                        sbNum.Append(unit[ns.Length - i]);
+                    }
+                    else { zeroCount++; isInsertZero = true; }
+                }
+                if (isZ)
+                {
+                    isZ = false;
                 }
             }
         }
 
-        return fileInfos;
+        Char[] a = sbNum.ToString().ToCharArray();
+        Array.Reverse(a);
+        string numTostr = new string(a);
+        if (numTostr.StartsWith("一十"))
+        {
+            numTostr = numTostr.Replace("一十", "十");
+        }
+        return numTostr;
     }
 
+    /// <summary>获取指定长度的随机字符串</summary>
+    public static string GetRandomString(int length)
+    {
+        string str = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++)
+            sb.Append(str.Substring(UnityEngine.Random.Range(0, str.Length), 1));
+        return sb.ToString();
+    }
+
+    #region ...加密解密相关
     /// <summary>获取文件的md5校验码</summary>
     public static string GetMD5HashFromFile(string fileName)
     {
+        if (string.IsNullOrEmpty(fileName)) return null;
         try
         {
             if (File.Exists(fileName))
@@ -169,44 +246,37 @@ public class MiscUtils
         }
         catch (Exception e)
         {
-            LogUtils.LogError(e.Message);
+            LogUtils.LogError(e.ToString(), false);
             return null;
         }
-    }
-
-    /// <summary>获取指定长度的随机字符串</summary>
-    public static string GetRandomString(int length)
-    {
-        string str = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++)
-            sb.Append(str.Substring(UnityEngine.Random.Range(0, str.Length), 1));
-        return sb.ToString();
     }
 
     /// <summary>对指定字符串进行Sha1加密</summary>
     public static string GetSha1Hash(string input)
     {
+        if (string.IsNullOrEmpty(input)) return null;
         SHA1 sha1 = new SHA1CryptoServiceProvider();
-        byte[] inputBytes = System.Text.UTF8Encoding.Default.GetBytes(input);
+        byte[] inputBytes = Encoding.Default.GetBytes(input);
         byte[] outputBytes = sha1.ComputeHash(inputBytes);
-        string output = System.BitConverter.ToString(outputBytes).Replace("-", "");
+        string output = BitConverter.ToString(outputBytes).Replace("-", "");
         return output.ToLower();
     }
 
     /// <summary>对指定字符串进行Md5加密</summary>
     public static string GetMd5Hash(string input)
     {
+        if (string.IsNullOrEmpty(input)) return null;
         MD5 md5 = new MD5CryptoServiceProvider();
-        byte[] inputBytes = System.Text.UTF8Encoding.Default.GetBytes(input);
+        byte[] inputBytes = Encoding.Default.GetBytes(input);
         byte[] outputBytes = md5.ComputeHash(inputBytes);
-        string output = System.BitConverter.ToString(outputBytes).Replace("-", "");
+        string output = BitConverter.ToString(outputBytes).Replace("-", "");
         return output.ToLower();
     }
 
     /// <summary>对指定字符串进行Base64加密</summary>
     public static string EncodeBase64(Encoding encode, string source)
     {
+        if (string.IsNullOrEmpty(source)) return null;
         byte[] bytes = encode.GetBytes(source);
         if (bytes.Length > 0)
             source = Convert.ToBase64String(bytes);
@@ -216,27 +286,45 @@ public class MiscUtils
     /// <summary>对指定字符串进行Base64解密</summary>
     public static string DecodeBase64(Encoding encode, string result)
     {
+        if (string.IsNullOrEmpty(result)) return null;
         byte[] bytes = Convert.FromBase64String(result);
         if (bytes.Length > 0)
             result = encode.GetString(bytes);
         return result;
     }
 
-    /// <summary>获取当前渠道</summary>
-    public static string GetChannel()
+    /// <summary> 对指定字符串进行AES加密</summary>
+    public static string AesEncrypt(string str, string key)
     {
-        GameObject gameObject = GameObject.Find("EternalGameObject");
-        if (!gameObject)
-            return null;
-        EternalGameObject eternalGameObject = gameObject.GetComponent<EternalGameObject>();
-#if UNITY_ANDROID
-        return eternalGameObject.androidBuildChannel.ToString();
-#elif UNITY_IOS
-        return eternalGameObject.iOSBuildChannel.ToString();
-#else
-        return null;
-#endif
+        if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(key)) return null;
+        byte[] toEncryptArray = Encoding.UTF8.GetBytes(str);
+        RijndaelManaged rm = new RijndaelManaged
+        {
+            Key = Encoding.UTF8.GetBytes(key),
+            Mode = CipherMode.ECB,
+            Padding = PaddingMode.PKCS7
+        };
+
+        byte[] resultArray = rm.CreateEncryptor().TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+        string temp = Convert.ToBase64String(resultArray, 0, resultArray.Length);
+        return temp;
     }
+
+    /// <summary> 对指定字符串进行RSA加密</summary>
+    public static string RSAEncrypt(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return null;
+        string xmlPublicKey = "<RSAKeyValue><Modulus>r15c6EQULYxTPDpUisrUwvvdyTfsfa0fI2fp2ISjJqSfQpzoeSRMZb0ObtCKwHYYsOB3GtFC4gCGes5aQ3sd8Q==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+        string encryptedContent = string.Empty;
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+        {
+            rsa.FromXmlString(xmlPublicKey);
+            byte[] encryptedData = rsa.Encrypt(Encoding.Default.GetBytes(content), false);
+            encryptedContent = Convert.ToBase64String(encryptedData);
+        }
+        return encryptedContent;
+    }
+    #endregion
 
     /// <summary>获取当前平台类型字符串</summary>
     public static string GetCurrentPlatform()
@@ -246,14 +334,8 @@ public class MiscUtils
 #elif UNITY_IOS
         return "iOS";
 #else
-        return "StandaloneWindows64";
+        return string.Empty;
 #endif
-    }
-
-    /// <summary> 读取指定路径的Json文件(非Bundle)</summary>
-    public static JsonData GetJsonFromPath(string path)
-    {
-        return JsonMapper.ToObject(File.ReadAllText(path));
     }
 
     /// <summary>Key和Value都需支持ToString</summary>
@@ -265,6 +347,96 @@ public class MiscUtils
             data[p.Key.ToString()] = p.Value.ToString();
         }
         return data;
+    }
+
+    /// <summary>
+    /// 匹配对应Json的对应数值并全部返回
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="value">对比的目标值</param>
+    /// <param name="columnIndex">对比 列索引</param>
+    /// <param name="isMultiple">是否返回多条</param>
+    /// <returns></returns>
+    public static JsonData MathJsonByIndex(JsonData self, string value, int columnIndex = 0, bool isMultiple = true)
+    {
+        if (self == null || self.Count <= 0)
+        {
+            return null;
+        }
+        if (isMultiple)
+        {
+            JsonData _localjson = new JsonData();
+            bool _result = false;
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][columnIndex].ToString() == value)
+                {
+                    _localjson.Add(self[i]);
+                    _result = true;
+                }
+            }
+            if (_result)
+            {
+                return _localjson;
+            }
+
+        }
+        else
+        {
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][columnIndex].ToString() == value)
+                {
+                    return self[i];
+                }
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 匹配对应Json的对应数值并全部返回
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="value">对比的目标值</param>
+    /// <param name="key">对比的目标key</param>
+    /// <param name="isMultiple">是否返回多条</param>
+    /// <returns></returns>
+    public static JsonData MathJsonByIndex(JsonData self, string value, string key, bool isMultiple = true)
+    {
+        if (self == null || self.Count <= 0)
+        {
+            LogUtils.Log("传入的表是空的");
+            return null;
+        }
+        if (isMultiple)
+        {
+            JsonData _localjson = new JsonData();
+            bool _result = false;
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][key].ToString() == value)
+                {
+                    _localjson.Add(self[i]);
+                    _result = true;
+                }
+            }
+            if (_result)
+            {
+                return _localjson;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][key].ToString() == value)
+                {
+                    return self[i];
+                }
+            }
+        }
+        return null;
     }
 
     /// <summary>获取OrderedDictionary对应索引的Key</summary>
@@ -282,9 +454,22 @@ public class MiscUtils
     {
         if (img && ca)
         {
-            RenderTexture rt = new RenderTexture((int)img.GetComponent<RectTransform>().rect.width, (int)img.GetComponent<RectTransform>().rect.height, 24, RenderTextureFormat.ARGB32);
+            Rect rect = img.GetComponent<RectTransform>().rect;
+#if UNITY_IOS
+            RenderTexture rt = RenderTexture.GetTemporary(Screen.width,
+                Screen.height,
+                24,
+                RenderTextureFormat.ARGB32);
+
+#else
+            RenderTexture rt = RenderTexture.GetTemporary((int)(rect.width * EternalGameObject.screenToCanvasScale),
+                (int)(rect.height * EternalGameObject.screenToCanvasScale),
+                24,
+                RenderTextureFormat.ARGB32);
+#endif
+
             rt.useMipMap = false;
-            rt.filterMode = FilterMode.Trilinear;
+            rt.filterMode = FilterMode.Bilinear;
             rt.antiAliasing = 4;
             rt.Create();
             ca.targetTexture = rt;
@@ -295,58 +480,144 @@ public class MiscUtils
     }
 
     /// <summary> 下载图片并保存到指定目录</summary> 
-    public static IEnumerator DownloadImage(string url, Action<Sprite> callback = null, string filePath = null)
+    public static IEnumerator DownloadImage(string url, Action<Sprite> callback = null, string path = null)
     {
         if (string.IsNullOrEmpty(url))
         {
-            if (callback != null)
-                callback(null);
+            callback?.Invoke(null);
             yield break;
         }
         UnityWebRequest uwr = new UnityWebRequest(url);
-        DownloadHandlerTexture downloadTexture = new DownloadHandlerTexture(true);
-        uwr.downloadHandler = downloadTexture;
+        uwr.downloadHandler = new DownloadHandlerBuffer();
         yield return uwr.SendWebRequest();
         Sprite sprite = null;
         if (uwr.isHttpError || uwr.isNetworkError)
         {
             LogUtils.Log("下载失败：url: " + url + ", error: " + uwr.error);
-            if (callback != null)
-                callback(null);
+            callback?.Invoke(null);
         }
         else
         {
             try
             {
-                if (!string.IsNullOrEmpty(filePath))
+                byte[] bs = uwr.downloadHandler.data;
+                int width = 100;
+                int height = 100;
+                Texture2D texture = new Texture2D(width, height);
+                texture.LoadImage(bs);
+
+                if (!string.IsNullOrEmpty(path))
                 {
-                    if (!Directory.Exists(filePath.Substring(0, filePath.LastIndexOf('/'))))
-                        Directory.CreateDirectory(filePath.Substring(0, filePath.LastIndexOf('/')));
-                    File.WriteAllBytes(filePath, downloadTexture.texture.EncodeToPNG());
+                    string filePath = ConstantUtils.SpriteFolderPath + path;
+                    string directoryPath = Path.GetDirectoryName(filePath);
+                    if (!Directory.Exists(directoryPath))
+                        Directory.CreateDirectory(directoryPath);
+                    File.WriteAllBytes(filePath, texture.EncodeToPNG());
                 }
-                sprite = TextureToSprite(downloadTexture.texture);
-                if (callback != null)
-                    callback(sprite);
+                sprite = TextureToSprite(texture);
+                callback?.Invoke(sprite);
             }
             catch (Exception e)
             {
                 LogUtils.Log("下载失败：url: " + url + ", error: " + e.Message);
-                if (callback != null)
-                    callback(null);
+                callback?.Invoke(null);
+            }
+        }
+    }
+
+    /// <summary> 下载图片并保存到指定目录</summary> 
+    public static IEnumerator DownloadImageWithParam(string url, Action<Sprite, object> callback, object param, string path = null)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            callback?.Invoke(null, param);
+            yield break;
+        }
+        UnityWebRequest uwr = new UnityWebRequest(url);
+        uwr.downloadHandler = new DownloadHandlerBuffer();
+        yield return uwr.SendWebRequest();
+        Sprite sprite = null;
+        if (uwr.isHttpError || uwr.isNetworkError)
+        {
+            LogUtils.Log("下载失败：url: " + url + ", error: " + uwr.error);
+            callback?.Invoke(null, param);
+        }
+        else
+        {
+            try
+            {
+                byte[] bs = uwr.downloadHandler.data;
+                int width = 100;
+                int height = 100;
+                Texture2D texture = new Texture2D(width, height);
+                texture.LoadImage(bs);
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    string filePath = ConstantUtils.SpriteFolderPath + path;
+                    string directoryPath = Path.GetDirectoryName(filePath);
+                    if (!Directory.Exists(directoryPath))
+                        Directory.CreateDirectory(directoryPath);
+                    File.WriteAllBytes(filePath, texture.EncodeToPNG());
+                }
+                sprite = TextureToSprite(texture);
+                callback?.Invoke(sprite, param);
+            }
+            catch (Exception e)
+            {
+                LogUtils.Log("下载失败：url: " + url + ", error: " + e.Message);
+                callback?.Invoke(null, param);
+            }
+        }
+    }
+
+    /// <summary> 下载音乐文件并保存到指定目录</summary> 
+    public static IEnumerator DownloadAudio(string url, string path = null)
+    {
+        UnityWebRequest uwr = new UnityWebRequest(url);
+        uwr.downloadHandler = new DownloadHandlerBuffer();
+        yield return uwr.SendWebRequest();
+        if (uwr.isHttpError || uwr.isNetworkError)
+        {
+            LogUtils.Log("下载失败：url: " + url + ", error: " + uwr.error);
+        }
+        else
+        {
+            try
+            {
+                byte[] bs = uwr.downloadHandler.data;
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    string filePath = ConstantUtils.AudioFolderPath + path;
+                    string directoryPath = Path.GetDirectoryName(filePath);
+                    if (!Directory.Exists(directoryPath))
+                        Directory.CreateDirectory(directoryPath);
+                    File.WriteAllBytes(filePath, bs);
+                }
+            }
+            catch (Exception e)
+            {
+                LogUtils.Log("下载失败：url: " + url + ", error: " + e.Message);
             }
         }
     }
 
     /// <summary> 发起带参的Get请求</summary>
-    public static void SendHttpGetRequest(string url, Action<UnityWebRequest> requestSuccessCallback, Action<UnityWebRequest> requestFailCallback = null, int timeout = 30)
+    public static void SendHttpGetRequest(string url, Action<UnityWebRequest> requestSuccessCallback, Action<UnityWebRequest> requestFailCallback = null, int timeout = 20)
     {
-        if (!IsNetworkConnect())
+        if (!IsNetworkConnecting())
+        {
+            if (requestFailCallback != null && requestFailCallback.Target != null)
+                requestFailCallback(null);
             return;
+        }
         PageManager.Instance.StartCoroutine(SendHttpGetRequestAc(url, requestSuccessCallback, requestFailCallback, timeout));
     }
 
     private static IEnumerator SendHttpGetRequestAc(string url, Action<UnityWebRequest> requestSuccessCallback, Action<UnityWebRequest> requestFailCallback, int timeout)
     {
+        LogUtils.Log("发起Get请求，URL：" + url);
         UnityWebRequest uwr = UnityWebRequest.Get(url);
         uwr.timeout = timeout;
         yield return uwr.SendWebRequest();
@@ -364,16 +635,53 @@ public class MiscUtils
     }
 
     /// <summary> 发起带参的Post请求</summary>
-    public static void SendHttpPostRequest(string url, WWWForm wwwf, Action<UnityWebRequest> requestSuccessCallback = null, Action<UnityWebRequest> requestFailCallback = null, int timeout = 30)
+    public static void SendHttpPostRequest(string url, WWWForm wwwf, Action<UnityWebRequest> requestSuccessCallback = null, Action<UnityWebRequest> requestFailCallback = null, int timeout = 20)
     {
-        if (!IsNetworkConnect())
+        if (!IsNetworkConnecting())
+        {
+            if (requestFailCallback != null && requestFailCallback.Target != null)
+                requestFailCallback(null);
             return;
+        }
         PageManager.Instance.StartCoroutine(SendHttpPostRequestAc(url, wwwf, requestSuccessCallback, requestFailCallback, timeout));
     }
 
     private static IEnumerator SendHttpPostRequestAc(string url, WWWForm wwwf, Action<UnityWebRequest> requestSuccessCallback, Action<UnityWebRequest> requestFailCallback, int timeout)
     {
+        LogUtils.Log("发起Post请求，URL：" + url);
         UnityWebRequest uwr = UnityWebRequest.Post(url, wwwf);
+        uwr.timeout = timeout;
+        yield return uwr.SendWebRequest();
+        if (uwr.isNetworkError || uwr.isHttpError)
+        {
+            LogUtils.LogError(uwr.error + "，异常地址：" + url);
+            if (requestFailCallback != null && requestFailCallback.Target != null)
+                requestFailCallback(uwr);
+        }
+        else
+        {
+            if (requestSuccessCallback != null && requestSuccessCallback.Target != null)
+                requestSuccessCallback(uwr);
+        }
+    }
+
+    /// <summary> 发起带参的Put请求</summary>
+    public static void SendHttpPutRequest(string url, string bytes, Action<UnityWebRequest> requestSuccessCallback = null, Action<UnityWebRequest> requestFailCallback = null, int timeout = 20)
+    {
+        if (!IsNetworkConnecting())
+        {
+            if (requestFailCallback != null && requestFailCallback.Target != null)
+                requestFailCallback(null);
+            return;
+        }
+        PageManager.Instance.StartCoroutine(SendHttpPutRequestAc(url, bytes, requestSuccessCallback, requestFailCallback, timeout));
+    }
+
+    private static IEnumerator SendHttpPutRequestAc(string url, string bytes, Action<UnityWebRequest> requestSuccessCallback, Action<UnityWebRequest> requestFailCallback, int timeout)
+    {
+        LogUtils.Log("发起Put请求，URL：" + url);
+        UnityWebRequest uwr = UnityWebRequest.Put(url, bytes);
+        uwr.method = "POST";
         uwr.timeout = timeout;
         yield return uwr.SendWebRequest();
         if (uwr.isNetworkError || uwr.isHttpError)
@@ -483,7 +791,7 @@ public class MiscUtils
         }
         catch (Exception e)
         {
-            LogUtils.LogError("创建文件失败：" + e.ToString());
+            LogUtils.LogError("创建文件失败：" + e.ToString(), false);
             return false;
         }
     }
@@ -501,7 +809,7 @@ public class MiscUtils
         }
         catch (Exception e)
         {
-            LogUtils.LogError("创建文件失败：" + e.ToString());
+            LogUtils.LogError("创建文件失败：" + e.ToString(), false);
             return false;
         }
     }
@@ -549,183 +857,141 @@ public class MiscUtils
     /// <summary> 采用GBK编码的字节结构计算字符串的字节长度 中文2个字节 英文及符号1个字节 </summary>
     public static int GetStringLengthByGBK(string str)
     {
+        if (string.IsNullOrEmpty(str))
+            return 0;
         int byteCount = Encoding.UTF8.GetByteCount(str);
         return (byteCount - str.Length) / 2 + str.Length;
     }
 
-    /// <summary> 将数字转化为###.##万、百万、千万或###.##亿的结构,当数字小于99999时不转化 </summary>
-    public static string NumToString(long num)
+    /// <summary>
+    /// 返回两个向量的夹角
+    /// </summary>
+    /// <param name="from"></param>
+    /// <param name="to"></param>
+    /// <returns></returns>
+    public static float VectorAngle(Vector2 from, Vector2 to)
     {
-        if (num > 99999999)
-        {
-            double n = num * 0.00000001f;
-            return n.ToString("F2") + "亿";
-        }
-        if (num > 9999999)
-        {
-            double n = num * 0.0000001f;
-            return n.ToString("F2") + "千万";
-        }
-        if (num > 999999)
-        {
-            double n = num * 0.000001f;
-            return n.ToString("F2") + "百万";
-        }
-        if (num > 99999)
-        {
-            double n = num * 0.0001f;
-            return n.ToString("F2") + "万";
-        }
-        return num.ToString();
-    }
-
-    /// <summary> 数字转换中文 工具 </summary>
-    /// <param name="numberStr"></param>
-    public static string NumberToChinese(string numberStr)
-    {
-        string numStr = "0123456789";
-        string chineseStr = "零一二三四五六七八九";
-        char[] c = numberStr.ToCharArray();
-        for (int i = 0; i < c.Length; i++)
-        {
-            int index = numStr.IndexOf(c[i]);
-            if (index != -1)
-                c[i] = chineseStr.ToCharArray()[index];
-        }
-        numStr = null;
-        chineseStr = null;
-        return new string(c);
+        float angle;
+        Vector3 cross = Vector3.Cross(from, to);
+        angle = Vector2.Angle(from, to);
+        return cross.z > 0 ? -angle : angle;
     }
 
     /// <summary>
     /// 网络是否出于连接状态
     /// </summary>
     /// <returns></returns>
-    public static bool IsNetworkConnect()
+    public static bool IsNetworkConnecting()
     {
         return Application.internetReachability != NetworkReachability.NotReachable;
     }
 
-    #region ...定位功能
     /// <summary>
-    /// 根据IP获取大致定位
+    /// 获取设备的mac地址
     /// </summary>
-    /// <param name="ua"></param>
-    public static void GetLocationByIP(UnityAction<object> ua)
+    /// <returns></returns>
+    public static string GetDeviceMacAddress()
     {
-        WWWForm wwwf = new WWWForm();
-        wwwf.AddField("ak", "你的百度ak");
-        wwwf.AddField("coor", "bd09ll");
-        SendHttpPostRequest("https://api.map.baidu.com/location/ip", wwwf, (uwr) =>
+        string physicalAddress = "";
+        NetworkInterface[] nice = NetworkInterface.GetAllNetworkInterfaces();
+        foreach (NetworkInterface adaper in nice)
         {
-            try
+            if (adaper.Description == "en0")
             {
-                //LogUtils.Log(Regex.Unescape(www.text));
-                JsonData jd = JsonMapper.ToObject(Regex.Unescape(uwr.downloadHandler.text));
-                JsonData pointJd = jd["content"]["point"];
-                JsonData addressComponentJd = jd["content"]["address_detail"];
-                ua(new string[] {
-                    pointJd.TryGetString("x"),
-                    pointJd.TryGetString("y"),
-                    addressComponentJd.TryGetString("province"),
-                    addressComponentJd.TryGetString("city"),
-                    addressComponentJd.TryGetString("city_code")
-                });
+                physicalAddress = adaper.GetPhysicalAddress().ToString();
+                break;
             }
-            catch (Exception e)
+            else
             {
-                LogUtils.Log("获取定位信息失败:" + e.ToString());
+                physicalAddress = adaper.GetPhysicalAddress().ToString();
+                if (physicalAddress != "")
+                {
+                    break;
+                }
             }
-        });
+        }
+        return physicalAddress;
     }
 
     /// <summary>
-    /// 获取用户定位，数组内为{经度,纬度},获取成功后关闭定位
+    /// 获取mac
     /// </summary>
-    /// <returns>{经度,纬度}</returns>
-    public static float[] GetLatitudeAndLongitude()
+    /// <returns></returns>
+    public static string GetDeviceIMEI_IDFA()
     {
-        float[] fs = null;
-        if (Input.location.status == LocationServiceStatus.Running)
+        string info = string.Empty;
+#if UNITY_IOS
+        info = Device.advertisingIdentifier;
+#elif UNITY_ANDROID && !UNITY_EDITOR
+        try
         {
-            fs = new float[] { Input.location.lastData.longitude, Input.location.lastData.latitude };
-            Input.location.Stop();
+            string imei0 = "";
+            string imei1 = "";
+            var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            var context = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            var telephoneyManager = context.Call<AndroidJavaObject>("getSystemService", "phone");
+            imei0 = telephoneyManager.Call<string>("getImei", 0);//如果手机双卡 双待  就会有两个MIEI号
+            imei1 = telephoneyManager.Call<string>("getImei", 1);//如果手机双卡 双待  就会有两个MIEI号
+            info = imei0 + (imei1 != null ? "," + imei1 : string.Empty);
         }
-        return fs;
+        catch (Exception e)
+        {
+            //不给权限
+        }
+#endif
+        return info;
     }
 
-    public static void StartGPS(float desiredAccuracyInMeters = 10, float updateDistanceInMeters = 10)
+    /// <summary>
+    /// 获取本机IP地址
+    /// </summary>
+    /// <param name="addressType">地址类型 1-ipv4，2-ipv6</param>
+    /// <returns></returns>
+    public static string GetIP(int addressType)
     {
-        PageManager.Instance.StartCoroutine(StartGPSAc(desiredAccuracyInMeters, updateDistanceInMeters));
-    }
+        if (addressType == 2 && !Socket.OSSupportsIPv6)
+            return null;
 
-    /// <summary> 开启定位</summary>
-    private static IEnumerator StartGPSAc(float desiredAccuracyInMeters, float updateDistanceInMeters)
-    {
-        if (!Input.location.isEnabledByUser)
+        string output = "";
+        foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())
         {
-            TipManager.Instance.OpenTip(TipType.SimpleTip, "无法获取到定位，需要设置GPS权限");
-            yield break;
-        }
-        Input.location.Start(desiredAccuracyInMeters, updateDistanceInMeters);
-        int maxWait = 20;
-        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-        {
-            yield return new WaitForSeconds(1);
-            maxWait--;
-        }
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            NetworkInterfaceType _type1 = NetworkInterfaceType.Wireless80211;
+            NetworkInterfaceType _type2 = NetworkInterfaceType.Ethernet;
 
-        if (maxWait < 1)
-        {
-            LogUtils.Log("初始化GPS超时");
-            yield break;
-        }
-
-        if (Input.location.status == LocationServiceStatus.Failed)
-        {
-            LogUtils.Log("启用GPS定位失败");
-            yield break;
-        }
-        else
-        {
-            LogUtils.Log("开启定位成功");
-        }
-    }
-
-    public static void GetLocation(UnityAction<string> ua)
-    {
-        PageManager.Instance.StartCoroutine(GetLocationAc(ua));
-    }
-
-    /// <summary> 获取大致定位地址 </summary>
-    public static IEnumerator GetLocationAc(UnityAction<string> ua)
-    {
-        float[] latAndlng = GetLatitudeAndLongitude();
-        while (latAndlng == null)
-        {
-            yield return new WaitForSecondsRealtime(3);
-            latAndlng = GetLatitudeAndLongitude();
-        }
-
-        WWWForm wwwf = new WWWForm();
-        wwwf.AddField("ak", "你的百度ak");
-        wwwf.AddField("location", latAndlng[1] + "," + latAndlng[0]);
-        wwwf.AddField("output", "json");
-        wwwf.AddField("pois", "0");
-        SendHttpPostRequest("http://api.map.baidu.com/geocoder/v2", wwwf,
-            (request) =>
+            if ((item.NetworkInterfaceType == _type1 || item.NetworkInterfaceType == _type2) && item.OperationalStatus == OperationalStatus.Up)
+#endif
             {
-                try
+                foreach (UnicastIPAddressInformation ip in item.GetIPProperties().UnicastAddresses)
                 {
-                    JsonData jd = JsonMapper.ToObject(Regex.Unescape(request.downloadHandler.text));
-                    string location = jd["result"]["addressComponent"].TryGetString("city");
-                    ua(location);
+                    if (addressType == 1 && ip.Address.AddressFamily == AddressFamily.InterNetwork)//IPv4
+                    {
+                        output = ip.Address.ToString();
+                    }
+                    else if (addressType == 2 && ip.Address.AddressFamily == AddressFamily.InterNetworkV6)//IPv6
+                    {
+                        output = ip.Address.ToString();
+                    }
                 }
-                catch
-                {
-                    TipManager.Instance.OpenTip(TipType.SimpleTip, "获取定位信息失败");
-                }
-            });
+            }
+        }
+        return output;
     }
-    #endregion
+
+    /// <summary>
+    /// 获取设备的AndroidId
+    /// </summary>
+    /// <returns></returns>
+    public static string GetAndroidId()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        AndroidJavaClass up = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject currentActivity = up.GetStatic<AndroidJavaObject>("currentActivity");
+        AndroidJavaObject contentResolver = currentActivity.Call<AndroidJavaObject>("getContentResolver");
+        AndroidJavaClass secure = new AndroidJavaClass("android.provider.Settings$Secure");
+        return secure.CallStatic<string>("getString", contentResolver, "android_id");
+#else
+        return null;
+#endif
+    }
 }

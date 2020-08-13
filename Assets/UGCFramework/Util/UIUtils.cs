@@ -5,6 +5,7 @@ using System.Collections;
 using System;
 using System.Text;
 using System.IO;
+using UGCF.UnityExtend;
 
 public class UIUtils
 {
@@ -152,7 +153,7 @@ public class UIUtils
     /// <summary> 延迟销毁或隐藏目标物体 </summary>
     public static void DelayDesOrDisObject(GameObject target, float delayTime, bool isDestroy = true, bool isFadeOut = false, UnityAction ua = null)
     {
-        PageManager.Instance.currentPage.StartCoroutine(DelayDesOrDisObjectAs(target, delayTime, isDestroy, isFadeOut, ua));
+        PageManager.Instance.StartCoroutine(DelayDesOrDisObjectAs(target, delayTime, isDestroy, isFadeOut, ua));
     }
 
     private static IEnumerator DelayDesOrDisObjectAs(GameObject target, float delayTime, bool isDestroy, bool isFadeOut, UnityAction ua)
@@ -197,9 +198,9 @@ public class UIUtils
     }
 
     /// <summary> 延迟目标时间执行目标函数 </summary>
-    public static void DelayExecuteAction(float delayTime, UnityAction ua)
+    public static Coroutine DelayExecuteAction(float delayTime, UnityAction ua)
     {
-        PageManager.Instance.StartCoroutine(DelayExecuteActionAc(delayTime, ua));
+        return PageManager.Instance.StartCoroutine(DelayExecuteActionAc(delayTime, ua));
     }
 
     private static IEnumerator DelayExecuteActionAc(float delayTime, UnityAction ua)
@@ -257,7 +258,7 @@ public class UIUtils
     public static void PrintScreenNextFrame(UnityAction<Texture2D> ua = null, Rect rect = default(Rect), Vector2 dest = default(Vector2))
     {
         if (rect == default(Rect)) rect = new Rect(0, 0, Screen.width, Screen.height);
-        PageManager.Instance.currentPage.StartCoroutine(PrintScreenAc(rect, ua, dest));
+        PageManager.Instance.StartCoroutine(PrintScreenAc(rect, ua, dest));
     }
 
     private static IEnumerator PrintScreenAc(Rect rect, UnityAction<Texture2D> ua, Vector2 dest)

@@ -3,6 +3,11 @@ using System.Collections;
 
 public class InputUtils
 {
+    /// <summary>
+    /// 抬起
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
     public static bool OnHeld(int index = 0)
     {
         switch (Application.platform)
@@ -21,7 +26,12 @@ public class InputUtils
         return false;
     }
 
-    public static bool OnPressed(int index = 0)
+    /// <summary>
+    /// 按下
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public static bool OnPress(int index = 0)
     {
         switch (Application.platform)
         {
@@ -35,11 +45,15 @@ public class InputUtils
             case RuntimePlatform.Android:
                 return Input.touchCount > index && Input.GetTouch(index).phase == TouchPhase.Began;
         }
-
         return false;
     }
 
-    public static bool OnReleased(int index = 0)
+    /// <summary>
+    /// 抬起
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public static bool OnLift(int index = 0)
     {
         switch (Application.platform)
         {
@@ -53,7 +67,6 @@ public class InputUtils
             case RuntimePlatform.Android:
                 return Input.touchCount > index && (Input.GetTouch(index).phase == TouchPhase.Ended || Input.GetTouch(index).phase == TouchPhase.Canceled);
         }
-
         return false;
     }
 
@@ -73,7 +86,6 @@ public class InputUtils
                     return Input.GetTouch(index).position;
                 break;
         }
-
         return Vector2.zero;
     }
 
@@ -93,7 +105,6 @@ public class InputUtils
                     return Input.GetTouch(index).deltaPosition;
                 return Vector2.zero;
         }
-
         return Vector2.zero;
     }
 
@@ -122,6 +133,7 @@ public class InputUtils
         if (Input.GetKeyDown(KeyCode.Escape))
 #endif
         {
+            Application.Quit();
         }
     }
 
