@@ -3,20 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-public class PageManager : MonoBehaviour
+public partial class PageManager : MonoBehaviour
 {
-    public static PageManager Instance;
+    private static PageManager instance;
+    public static PageManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<Canvas>().gameObject.AddComponent<PageManager>();
+                instance.name = instance.GetType().ToString();
+                DontDestroyOnLoad(instance);
+            }
+            return instance;
+        }
+    }
     // 当前Page
-    [HideInInspector]
-    public Page currentPage;
+    [HideInInspector] public Page currentPage;
     // Page历史，用于返回时检索
     static List<string> pageHistory = new List<string>();
     const string DefaultPageDirectoryPath = "UIResources/Page";
-
-    void Awake()
-    {
-        Instance = this;
-    }
 
     /// <summary>
     /// 根据Page子类类型打开特定的Page
@@ -30,6 +37,11 @@ public class PageManager : MonoBehaviour
     public Page OpenPage(string pageName)
     {
         return OpenPageAc(pageName);
+    }
+
+    public T GetPage<T>() where T : Page
+    {
+        return GetComponentInChildren<T>();
     }
 
     // 返回上一个Page
@@ -68,10 +80,7 @@ public class PageManager : MonoBehaviour
     void DestroyCurrentPage(string newPageName)
     {
         if (currentPage != null)
-        {
             DestroyPage(currentPage);
-            NodeManager.ClearNodeHistory();
-        }
         RefreshHistory(newPageName);
     }
 
@@ -85,7 +94,7 @@ public class PageManager : MonoBehaviour
         if (currentPage.GetSpriteAB() != null)
             currentPage.GetSpriteAB().Unload(true);
         AudioManager.Instance.ClearAllTempAudio();
-        Destroy(page.gameObject);
+        DestroyImmediate(page.gameObject);
         Resources.UnloadUnusedAssets();
     }
 
@@ -118,19 +127,18 @@ public class PageManager : MonoBehaviour
                     return null;
                 }
             }
+            MiscUtils.AttachAndReset(go, transform);
             page = go.GetComponent<Page>();
             if (page)
             {
-                UIUtils.AttachAndReset(go, transform);
                 page.InitData(ab, path);
-
                 DestroyCurrentPage(page.name);
                 currentPage = page;
                 page.Init();
             }
             else
             {
-                LogUtils.LogError("找不到包含的Page组件: " + pageName);
+                LogUtils.Log("找不到预制体上包含的Page组件: " + pageName);
                 return null;
             }
         }

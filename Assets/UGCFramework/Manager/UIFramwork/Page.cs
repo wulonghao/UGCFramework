@@ -2,8 +2,10 @@
 using System;
 using UnityEngine;
 
-public class Page : HotFixBaseInheritMono
+public partial class Page : HotFixBaseInheritMono
 {
+    /// <summary> 受适配影响的页面主体 </summary>
+    public RectTransform main;
     [HideInInspector]
     public string resourceDirectory;
     protected AssetBundle spriteAB;
@@ -17,22 +19,22 @@ public class Page : HotFixBaseInheritMono
 
     public virtual void Init()
     {
-        gameObject.SetActive(false);
         LogUtils.Log(name + "：Init");
+        gameObject.SetActive(false);
     }
 
     public virtual void Open()
     {
+        LogUtils.Log(name + "：Open");
         TipManager.Instance.CloseAllTip();
         gameObject.SetActive(true);
-        LogUtils.Log(name + "：Open");
     }
 
     public virtual void Close()
     {
+        LogUtils.Log(name + "：Close");
         gameObject.SetActive(false);
         AudioManager.Instance.StopMusic();
-        LogUtils.Log(name + "：Close");
     }
 
     public AssetBundle GetSpriteAB()
@@ -58,9 +60,9 @@ public class Page : HotFixBaseInheritMono
         return t;
     }
 
-    public T OpenNode<T>(bool isAddToRecord = true, bool closeLastNode = true) where T : Node
+    public T OpenNode<T>(bool isAutoPlayEnter = true, bool isCloseLastNode = true) where T : Node
     {
-        T t = NodeManager.OpenNode<T>(isAddToRecord, closeLastNode, resourceDirectory + "/Prefab");
+        T t = NodeManager.OpenNode<T>(isAutoPlayEnter, isCloseLastNode, resourceDirectory + "/Prefab");
         if (!t)
             t = NodeManager.OpenNode<T>();
         return t;
