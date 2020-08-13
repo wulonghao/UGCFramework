@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace PoolManager
+namespace UGCF.PoolManager
 {
     /// <summary>
     /// 对象池管理器

@@ -7,43 +7,46 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using UnityEngine.SignInWithApple;
+using UGCF.Utils;
 
-public class ThirdPartySdkManager : MonoBehaviour
+namespace UGCF.Manager
 {
-    static ThirdPartySdkManager instance;
-    public static ThirdPartySdkManager Instance
+    public class ThirdPartySdkManager : MonoBehaviour
     {
-        get
+        static ThirdPartySdkManager instance;
+        public static ThirdPartySdkManager Instance
         {
-            if (instance == null)
+            get
             {
-                instance = new GameObject().AddComponent<ThirdPartySdkManager>();
-                instance.name = instance.GetType().ToString();
-                DontDestroyOnLoad(instance);
-                instance.Init();
+                if (instance == null)
+                {
+                    instance = new GameObject().AddComponent<ThirdPartySdkManager>();
+                    instance.name = instance.GetType().ToString();
+                    DontDestroyOnLoad(instance);
+                    instance.Init();
+                }
+                return instance;
             }
-            return instance;
         }
-    }
-    public bool isRegisterToWechat = false;
-    public bool isRegisterToQQ = false;
-    public AndroidJavaClass tool;
-    public AndroidJavaObject currentActivity;
+        public bool isRegisterToWechat = false;
+        public bool isRegisterToQQ = false;
+        public AndroidJavaClass tool;
+        public AndroidJavaObject currentActivity;
 
-    void Init()
-    {
+        void Init()
+        {
 #if UNITY_ANDROID && !UNITY_EDITOR
         AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
         tool = new AndroidJavaClass(ConstantUtils.BundleIdentifier + ".Tool");
 #endif
-        RegisterAppWechat();
-        RegisterAppQQ();
-    }
+            RegisterAppWechat();
+            RegisterAppQQ();
+        }
 
-    #region ...wechat
-    public const string WXAppID = "你的微信APPID";
-    const string WXAppSecret = "你的微信AppSecret";
+        #region ...wechat
+        public const string WXAppID = "你的微信APPID";
+        const string WXAppSecret = "你的微信AppSecret";
 
 #if UNITY_IOS
     [DllImport("__Internal")]
@@ -53,47 +56,47 @@ public class ThirdPartySdkManager : MonoBehaviour
     [DllImport("__Internal")]
     static extern void OpenWechat_iOS(string state);
 #elif UNITY_ANDROID
-    static string WechatToolStr = ConstantUtils.BundleIdentifier + ".wechat.WechatTool";
-    static string WechatLoginStr = ConstantUtils.BundleIdentifier + ".wechat.WechatLogin";
-    static string WechatPayStr = ConstantUtils.BundleIdentifier + ".wechat.WechatPay";
+        static string WechatToolStr = ConstantUtils.BundleIdentifier + ".wechat.WechatTool";
+        static string WechatLoginStr = ConstantUtils.BundleIdentifier + ".wechat.WechatLogin";
+        static string WechatPayStr = ConstantUtils.BundleIdentifier + ".wechat.WechatPay";
 #endif
 
-    /// <summary> 注册微信 </summary>
-    public bool RegisterAppWechat()
-    {
-        if (!isRegisterToWechat)
+        /// <summary> 注册微信 </summary>
+        public bool RegisterAppWechat()
         {
+            if (!isRegisterToWechat)
+            {
 #if UNITY_EDITOR
-            isRegisterToWechat = true;
+                isRegisterToWechat = true;
 #elif UNITY_IOS
             RegisterApp_iOS(WXAppID, WXAppSecret);
 #elif UNITY_ANDROID
             AndroidJavaClass wechatTool = new AndroidJavaClass(WechatToolStr);
             wechatTool.CallStatic<bool>("RegisterToWechat", currentActivity, WXAppID, WXAppSecret);
 #endif
+            }
+            return isRegisterToWechat;
         }
-        return isRegisterToWechat;
-    }
 
-    /// <summary> 是否安装了微信 </summary>
-    public bool IsWechatInstalled()
-    {
-        bool isRegister = isRegisterToWechat;
+        /// <summary> 是否安装了微信 </summary>
+        public bool IsWechatInstalled()
+        {
+            bool isRegister = isRegisterToWechat;
 #if UNITY_EDITOR
-        isRegister = false;
+            isRegister = false;
 #elif UNITY_IOS
         isRegister = IsWechatInstalled_iOS();
 #elif UNITY_ANDROID
         AndroidJavaClass wechatTool = new AndroidJavaClass(WechatToolStr);
         isRegister = wechatTool.CallStatic<bool>("IsWechatInstalled");
 #endif
-        return isRegister;
-    }
+            return isRegister;
+        }
 
-    #region ...微信登录
-    /// <summary> 微信登录 </summary>
-    public void WechatLogin()
-    {
+        #region ...微信登录
+        /// <summary> 微信登录 </summary>
+        public void WechatLogin()
+        {
 #if UNITY_EDITOR
 
 #elif UNITY_IOS
@@ -102,43 +105,43 @@ public class ThirdPartySdkManager : MonoBehaviour
         AndroidJavaClass loginC = new AndroidJavaClass(WechatLoginStr);
         loginC.CallStatic("LoginWeChat", "app_wechat");//后期改为随机数加session来校验
 #endif
-    }
-
-    /// <summary> 微信登录回调 </summary>
-    public void WechatLoginCallback(string callBackInfo)
-    {
-        //openid	    普通用户的标识，对当前开发者帐号唯一
-        //nickname	    普通用户昵称
-        //sex	        普通用户性别，1为男性，2为女性
-        //province	    普通用户个人资料填写的省份
-        //city	        普通用户个人资料填写的城市
-        //country	    国家，如中国为CN
-        //headimgurl    用户头像，最后一个数值代表正方形头像大小（有0、46、64、96、132数值可选，0代表640*640正方形头像），用户没有头像时该项为空
-        //privilege	    用户特权信息，json数组，如微信沃卡用户为（chinaunicom）
-        //unionid	    用户统一标识。针对一个微信开放平台帐号下的应用，同一用户的unionid是唯一的。多app数据互通保存该值
-        //access_token  用户当前临时token值，自主添加的值
-        if (!string.IsNullOrEmpty(callBackInfo))
-        {
-            JsonData jd = JsonMapper.ToObject(callBackInfo);
-            if (!string.IsNullOrEmpty(jd.TryGetString("errcode")))
-            {
-                TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
-                return;
-            }
-            //TODO 登录
         }
-        else
-            TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);//登录失败请重试
-    }
-    #endregion
 
-    #region ...微信支付
+        /// <summary> 微信登录回调 </summary>
+        public void WechatLoginCallback(string callBackInfo)
+        {
+            //openid	    普通用户的标识，对当前开发者帐号唯一
+            //nickname	    普通用户昵称
+            //sex	        普通用户性别，1为男性，2为女性
+            //province	    普通用户个人资料填写的省份
+            //city	        普通用户个人资料填写的城市
+            //country	    国家，如中国为CN
+            //headimgurl    用户头像，最后一个数值代表正方形头像大小（有0、46、64、96、132数值可选，0代表640*640正方形头像），用户没有头像时该项为空
+            //privilege	    用户特权信息，json数组，如微信沃卡用户为（chinaunicom）
+            //unionid	    用户统一标识。针对一个微信开放平台帐号下的应用，同一用户的unionid是唯一的。多app数据互通保存该值
+            //access_token  用户当前临时token值，自主添加的值
+            if (!string.IsNullOrEmpty(callBackInfo))
+            {
+                JsonData jd = JsonMapper.ToObject(callBackInfo);
+                if (!string.IsNullOrEmpty(jd.TryGetString("errcode")))
+                {
+                    TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
+                    return;
+                }
+                //TODO 登录
+            }
+            else
+                TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);//登录失败请重试
+        }
+        #endregion
+
+        #region ...微信支付
 
 #if UNITY_ANDROID
-    Queue<string> wechatPayQueues = new Queue<string>();
-    // <summary> 发起微信支付请求 </summary>
-    public void SendWechatPay(string payCode, string orderNum, bool qrCode)
-    {
+        Queue<string> wechatPayQueues = new Queue<string>();
+        // <summary> 发起微信支付请求 </summary>
+        public void SendWechatPay(string payCode, string orderNum, bool qrCode)
+        {
 #if !UNITY_EDITOR
         JsonData jd = JsonMapper.ToObject(payCode);
         string appId = jd.TryGetString("appid");
@@ -152,32 +155,32 @@ public class ThirdPartySdkManager : MonoBehaviour
         AndroidJavaClass utils = new AndroidJavaClass(WechatPayStr);
         utils.CallStatic("SendPay", appId, partKey, prePayId, nonceStr, jd.TryGetString("timestamp"), jd.TryGetString("package"), jd.TryGetString("sign"));
 #endif
-    }
-
-    /// <summary> 支付回调 </summary>
-    public void WechatPayCallback(string retCode)
-    {
-        switch (int.Parse(retCode))
-        {
-            case -2:
-                TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_CANCEL);
-                break;
-            case -1:
-                TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_FAILE);
-                break;
-            case 0:
-                TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_SUCCESS);
-                break;
         }
-    }
+
+        /// <summary> 支付回调 </summary>
+        public void WechatPayCallback(string retCode)
+        {
+            switch (int.Parse(retCode))
+            {
+                case -2:
+                    TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_CANCEL);
+                    break;
+                case -1:
+                    TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_FAILE);
+                    break;
+                case 0:
+                    TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_SUCCESS);
+                    break;
+            }
+        }
 #endif
 
-    #endregion
+        #endregion
 
-    #endregion
+        #endregion
 
-    #region ...QQ
-    public const string QQAppID = "你的QQAppID";
+        #region ...QQ
+        public const string QQAppID = "你的QQAppID";
 
 #if UNITY_IOS
     [DllImport("__Internal")]
@@ -187,15 +190,15 @@ public class ThirdPartySdkManager : MonoBehaviour
     [DllImport("__Internal")]
     static extern void LoginByQQ();
 #elif UNITY_ANDROID
-    static string QQToolStr = ConstantUtils.BundleIdentifier + ".qq.QQTool";
-    static string QQLoginStr = ConstantUtils.BundleIdentifier + ".qq.QQLogin";
+        static string QQToolStr = ConstantUtils.BundleIdentifier + ".qq.QQTool";
+        static string QQLoginStr = ConstantUtils.BundleIdentifier + ".qq.QQLogin";
 #endif
 
-    public bool IsQQInstalled()
-    {
-        bool isRegister = isRegisterToQQ;
+        public bool IsQQInstalled()
+        {
+            bool isRegister = isRegisterToQQ;
 #if UNITY_EDITOR
-        isRegister = false;
+            isRegister = false;
 #else
 #if UNITY_IOS
         isRegister = IsQQInstalled_iOS();
@@ -204,14 +207,14 @@ public class ThirdPartySdkManager : MonoBehaviour
         isRegister = qqTool.CallStatic<bool>("IsQQInstalled", currentActivity);
 #endif
 #endif
-        return isRegister;
-    }
+            return isRegister;
+        }
 
-    /// <summary> 注册QQ </summary>
-    public void RegisterAppQQ()
-    {
-        if (!isRegisterToQQ)
+        /// <summary> 注册QQ </summary>
+        public void RegisterAppQQ()
         {
+            if (!isRegisterToQQ)
+            {
 #if UNITY_EDITOR
 
 #elif UNITY_IOS
@@ -220,14 +223,14 @@ public class ThirdPartySdkManager : MonoBehaviour
             AndroidJavaClass qqTool = new AndroidJavaClass(QQToolStr);
             qqTool.CallStatic<bool>("RegisterToQQ", currentActivity, QQAppID);
 #endif
-            isRegisterToQQ = true;
+                isRegisterToQQ = true;
+            }
         }
-    }
 
-    public void QQLogin()
-    {
-        if (!isRegisterToQQ)
-            return;
+        public void QQLogin()
+        {
+            if (!isRegisterToQQ)
+                return;
 #if UNITY_EDITOR
 
 #elif UNITY_IOS
@@ -236,117 +239,117 @@ public class ThirdPartySdkManager : MonoBehaviour
         AndroidJavaClass loginC = new AndroidJavaClass(QQLoginStr);
         loginC.CallStatic("LoginQQ");
 #endif
-    }
-
-    public void QQLoginCallback(string callBackInfo)
-    {
-        //openid	    普通用户的标识，对当前开发者帐号唯一
-        //nickname	    普通用户昵称
-        //sex	        普通用户性别，1为男性，2为女性
-        //figureurl_qq_1	    大小为40×40像素的QQ头像URL
-        //figureurl_qq_2	    普大小为100×100像素的QQ头像URL。需要注意，不是所有的用户都拥有QQ的100x100的头像，但40x40像素则是一定会有
-        if (!string.IsNullOrEmpty(callBackInfo))
-        {
-            //TODO 登录
         }
-        else
-            TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
-    }
-    #endregion
 
-    #region ...ali
-    #region ...alipay
+        public void QQLoginCallback(string callBackInfo)
+        {
+            //openid	    普通用户的标识，对当前开发者帐号唯一
+            //nickname	    普通用户昵称
+            //sex	        普通用户性别，1为男性，2为女性
+            //figureurl_qq_1	    大小为40×40像素的QQ头像URL
+            //figureurl_qq_2	    普大小为100×100像素的QQ头像URL。需要注意，不是所有的用户都拥有QQ的100x100的头像，但40x40像素则是一定会有
+            if (!string.IsNullOrEmpty(callBackInfo))
+            {
+                //TODO 登录
+            }
+            else
+                TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
+        }
+        #endregion
+
+        #region ...ali
+        #region ...alipay
 
 #if UNITY_ANDROID
-    public const string AlipayAppID = "你的AlipayAppID";
-    // <summary> 发起支付宝支付请求 </summary>
-    public void SendAliPay(string payCode)
-    {
+        public const string AlipayAppID = "你的AlipayAppID";
+        // <summary> 发起支付宝支付请求 </summary>
+        public void SendAliPay(string payCode)
+        {
 #if !UNITY_EDITOR
         AndroidJavaObject utils = new AndroidJavaObject(ConstantUtils.BundleIdentifier + ".alipay.AliPay");
         utils.Call("SendPay", payCode, currentActivity);
 #endif
-    }
+        }
 
-    /// <summary> 支付回调 </summary>
-    public void AliPayCallback(string paySuccess)
-    {
-        bool payResult = bool.Parse(paySuccess);
-        TipManager.Instance.OpenTip(TipType.SimpleTip, payResult ? ConstantUtils.PAY_RESULT_SUCCESS : ConstantUtils.PAY_RESULT_FAILE);
-    }
+        /// <summary> 支付回调 </summary>
+        public void AliPayCallback(string paySuccess)
+        {
+            bool payResult = bool.Parse(paySuccess);
+            TipManager.Instance.OpenTip(TipType.SimpleTip, payResult ? ConstantUtils.PAY_RESULT_SUCCESS : ConstantUtils.PAY_RESULT_FAILE);
+        }
 #endif
-    #endregion
+        #endregion
 
-    #region ...本机号码一键登录
-    AndroidJavaObject oneClickLogin;
+        #region ...本机号码一键登录
+        AndroidJavaObject oneClickLogin;
 
-    /// <summary>
-    /// 初始化一键登录界面
-    /// </summary>
-    public void InitOneClick()
-    {
+        /// <summary>
+        /// 初始化一键登录界面
+        /// </summary>
+        public void InitOneClick()
+        {
 #if UNITY_ANDROID && !UNITY_EDITOR
         if(oneClickLogin == null)
             oneClickLogin = new AndroidJavaObject(ConstantUtils.BundleIdentifier + ".oneclick.OneClickLogin");
         oneClickLogin.Call("init");
 #endif
-    }
+        }
 
-    /// <summary>
-    /// 打开一键登录界面
-    /// </summary>
-    public void OpenOneClickLoginPage()
-    {
+        /// <summary>
+        /// 打开一键登录界面
+        /// </summary>
+        public void OpenOneClickLoginPage()
+        {
 #if UNITY_ANDROID && !UNITY_EDITOR
         oneClickLogin.Call("openLoginPage");
 #endif
-    }
-
-    public void OneClickCallback(string token)
-    {
-        if (token.Length > 100)
-        {
-            //TODO 登录
         }
-        else
+
+        public void OneClickCallback(string token)
         {
-            switch (token)
+            if (token.Length > 100)
             {
-                case "600013":
-                case "600014":
-                    TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_4);
-                    break;
-                case "600021":
-                    TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_5);
-                    break;
-                case "700000":
-                case "700001":
-                    //点击返回 用户取消免密登录
-                    break;
-                default:
-                    TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_1);
-                    break;
+                //TODO 登录
+            }
+            else
+            {
+                switch (token)
+                {
+                    case "600013":
+                    case "600014":
+                        TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_4);
+                        break;
+                    case "600021":
+                        TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_5);
+                        break;
+                    case "700000":
+                    case "700001":
+                        //点击返回 用户取消免密登录
+                        break;
+                    default:
+                        TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_1);
+                        break;
+                }
             }
         }
-    }
-    #endregion
-    #endregion
+        #endregion
+        #endregion
 
-    #region ...苹果支付
+        #region ...苹果支付
 #if UNITY_IOS
     [DllImport("__Internal")]
     static extern void RequestApplePay(string skuId);
 #endif
 
-    public void SendApplyPay(string skuId)
-    {
+        public void SendApplyPay(string skuId)
+        {
 #if UNITY_IOS
         RequestApplePay(skuId);
 #endif
-    }
+        }
 
-    public void ApplePayCallBack(string result)
-    {
+        public void ApplePayCallBack(string result)
+        {
 #if UNITY_IOS
         RuntimeTool.RecordTrackByHttp("收到苹果支付返回结果，凭据长度：" + result.Length);
         if (result.Length == 1)
@@ -360,125 +363,126 @@ public class ThirdPartySdkManager : MonoBehaviour
             TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.PAY_RESULT_SUCCESS);
         }
 #endif
-    }
-    #endregion
-
-    #region 苹果登录   
-
-    /// <summary>
-    /// 苹果登录
-    /// </summary>
-    public void LoginWithApple()
-    {
-        if (!gameObject.GetComponent<SignInWithApple>())
-        {
-            gameObject.AddComponent<SignInWithApple>();
         }
-        GetComponent<SignInWithApple>().Login(OnAppleLogin);
-    }
+        #endregion
 
-    /// <summary>
-    /// 苹果登录回调
-    /// </summary>
-    /// <param name="args"></param>
-    private void OnAppleLogin(SignInWithApple.CallbackArgs args)
-    {
-        if (args.error != null || string.IsNullOrEmpty(args.userInfo.userId))
-        {
-            TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.LOGIN_FAIL, 0, LoginWithApple);//登录失败请重试
-        }
-        else
-        {
-            //TODO 登录
-        }
-    }
-    #endregion
+        #region 苹果登录   
 
-    #region 其他功能
+        /// <summary>
+        /// 苹果登录
+        /// </summary>
+        public void LoginWithApple()
+        {
+            if (!gameObject.GetComponent<SignInWithApple>())
+            {
+                gameObject.AddComponent<SignInWithApple>();
+            }
+            GetComponent<SignInWithApple>().Login(OnAppleLogin);
+        }
+
+        /// <summary>
+        /// 苹果登录回调
+        /// </summary>
+        /// <param name="args"></param>
+        private void OnAppleLogin(SignInWithApple.CallbackArgs args)
+        {
+            if (args.error != null || string.IsNullOrEmpty(args.userInfo.userId))
+            {
+                TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.LOGIN_FAIL, 0, LoginWithApple);//登录失败请重试
+            }
+            else
+            {
+                //TODO 登录
+            }
+        }
+        #endregion
+
+        #region 其他功能
 #if UNITY_IOS
     [DllImport("__Internal")]
     static extern void CopyTextToClipboard_iOS(string input);
 #endif
 
-    public string GetAndroid_OAID()
-    {
+        public string GetAndroid_OAID()
+        {
 #if UNITY_ANDROID && !UNITY_EDITOR
         return tool.CallStatic<string>("GetOAID");
 #else
-        return string.Empty;
+            return string.Empty;
 #endif
-    }
+        }
 
-    /// <summary>
-    /// 复制到剪贴板
-    /// </summary>
-    public void CopyToClipboard(string input)
-    {
+        /// <summary>
+        /// 复制到剪贴板
+        /// </summary>
+        public void CopyToClipboard(string input)
+        {
 #if UNITY_EDITOR
-        TextEditor t = new TextEditor();
-        t.text = input;
-        t.OnFocus();
-        t.Copy();
+            TextEditor t = new TextEditor();
+            t.text = input;
+            t.OnFocus();
+            t.Copy();
 #elif UNITY_IOS
         CopyTextToClipboard_iOS(input);  
 #elif UNITY_ANDROID
         tool.CallStatic("CopyTextToClipboard", input);
 #endif
-    }
+        }
 
-    /// <summary>
-    /// 判断文件路径是否存在，主要针对安卓真机
-    /// </summary>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    public bool FileExistByStreaming(string path)
-    {
+        /// <summary>
+        /// 判断文件路径是否存在，主要针对安卓真机
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public bool FileExistByStreaming(string path)
+        {
 #if UNITY_EDITOR
-        return File.Exists(path);
+            return File.Exists(path);
 #elif UNITY_ANDROID
         string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
         return tool.CallStatic<bool>("FileExist", androidPath);
 #else
         return File.Exists(path);
 #endif
-    }
+        }
 
-    public string GetFileByStreaming(string path)
-    {
-        try
+        public string GetFileByStreaming(string path)
         {
+            try
+            {
 #if UNITY_EDITOR
-            return File.ReadAllText(path);
+                return File.ReadAllText(path);
 #elif UNITY_ANDROID
             string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
             return tool.CallStatic<string>("GetTextFile", androidPath);
 #else
             return File.ReadAllText(path);
 #endif
+            }
+            catch
+            {
+                LogUtils.Log("文件读取失败！path：" + path);
+                return null;
+            }
         }
-        catch
-        {
-            LogUtils.Log("文件读取失败！path：" + path);
-            return null;
-        }
+        #endregion
     }
-    #endregion
-}
 
-public enum WechatErrorCode
-{
-    Success = 0,
-    ErrorCommon = -1,
-    ErrorUserCancel = -2,
-    ErrorSentFail = -3,
-    ErrorAuthDenied = -4,
-    ErrorUnsupport = -5,
-    ErrorBan = -6,
-}
+    public enum WechatErrorCode
+    {
+        Success = 0,
+        ErrorCommon = -1,
+        ErrorUserCancel = -2,
+        ErrorSentFail = -3,
+        ErrorAuthDenied = -4,
+        ErrorUnsupport = -5,
+        ErrorBan = -6,
+    }
 
-public enum QQErrorCode
-{
-    Success = 0,
-    UserCancel,
-    Failure
+    public enum QQErrorCode
+    {
+        Success = 0,
+        UserCancel,
+        Failure
+    }
 }

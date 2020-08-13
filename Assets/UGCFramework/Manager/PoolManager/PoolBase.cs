@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace PoolManager
+namespace UGCF.PoolManager
 {
     public abstract class PoolBase<T> : MonoBehaviour where T : PoolUnit
     {

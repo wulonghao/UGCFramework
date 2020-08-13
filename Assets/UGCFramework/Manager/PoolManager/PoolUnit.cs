@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PoolManager
+namespace UGCF.PoolManager
 {
     public class PoolUnit : MonoBehaviour
     {
