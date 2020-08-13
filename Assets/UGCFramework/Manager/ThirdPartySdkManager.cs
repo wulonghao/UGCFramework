@@ -277,6 +277,61 @@ public class ThirdPartySdkManager : MonoBehaviour
 #endif
     #endregion
 
+    #region ...本机号码一键登录
+    AndroidJavaObject oneClickLogin;
+
+    /// <summary>
+    /// 初始化一键登录界面
+    /// </summary>
+    public void InitOneClick()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if(oneClickLogin == null)
+            oneClickLogin = new AndroidJavaObject(ConstantUtils.BundleIdentifier + ".oneclick.OneClickLogin");
+        oneClickLogin.Call("init");
+#endif
+    }
+
+    /// <summary>
+    /// 打开一键登录界面
+    /// </summary>
+    public void OpenOneClickLoginPage()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        oneClickLogin.Call("openLoginPage");
+#endif
+    }
+
+    public void OneClickCallback(string token)
+    {
+        if (token.Length > 100)
+        {
+            //TODO 登录
+        }
+        else
+        {
+            switch (token)
+            {
+                case "600013":
+                case "600014":
+                    TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_4);
+                    break;
+                case "600021":
+                    TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_5);
+                    break;
+                case "700000":
+                case "700001":
+                    //点击返回 用户取消免密登录
+                    break;
+                default:
+                    TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.ONE_CLICK_LOGIN_1);
+                    break;
+            }
+        }
+    }
+    #endregion
+    #endregion
+
     #region ...苹果支付
 #if UNITY_IOS
     [DllImport("__Internal")]
