@@ -85,7 +85,7 @@ namespace UGCF.Utils
         {
             if (string.IsNullOrEmpty(logErrorPath))
             {
-                logErrorPath = LogErrorRootPath + UserInfoModel.Instance.userId + "_" + MiscUtils.GetTimeStampByDateTime(DateTime.Now) + ".log";
+                logErrorPath = LogErrorRootPath + MiscUtils.GetTimeStampByDateTime(DateTime.Now) + ".log";
                 MiscUtils.CreateTextFile(logErrorPath, "");
                 logWrite = new StreamWriter(logErrorPath) { AutoFlush = false };
             }
@@ -93,24 +93,8 @@ namespace UGCF.Utils
             {
                 if (!File.Exists(logErrorPath))
                     return;
-                int index = logErrorPath.IndexOf("/_");
-                if (index > 0)
-                {
-                    string newName = logErrorPath.Insert(index + 1, UserInfoModel.Instance.userId);
-                    if (newName != logErrorPath)
-                    {
-                        logWrite.Close();
-                        StreamReader sr = new StreamReader(logErrorPath);
-                        string fileContent = sr.ReadToEnd();
-                        sr.Close();
-                        File.Delete(logErrorPath);
-
-                        MiscUtils.CreateTextFile(newName, "");
-                        logWrite = new StreamWriter(newName) { AutoFlush = false };
-                        logWrite.Write(fileContent);
-                        logWrite.Flush();
-                    }
-                }
+                if (logWrite != null)
+                    logWrite.Flush();
             }
         }
     }
