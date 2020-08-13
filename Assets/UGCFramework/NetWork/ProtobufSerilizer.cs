@@ -3,6 +3,7 @@ using System.IO;
 using ProtoBuf;
 using System;
 using UnityEngine;
+using UGCF.Utils;
 
 public class ProtobufSerilizer
 {
