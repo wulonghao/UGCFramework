@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UGCF.Manager;
+using UGCF.UnityExtend;
 using UnityEngine;
 
 public class Test3Page : Page

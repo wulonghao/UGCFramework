@@ -1,30 +1,17 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
+using UGCF.HotUpdate;
+using UGCF.Manager;
+using UGCF.Utils;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class EternalGameObject : MonoBehaviour
+public class EternalGameObject : HotFixBaseInheritMono
 {
     public static EternalGameObject Instance;
-    public RectTransform rootCanvas;
-    [HideInInspector]
-    public static AssetBundle commonBasicspriteAb, commonButtonAb, imageColorChangeAb, imageColorChangeVAb;
+    public static AssetBundle commonBasicspriteAb, commonButtonAb, fontDefault, imageColorChangeAb, imageColorChangeVAb;
+    [SerializeField] bool isNeverSleep = true;
 
-    public bool isDebugLog = true;
-    public bool isLocalVersion = true;
-    public bool isNeverSleep = true;
-
-    public static float canvasWidth;
-    public static float canvasHeight;
-    public static float canvasWidthScale;
-    public static float canvasHeightScale;
-    public static float screenWidthScale;
-    public static float screenHeightScale;
-    public static int pixelWidth;
-    public static int pixelHeight;
-
-    public AndroidBuildChannel androidBuildChannel;
-    public IOSBuildChannel iOSBuildChannel;
 
     void Awake()
     {
@@ -38,62 +25,61 @@ public class EternalGameObject : MonoBehaviour
     {
         ILRuntimeUtils.LoadHotFixWithInit();
         LogUtils.Log(Application.persistentDataPath);
-        UIDataInit();
         LoadNecessaryBundle();
         PageManager.Instance.OpenPage<StartPage>();
     }
 
-    void UIDataInit()
-    {
-        canvasWidth = rootCanvas.rect.width;
-        canvasHeight = rootCanvas.rect.height;
-        screenWidthScale = rootCanvas.localScale.x;
-        screenHeightScale = rootCanvas.localScale.y;
-        Vector2 vec2 = rootCanvas.GetComponent<CanvasScaler>().referenceResolution;
-        pixelWidth = (int)vec2.x;
-        pixelHeight = (int)vec2.y;
-        canvasWidthScale = canvasWidth / pixelWidth;
-        canvasHeightScale = canvasHeight / pixelHeight;
-    }
-
     /// <summary> 加载必要资源 </summary>
-    void LoadNecessaryBundle()
+    public static void LoadNecessaryBundle()
     {
-        if (!commonBasicspriteAb) commonBasicspriteAb = BundleManager.Instance.GetSpriteBundle("Common/BasicSprite");
-        if (!commonButtonAb) commonButtonAb = BundleManager.Instance.GetSpriteBundle("Common/Button");
-
-        BundleManager.Instance.GetBundle("Font/Default");
-
-        if (!imageColorChangeAb)
+        if (CheckHotFixStaticMethod(out string typeFullName, out string methodName))
         {
-            imageColorChangeAb = BundleManager.Instance.GetBundle("Shader/imagecolorchange");
-            if (imageColorChangeAb)
-            {
-                Material imagecolorchangeMat = imageColorChangeAb.LoadAsset<Material>("imagecolorchange");
-                imagecolorchangeMat.shader = Shader.Find(imagecolorchangeMat.shader.name);
-            }
+            InvokeStaticHotFix(typeFullName, methodName, null);
+            return;
         }
-        if (!imageColorChangeVAb)
-        {
-            imageColorChangeVAb = BundleManager.Instance.GetBundle("Shader/imagecolorchangev");
-            if (imageColorChangeVAb)
-            {
-                Material imagecolorchangevMat = imageColorChangeVAb.LoadAsset<Material>("imagecolorchangev");
-                imagecolorchangevMat.shader = Shader.Find(imagecolorchangevMat.shader.name);
-            }
-        }
+        commonBasicspriteAb = LoadBundle(commonBasicspriteAb, "Basicsprite", 1);
+        commonButtonAb = LoadBundle(commonButtonAb, "Button", 1);
+
+        fontDefault = LoadBundle(fontDefault, "jdzytj", 2);
+
+        imageColorChangeAb = LoadBundle(imageColorChangeAb, "imagecolorchange", 3);
+        imageColorChangeVAb = LoadBundle(imageColorChangeVAb, "imagecolorchangev", 3);
     }
-}
 
-public enum AndroidBuildChannel
-{
-    Test,
-    QiHu360,
-    WanDouJia
-}
-
-public enum IOSBuildChannel
-{
-    Test,
-    AppStore
+    /// <summary>
+    /// 加载公共Bundle，若已加载，则Unload后重新加载
+    /// </summary>
+    /// <param name="assetBundle">存储Bundle引用的Object</param>
+    /// <param name="bundleName">bundle的相对路径名</param>
+    /// <param name="type">bundle类型 1-sprite, 2-Font, 3-Material, 4-RenderTexture</param>
+    static AssetBundle LoadBundle(AssetBundle assetBundle, string bundleName, int type)
+    {
+        if (CheckHotFixStaticMethod(out string typeFullName, out string methodName))
+        {
+            return (AssetBundle)InvokeStaticHotFix(typeFullName, methodName, assetBundle, bundleName, type);
+        }
+        if (assetBundle)
+            assetBundle.Unload(false);
+        switch (type)
+        {
+            case 1://公共图片
+                assetBundle = BundleManager.Instance.GetSpriteBundle("Common/" + bundleName);
+                break;
+            case 2://公共字体
+                assetBundle = BundleManager.Instance.GetBundle("Font/" + bundleName);
+                break;
+            case 3://公共材质
+                assetBundle = BundleManager.Instance.GetBundle("Shader/" + bundleName);
+                if (assetBundle)
+                {
+                    Material material = assetBundle.LoadAsset<Material>(bundleName);
+                    material.shader = Shader.Find(material.shader.name);
+                }
+                break;
+            case 4://RenderTexture
+                assetBundle = BundleManager.Instance.GetBundle("RenderTexture/" + bundleName);
+                break;
+        }
+        return assetBundle;
+    }
 }

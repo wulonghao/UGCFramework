@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UGCF.Manager;
+using UGCF.UnityExtend;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,7 +38,7 @@ public class StartPage : Page
     void NecessaryInit()
     {
         Loom.Initialize();
-        MessageProcessor.CommonMessageEventBind();
+        CommonMessageManager.CommonMessageEventBind();
     }
 
     public override void Open()
