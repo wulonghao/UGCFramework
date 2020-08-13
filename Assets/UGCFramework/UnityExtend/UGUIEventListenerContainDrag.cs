@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
+using UGCF.Manager;
 
 namespace UGCF.UnityExtend
 {

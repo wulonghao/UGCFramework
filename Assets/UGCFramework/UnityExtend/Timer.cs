@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System.Text;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using UGCF.Utils;
 
 namespace UGCF.UnityExtend
 {

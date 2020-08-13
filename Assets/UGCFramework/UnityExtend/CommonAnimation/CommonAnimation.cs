@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
+using UGCF.Manager;
+using UGCF.Utils;
 
 namespace UGCF.UnityExtend
 {
@@ -170,7 +172,7 @@ namespace UGCF.UnityExtend
             if (allAnimations.Count == 0)
                 return this;
             if (!isStop) Stop();
-            playBaseMb = isPlayOnDisable ? (MonoBehaviour)PageManager.Instance : this;
+            playBaseMb = isPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
             if (isFoward)
                 playBaseMb.StartCoroutine(PlayAnimation(allAnimations, isFoward));
             else
@@ -185,7 +187,7 @@ namespace UGCF.UnityExtend
             if (commonAnimation == null)
                 return this;
             if (!isStop) Stop();
-            playBaseMb = isPlayOnDisable ? (MonoBehaviour)PageManager.Instance : this;
+            playBaseMb = isPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
             playBaseMb.StartCoroutine(PlayAnimation(new List<CommonAnimationBase>() { commonAnimation }, isFoward));
             return this;
         }

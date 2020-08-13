@@ -9,7 +9,7 @@ namespace UGCF.UGUIExtend
 {
     [CustomEditor(typeof(CommonAnimation))]
     [CanEditMultipleObjects]
-    public class CommonAnimationEditor : Editor
+    public class CommonAnimationEditor : UnityEditor.Editor
     {
         SerializedObject obj;
         SerializedProperty point, scale, alpha, color, size, angle, fillAmount;
