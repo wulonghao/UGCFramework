@@ -17,7 +17,7 @@ public class BuildApkOrXcode : EditorWindow
     static void ShowExcelTools()
     {
         BuildApkOrXcode instance = GetWindow<BuildApkOrXcode>("生成APK或Xcode工程");
-        EternalGameObject eternalGameObject = GameObject.Find("EternalGameObject").GetComponent<EternalGameObject>();
+        EternalGameObject eternalGameObject = FindObjectOfType<EternalGameObject>();
         instance.isDebugLog = eternalGameObject.isDebugLog;
         instance.isLocalVersion = eternalGameObject.isLocalVersion;
         instance.Show();
@@ -30,9 +30,12 @@ public class BuildApkOrXcode : EditorWindow
 
     void DrawOptions()
     {
-        GameObject gameObject = GameObject.Find("EternalGameObject");
-        if (!gameObject) return;
-        EternalGameObject eternalGameObject = gameObject.GetComponent<EternalGameObject>();
+        ChannelManager channelManager = FindObjectOfType<ChannelManager>();
+        if (!channelManager)
+            return;
+        EternalGameObject eternalGameObject = FindObjectOfType<EternalGameObject>();
+        if (!eternalGameObject)
+            return;
 #if UNITY_ANDROID
         buildTarget = BuildTarget.Android;
 #elif UNITY_IOS
@@ -42,14 +45,14 @@ public class BuildApkOrXcode : EditorWindow
 
         if (buildTarget == BuildTarget.Android)
         {
-            eternalGameObject.androidBuildChannel =
-                (AndroidBuildChannel)EditorGUILayout.EnumPopup("请选择要打包的渠道：", eternalGameObject.androidBuildChannel, GUILayout.Width(300));
+            channelManager.androidBuildChannel =
+                (ChannelManager.AndroidBuildChannel)EditorGUILayout.EnumPopup("请选择要打包的渠道：", channelManager.androidBuildChannel, GUILayout.Width(300));
             PlayerSettings.bundleVersion = EditorGUILayout.TextField("要打包的版本名：", PlayerSettings.bundleVersion, GUILayout.Width(300));
             PlayerSettings.Android.bundleVersionCode = EditorGUILayout.IntField("要打包的版本号：", PlayerSettings.Android.bundleVersionCode, GUILayout.Width(300));
         }
         else
         {
-            eternalGameObject.iOSBuildChannel = (IOSBuildChannel)EditorGUILayout.EnumPopup("请选择要打包的渠道：", eternalGameObject.iOSBuildChannel, GUILayout.Width(300));
+            channelManager.iOSBuildChannel = (ChannelManager.IOSBuildChannel)EditorGUILayout.EnumPopup("请选择要打包的渠道：", channelManager.iOSBuildChannel, GUILayout.Width(300));
             PlayerSettings.bundleVersion = EditorGUILayout.TextField("要打包的版本名：", PlayerSettings.bundleVersion, GUILayout.Width(300));
             PlayerSettings.iOS.buildNumber = EditorGUILayout.TextField("要打包的版本号：", PlayerSettings.iOS.buildNumber, GUILayout.Width(300));
         }
@@ -66,7 +69,7 @@ public class BuildApkOrXcode : EditorWindow
                 string apkDirectory = Application.dataPath.Replace("Assets", "AndroidApk/") + PlayerSettings.bundleVersion;
                 if (!Directory.Exists(apkDirectory))
                     apkDirectory = Application.dataPath.Replace("Assets", "AndroidApk");
-                string apkName = string.Format("{0}_{1}", eternalGameObject.androidBuildChannel.ToString().ToLower(), PlayerSettings.bundleVersion);
+                string apkName = string.Format("{0}_{1}", channelManager.androidBuildChannel.ToString().ToLower(), PlayerSettings.bundleVersion);
                 savePath = EditorUtility.SaveFilePanel("选择保存地址", apkDirectory, apkName, "apk");
             }
             EditorGUILayout.LabelField(savePath);
@@ -74,7 +77,7 @@ public class BuildApkOrXcode : EditorWindow
         else
         {
             savePath = Application.dataPath.Replace("Assets", "AndroidApk") +
-                string.Format("/{1}/{0}_{1}.apk", eternalGameObject.androidBuildChannel.ToString().ToLower(), PlayerSettings.bundleVersion);
+                string.Format("/{1}/{0}_{1}.apk", channelManager.androidBuildChannel.ToString().ToLower(), PlayerSettings.bundleVersion);
             EditorGUILayout.LabelField("默认路径：", savePath);
         }
 #elif UNITY_IOS
@@ -123,11 +126,11 @@ public class BuildApkOrXcode : EditorWindow
                 if (Directory.Exists(Application.streamingAssetsPath + "/AssetBundle"))
                     Directory.Delete(Application.streamingAssetsPath + "/AssetBundle", true);
                 if (isCopyBundleToStreaming)
-                    MiscUtils.CopyDirectory(Application.dataPath.Replace("Assets", "Release/") + buildTarget + "/" + eternalGameObject.androidBuildChannel, GlobalVariableUtils.StreamingAssetBundleFolderPath, true, true);
+                    MiscUtils.CopyDirectory(Application.dataPath.Replace("Assets", "Release/") + buildTarget + "/" + channelManager.androidBuildChannel, ConstantUtils.StreamingAssetBundleFolderPath, true, true);
             }
             else
             {
-                string channel = eternalGameObject.iOSBuildChannel.ToString();
+                string channel = channelManager.iOSBuildChannel.ToString();
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS, channel);
                 eternalGameObject.isDebugLog = isDebugLog;
                 eternalGameObject.isLocalVersion = isLocalVersion;
@@ -135,7 +138,7 @@ public class BuildApkOrXcode : EditorWindow
                 if (Directory.Exists(Application.streamingAssetsPath + "/AssetBundle"))
                     Directory.Delete(Application.streamingAssetsPath + "/AssetBundle", true);
                 if (isCopyBundleToStreaming)
-                    MiscUtils.CopyDirectory(Application.dataPath.Replace("Assets", "Release/") + buildTarget + "/" + channel, GlobalVariableUtils.StreamingAssetBundleFolderPath, true, true);
+                    MiscUtils.CopyDirectory(Application.dataPath.Replace("Assets", "Release/") + buildTarget + "/" + channel, ConstantUtils.StreamingAssetBundleFolderPath, true, true);
             }
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
@@ -152,7 +155,7 @@ public class BuildApkOrXcode : EditorWindow
             };
             BuildPipeline.BuildPlayer(buildPlayerOptions);
 #if UNITY_ANDROID
-            Debug.Log("Android平台" + eternalGameObject.androidBuildChannel + "渠道包生成完毕");
+            Debug.Log("Android平台" + channelManager.androidBuildChannel + "渠道包生成完毕");
 #elif UNITY_IOS
             Debug.Log("iOS平台" + eternalGameObject.iOSBuildChannel + "渠道Xcode工程生成完毕");
 #endif

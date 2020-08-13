@@ -173,9 +173,9 @@ public class EditorCreateBundle : Editor
     static string GetChannelPath(BuildTarget target)
     {
         if (isRelease)
-            return Application.dataPath.Replace("Assets", "Release/") + target.ToString() + "/" + MiscUtils.GetChannel() + "/";
+            return Application.dataPath.Replace("Assets", "Release/") + target.ToString() + "/" + ChannelManager.Instance.GetCurrentChannel() + "/";
         else
-            return Application.streamingAssetsPath + "/AssetBundle/" + target.ToString() + "/" + MiscUtils.GetChannel() + "/";
+            return Application.streamingAssetsPath + "/AssetBundle/" + target.ToString() + "/" + ChannelManager.Instance.GetCurrentChannel() + "/";
     }
 
     static string GetPlatformDirectoryPath(BuildTarget target)
