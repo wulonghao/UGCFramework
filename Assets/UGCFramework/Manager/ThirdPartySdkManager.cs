@@ -340,7 +340,6 @@ namespace UGCF.Manager
     [DllImport("__Internal")]
     static extern void RequestApplePay(string skuId);
 #endif
-
         public void SendApplyPay(string skuId)
         {
 #if UNITY_IOS
@@ -366,7 +365,7 @@ namespace UGCF.Manager
         }
         #endregion
 
-        #region 苹果登录   
+        #region ...苹果登录   
 
         /// <summary>
         /// 苹果登录
@@ -397,12 +396,11 @@ namespace UGCF.Manager
         }
         #endregion
 
-        #region 其他功能
+        #region ...其他功能
 #if UNITY_IOS
-    [DllImport("__Internal")]
-    static extern void CopyTextToClipboard_iOS(string input);
+        [DllImport("__Internal")]
+        static extern void CopyTextToClipboard_iOS(string input);
 #endif
-
         public string GetAndroid_OAID()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
