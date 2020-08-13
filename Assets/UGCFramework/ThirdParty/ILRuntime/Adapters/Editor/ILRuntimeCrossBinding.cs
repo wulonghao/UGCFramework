@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.Text;
 using System.Collections.Generic;
+using UGCF.Manager;
 
 [System.Reflection.Obfuscation(Exclude = true)]
 public class ILRuntimeCrossBinding
