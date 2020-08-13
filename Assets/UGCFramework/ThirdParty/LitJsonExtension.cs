@@ -1,5 +1,6 @@
 ﻿using LitJson;
 using System.Collections;
+using UGCF.Utils;
 using UnityEngine;
 
 public static class LitJsonExtension
