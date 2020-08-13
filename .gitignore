@@ -31,7 +31,9 @@ sysinfo.txt
 
 # Builds
 *.apk
-*.unitypackage
 Assets/StreamingAssets/
 iOS_SDK_Code/UnityAppController.mm
 iOS_SDK_Code/UnityAppController.h
+ExampleProject/UnityProject/Library/
+ExampleProject/UnityProject/.vs/
+ExampleProject/UnityProject/obj/
