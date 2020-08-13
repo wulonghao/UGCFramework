@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Android_SDK_Code.iml" filepath="$PROJECT_DIR$/Android_SDK_Code.iml" />
-      <module fileurl="file://E:\Work\UnityProject\UGCFramework\Android_SDK_Code\ThirdSdk_Android.iml" filepath="E:\Work\UnityProject\UGCFramework\Android_SDK_Code\ThirdSdk_Android.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

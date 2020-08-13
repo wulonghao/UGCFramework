@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using protocol;
 using System.Collections;
 using System;
+using System.Collections.Generic;
+using UnityEngine.SignInWithApple;
 
 public class ThirdPartySdkManager : MonoBehaviour
 {
@@ -15,10 +17,9 @@ public class ThirdPartySdkManager : MonoBehaviour
         {
             if (instance == null)
             {
-                GameObject go = new GameObject();
-                instance = go.AddComponent<ThirdPartySdkManager>();
-                go.name = instance.GetType().ToString();
-                DontDestroyOnLoad(go);
+                instance = new GameObject().AddComponent<ThirdPartySdkManager>();
+                instance.name = instance.GetType().ToString();
+                DontDestroyOnLoad(instance);
                 instance.Init();
             }
             return instance;
@@ -34,7 +35,7 @@ public class ThirdPartySdkManager : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        tool = new AndroidJavaClass("com.my.ugcf.Tool");
+        tool = new AndroidJavaClass(ConstantUtils.BundleIdentifier + ".Tool");
 #endif
         RegisterAppWechat();
         RegisterAppQQ();
@@ -51,6 +52,10 @@ public class ThirdPartySdkManager : MonoBehaviour
     static extern bool IsWechatInstalled_iOS();
     [DllImport("__Internal")]
     static extern void OpenWechat_iOS(string state);
+#elif UNITY_ANDROID
+    static string WechatToolStr = ConstantUtils.BundleIdentifier + ".wechat.WechatTool";
+    static string WechatLoginStr = ConstantUtils.BundleIdentifier + ".wechat.WechatLogin";
+    static string WechatPayStr = ConstantUtils.BundleIdentifier + ".wechat.WechatPay";
 #endif
 
     /// <summary> 注册微信 </summary>
@@ -63,7 +68,8 @@ public class ThirdPartySdkManager : MonoBehaviour
 #elif UNITY_IOS
             RegisterApp_iOS(WXAppID, WXAppSecret);
 #elif UNITY_ANDROID
-            tool.CallStatic<bool>("RegisterToWechat", currentActivity, WXAppID, WXAppSecret);
+            AndroidJavaClass wechatTool = new AndroidJavaClass(WechatToolStr);
+            wechatTool.CallStatic<bool>("RegisterToWechat", currentActivity, WXAppID, WXAppSecret);
 #endif
         }
         return isRegisterToWechat;
@@ -75,13 +81,11 @@ public class ThirdPartySdkManager : MonoBehaviour
         bool isRegister = isRegisterToWechat;
 #if UNITY_EDITOR
         isRegister = false;
-#else
-#if UNITY_IOS
+#elif UNITY_IOS
         isRegister = IsWechatInstalled_iOS();
 #elif UNITY_ANDROID
-        //isRegister = tool.CallStatic<bool>("IsWechatInstalled");
-        isRegister = true;
-#endif
+        AndroidJavaClass wechatTool = new AndroidJavaClass(WechatToolStr);
+        isRegister = wechatTool.CallStatic<bool>("IsWechatInstalled");
 #endif
         return isRegister;
     }
@@ -95,7 +99,7 @@ public class ThirdPartySdkManager : MonoBehaviour
 #elif UNITY_IOS
         OpenWechat_iOS("app_wechat");
 #elif UNITY_ANDROID
-        AndroidJavaClass loginC = new AndroidJavaClass("com.my.ugcf.wechat.WechatLogin");
+        AndroidJavaClass loginC = new AndroidJavaClass(WechatLoginStr);
         loginC.CallStatic("LoginWeChat", "app_wechat");//后期改为随机数加session来校验
 #endif
     }
@@ -119,27 +123,34 @@ public class ThirdPartySdkManager : MonoBehaviour
             if (!string.IsNullOrEmpty(jd.TryGetString("errcode")))
             {
                 TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
-                LoadingPnl.CloseLoading();
                 return;
             }
-            //TODO 登录 callBackInfo
+            //TODO 登录
         }
         else
-            TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
+            TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);//登录失败请重试
     }
     #endregion
 
     #region ...微信支付
-    // <summary> 发起微信支付请求 </summary>
-    public void SendWechatPay(string payCode)
-    {
-#if UNITY_EDITOR
 
-#elif UNITY_ANDROID
+#if UNITY_ANDROID
+    Queue<string> wechatPayQueues = new Queue<string>();
+    // <summary> 发起微信支付请求 </summary>
+    public void SendWechatPay(string payCode, string orderNum, bool qrCode)
+    {
+#if !UNITY_EDITOR
         JsonData jd = JsonMapper.ToObject(payCode);
-        AndroidJavaClass utils = new AndroidJavaClass("com.my.ugcf.wechat.WechatPay");
-        utils.CallStatic("SendPay", jd.TryGetString("appid"), jd.TryGetString("partnerid"), jd.TryGetString("prepayid"),
-            jd.TryGetString("noncestr"), jd.TryGetString("timestamp"), jd.TryGetString("package"), jd.TryGetString("sign"));
+        string appId = jd.TryGetString("appid");
+        string partKey = jd.TryGetString("partnerid");
+        string prePayId = jd.TryGetString("prepayid");
+        string nonceStr = jd.TryGetString("noncestr");
+        string mch_id = jd.TryGetString("mch_id");
+        string price = jd.TryGetString("price");
+        string title = jd.TryGetString("title");
+        string qrUrl = jd.TryGetString("code_url");
+        AndroidJavaClass utils = new AndroidJavaClass(WechatPayStr);
+        utils.CallStatic("SendPay", appId, partKey, prePayId, nonceStr, jd.TryGetString("timestamp"), jd.TryGetString("package"), jd.TryGetString("sign"));
 #endif
     }
 
@@ -159,6 +170,8 @@ public class ThirdPartySdkManager : MonoBehaviour
                 break;
         }
     }
+#endif
+
     #endregion
 
     #endregion
@@ -173,6 +186,9 @@ public class ThirdPartySdkManager : MonoBehaviour
     static extern bool IsQQInstalled_iOS();
     [DllImport("__Internal")]
     static extern void LoginByQQ();
+#elif UNITY_ANDROID
+    static string QQToolStr = ConstantUtils.BundleIdentifier + ".qq.QQTool";
+    static string QQLoginStr = ConstantUtils.BundleIdentifier + ".qq.QQLogin";
 #endif
 
     public bool IsQQInstalled()
@@ -184,7 +200,8 @@ public class ThirdPartySdkManager : MonoBehaviour
 #if UNITY_IOS
         isRegister = IsQQInstalled_iOS();
 #elif UNITY_ANDROID
-        isRegister = tool.CallStatic<bool>("IsQQInstalled", currentActivity);
+        AndroidJavaClass qqTool = new AndroidJavaClass(QQToolStr);
+        isRegister = qqTool.CallStatic<bool>("IsQQInstalled", currentActivity);
 #endif
 #endif
         return isRegister;
@@ -200,7 +217,8 @@ public class ThirdPartySdkManager : MonoBehaviour
 #elif UNITY_IOS
             InitQQ(QQAppID);
 #elif UNITY_ANDROID
-            tool.CallStatic<bool>("RegisterToQQ", currentActivity, QQAppID);
+            AndroidJavaClass qqTool = new AndroidJavaClass(QQToolStr);
+            qqTool.CallStatic<bool>("RegisterToQQ", currentActivity, QQAppID);
 #endif
             isRegisterToQQ = true;
         }
@@ -215,7 +233,7 @@ public class ThirdPartySdkManager : MonoBehaviour
 #elif UNITY_IOS
         LoginByQQ();
 #elif UNITY_ANDROID
-        AndroidJavaClass loginC = new AndroidJavaClass("com.my.ugcf.qq.QQLogin");
+        AndroidJavaClass loginC = new AndroidJavaClass(QQLoginStr);
         loginC.CallStatic("LoginQQ");
 #endif
     }
@@ -236,16 +254,16 @@ public class ThirdPartySdkManager : MonoBehaviour
     }
     #endregion
 
+    #region ...ali
     #region ...alipay
-    public const string AlipayAppID = "你的AlipayAppID";
 
+#if UNITY_ANDROID
+    public const string AlipayAppID = "你的AlipayAppID";
     // <summary> 发起支付宝支付请求 </summary>
     public void SendAliPay(string payCode)
     {
-#if UNITY_EDITOR
-
-#elif UNITY_ANDROID
-        AndroidJavaObject utils = new AndroidJavaObject("com.my.ugcf.alipay.AliPay");
+#if !UNITY_EDITOR
+        AndroidJavaObject utils = new AndroidJavaObject(ConstantUtils.BundleIdentifier + ".alipay.AliPay");
         utils.Call("SendPay", payCode, currentActivity);
 #endif
     }
@@ -256,6 +274,7 @@ public class ThirdPartySdkManager : MonoBehaviour
         bool payResult = bool.Parse(paySuccess);
         TipManager.Instance.OpenTip(TipType.SimpleTip, payResult ? ConstantUtils.PAY_RESULT_SUCCESS : ConstantUtils.PAY_RESULT_FAILE);
     }
+#endif
     #endregion
 
     #region ...苹果支付
@@ -274,10 +293,11 @@ public class ThirdPartySdkManager : MonoBehaviour
     public void ApplePayCallBack(string result)
     {
 #if UNITY_IOS
+        RuntimeTool.RecordTrackByHttp("收到苹果支付返回结果，凭据长度：" + result.Length);
         if (result.Length == 1)
         {
             int code = int.Parse(result);
-            TipManager.Instance.OpenTip(TipType.SimpleTip, code == 0 ? ConstantUtils.PAY_RESULT_FAILE : ConstantUtils.PAY_RESULT_CANCEL);
+            TipManager.Instance.OpenTip(TipType.AlertTip, code == 0 ? ConstantUtils.PAY_RESULT_FAILE : ConstantUtils.PAY_RESULT_CANCEL);
         }
         else
         {
@@ -288,13 +308,52 @@ public class ThirdPartySdkManager : MonoBehaviour
     }
     #endregion
 
+    #region 苹果登录   
+
+    /// <summary>
+    /// 苹果登录
+    /// </summary>
+    public void LoginWithApple()
+    {
+        if (!gameObject.GetComponent<SignInWithApple>())
+        {
+            gameObject.AddComponent<SignInWithApple>();
+        }
+        GetComponent<SignInWithApple>().Login(OnAppleLogin);
+    }
+
+    /// <summary>
+    /// 苹果登录回调
+    /// </summary>
+    /// <param name="args"></param>
+    private void OnAppleLogin(SignInWithApple.CallbackArgs args)
+    {
+        if (args.error != null || string.IsNullOrEmpty(args.userInfo.userId))
+        {
+            TipManager.Instance.OpenTip(TipType.AlertTip, ConstantUtils.LOGIN_FAIL, 0, LoginWithApple);//登录失败请重试
+        }
+        else
+        {
+            //TODO 登录
+        }
+    }
+    #endregion
+
     #region 其他功能
 #if UNITY_IOS
     [DllImport("__Internal")]
     static extern void CopyTextToClipboard_iOS(string input);
-    [DllImport("__Internal")]
-    static extern float GetBattery_iOS();
 #endif
+
+    public string GetAndroid_OAID()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        return tool.CallStatic<string>("GetOAID");
+#else
+        return string.Empty;
+#endif
+    }
+
     /// <summary>
     /// 复制到剪贴板
     /// </summary>
@@ -308,21 +367,7 @@ public class ThirdPartySdkManager : MonoBehaviour
 #elif UNITY_IOS
         CopyTextToClipboard_iOS(input);  
 #elif UNITY_ANDROID
-        tool.CallStatic("CopyTextToClipboard", currentActivity, input);
-#endif
-    }
-
-    /// <summary>
-    /// 获取电量
-    /// </summary>
-    public int GetBattery()
-    {
-#if UNITY_EDITOR
-        return 50;
-#elif UNITY_IOS
-        return (int)(GetBattery_iOS() * 100);
-#elif UNITY_ANDROID
-        return tool.CallStatic<int>("GetBattery");
+        tool.CallStatic("CopyTextToClipboard", input);
 #endif
     }
 
@@ -341,6 +386,26 @@ public class ThirdPartySdkManager : MonoBehaviour
 #else
         return File.Exists(path);
 #endif
+    }
+
+    public string GetFileByStreaming(string path)
+    {
+        try
+        {
+#if UNITY_EDITOR
+            return File.ReadAllText(path);
+#elif UNITY_ANDROID
+            string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
+            return tool.CallStatic<string>("GetTextFile", androidPath);
+#else
+            return File.ReadAllText(path);
+#endif
+        }
+        catch
+        {
+            LogUtils.Log("文件读取失败！path：" + path);
+            return null;
+        }
     }
     #endregion
 }

@@ -11,7 +11,9 @@ import java.net.URLConnection;
 import com.unity3d.player.*;
 
 public class WechatLogin{
-     static String access_token;
+    private static String access_token;
+    private static final String CallbackTypeName = "ThirdPartySdkManager";
+    private static final String CallbackMethodName = "WechatLoginCallback";
 
     // 登录微信
     public static void LoginWeChat(String state) {
@@ -20,7 +22,7 @@ public class WechatLogin{
         // 设置应用的作用域，获取个人信息
         req.scope = "snsapi_userinfo";
         req.state = state;
-        Tool.api.sendReq(req);
+        WechatTool.api.sendReq(req);
     }
 
     // 获取微信登录授权口令
@@ -88,16 +90,16 @@ public class WechatLogin{
                             String openId = jsStr.getString("openid");
                             GetUserInfo(access_token, openId);
                         } catch (Exception e) {
-                            UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "WechatLoginCallback", "");
+                            UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, "");
                         }
                         break;
                     case 2:
                         try {
                             JSONObject jsStr2 = new JSONObject(info);
                             jsStr2.put("access_token",access_token);
-                            UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "WechatLoginCallback", jsStr2.toString());
+                            UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, jsStr2.toString());
                         } catch (Exception e) {
-                            UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "WechatLoginCallback", "");
+                            UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, "");
                         }
                         break;
                 }

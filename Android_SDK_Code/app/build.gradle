@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }
@@ -18,8 +18,10 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:26.1.0'
+    compileOnly fileTree(include: ['*.jar','*.aar'], dir: 'libs')
+    compileOnly 'com.android.support:support-v4:28.0.0'
+    compileOnly 'com.alibaba:fastjson:1.2.60'
+    api 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+'
 }
 repositories {
     mavenCentral()

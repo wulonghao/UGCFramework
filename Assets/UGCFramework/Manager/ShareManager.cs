@@ -13,10 +13,9 @@ public class ShareManager : MonoBehaviour
         {
             if (instance == null)
             {
-                GameObject go = new GameObject();
-                instance = go.AddComponent<ShareManager>();
-                go.name = instance.GetType().ToString();
-                DontDestroyOnLoad(go);
+                instance = new GameObject().AddComponent<ShareManager>();
+                instance.name = instance.GetType().ToString();
+                DontDestroyOnLoad(instance);
                 instance.Init();
             }
             return instance;
@@ -51,7 +50,7 @@ public class ShareManager : MonoBehaviour
     [DllImport("__Internal")]
     static extern void ShareUrlWx_iOS(int scene, string url, string title, string content, IntPtr ptrThumb, int sizeThumb);
 #elif UNITY_ANDROID
-    const string WeChatShareUtils = "com.my.ygcf.wechat.ShareUtils";
+    static string WeChatShareUtils = ConstantUtils.BundleIdentifier + ".wechat.WechatShareUtil";
 #endif
 
     /// <summary>
@@ -159,7 +158,7 @@ public class ShareManager : MonoBehaviour
     [DllImport("__Internal")]
     static extern void ShareUrlByQQ(string title, string desc, string iconUrl, string url);
 #elif UNITY_ANDROID
-    const string QQShareUtils = "com.my.ygcf.qq.ShareUtils";
+    static string QQShareUtils = ConstantUtils.BundleIdentifier + ".qq.QQShareUtil";
 #endif
 
     string printScreenPath = Application.persistentDataPath + "/shareIcon.jpg";

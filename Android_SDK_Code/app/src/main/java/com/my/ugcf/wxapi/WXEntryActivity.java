@@ -1,5 +1,7 @@
 package com.my.ugcf.wxapi;
 
+import com.my.ugcf.Tool;
+import com.my.ugcf.wechat.WechatLogin;
 import com.my.ugcf.wechat.WechatTool;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
@@ -20,7 +22,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		if (api == null) {
-			api = WXAPIFactory.createWXAPI(this, WechatTool.APP_ID, false);
+			api = WXAPIFactory.createWXAPI(this, WechatTool.WX_APP_ID, false);
 			api.handleIntent(getIntent(), this);
 		}
     }
@@ -34,8 +36,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 
 	// 微信发送请求到第三方应用时，会回调到该方法
 	@Override
-	public void onReq(BaseReq req) {
-	}
+	public void onReq(BaseReq req) {}
 
 	// 第三方应用发送到微信的请求处理后的响应结果，会回调到该方法
 	@Override
@@ -43,9 +44,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 		switch (resp.getType()){
 			case 1://授权
 				if(resp.errCode == BaseResp.ErrCode.ERR_OK){
-					UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "LoginCallBack", ((SendAuth.Resp) resp).code);
-				}else{
-					UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "LoginCallBack", "");
+					WechatLogin.GetOpenId(WechatTool.WX_APP_ID, WechatTool.WX_APP_SECRET,((SendAuth.Resp) resp).code);
 				}
 				break;
 			case 2://分享

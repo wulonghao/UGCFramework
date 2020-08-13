@@ -1,5 +1,6 @@
 package com.my.ugcf.wxapi;
 
+import com.my.ugcf.Tool;
 import com.my.ugcf.wechat.WechatTool;
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
@@ -19,11 +20,8 @@ public class WXPayEntryActivity extends Activity implements IWXAPIEventHandler  
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(api == null) {
-            api = WXAPIFactory.createWXAPI(this, WechatTool.APP_ID);
-            //api.registerApp(WechatTool.APP_ID);
-            api.handleIntent(getIntent(), this);
-        }
+        api = WXAPIFactory.createWXAPI(this, WechatTool.WX_APP_ID);
+        api.handleIntent(getIntent(), this);
     }
 
     @Override
@@ -34,8 +32,7 @@ public class WXPayEntryActivity extends Activity implements IWXAPIEventHandler  
     }
 
     @Override
-    public void onReq(BaseReq req) {
-    }
+    public void onReq(BaseReq req) {}
 
     @Override
     public void onResp(BaseResp resp) {

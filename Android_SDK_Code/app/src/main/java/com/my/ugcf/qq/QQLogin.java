@@ -8,12 +8,16 @@ import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.UiError;
 import com.unity3d.player.UnityPlayer;
 import org.json.JSONObject;
-import static com.my.ugcf.Tool.mTencent;
 
 public class QQLogin {
     public static String openId = "";
+
     public static void LoginQQ() {
-        mTencent.login(Tool.toolActivity, "get_user_info", new IUiListener() {
+        if (QQTool.mTencent.isSessionValid()) {
+            QQLogin.getUserInfo();
+            return;
+        }
+        QQTool.mTencent.login(Tool.toolActivity, "get_user_info", new IUiListener() {
             @Override
             public void onComplete(Object o) {
                 try {
@@ -25,11 +29,10 @@ public class QQLogin {
                         String expires = values.getString(Constants.PARAM_EXPIRES_IN);
                         if (!TextUtils.isEmpty(token) && !TextUtils.isEmpty(expires)
                                 && !TextUtils.isEmpty(openId)) {
-                            mTencent.setAccessToken(token, expires);
-                            mTencent.setOpenId(openId);
+                            QQTool.mTencent.setAccessToken(token, expires);
+                            QQTool.mTencent.setOpenId(openId);
                         }
                         QQLogin.getUserInfo();
-                        //UnityPlayer.UnitySendMessage("ThirdPartySdkManager","QQLoginCallback", values.toString());
                     } else {
                         UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "QQLoginCallback", "");
                     }
@@ -51,7 +54,7 @@ public class QQLogin {
     }
 
     public static void getUserInfo() {
-        UserInfo userInfo = new UserInfo(Tool.toolActivity, mTencent.getQQToken());
-        userInfo.getUserInfo(Tool.mQQLoginBaseUiListener);
+        UserInfo userInfo = new UserInfo(Tool.toolActivity, QQTool.mTencent.getQQToken());
+        userInfo.getUserInfo(QQTool.mQQLoginBaseUiListener);
     }
 }

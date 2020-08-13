@@ -1,6 +1,5 @@
 package com.my.ugcf.wechat;
 
-import com.my.ugcf.Tool;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 
 public class WechatPay {
@@ -13,6 +12,6 @@ public class WechatPay {
         req.timeStamp = timeStamp;
         req.packageValue = packageValue;
         req.sign = sign;
-        Tool.api.sendReq(req);
+        WechatTool.api.sendReq(req);
     }
 }

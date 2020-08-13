@@ -7,6 +7,9 @@ import com.unity3d.player.UnityPlayer;
 import org.json.JSONObject;
 
 public class QQLoginBaseUiListener implements IUiListener {
+    private static final String CallbackTypeName = "ThirdPartySdkManager";
+    private static final String CallbackMethodName = "QQLoginCallback";
+
     @Override
     public void onComplete(Object response) {
         doComplete((JSONObject)response);
@@ -16,20 +19,19 @@ public class QQLoginBaseUiListener implements IUiListener {
         try {
             int ret = userInfo.getInt("ret");
             userInfo.put("openid", QQLogin.openId);
-            Log.i("unity",userInfo.toString());
-            UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "QQLoginCallback", ret == 0 ? userInfo.toString() : "");
+            UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, ret == 0 ? userInfo.toString() : "");
         } catch (Exception e) {
-            UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "QQLoginCallback", "");
+            UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, "");
         }
     }
 
     @Override
     public void onError(UiError e) {
-        UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "QQLoginCallback", "");
+        UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, "");
     }
 
     @Override
     public void onCancel() {
-        UnityPlayer.UnitySendMessage("ThirdPartySdkManager", "QQLoginCallback", "");
+        UnityPlayer.UnitySendMessage(CallbackTypeName, CallbackMethodName, "");
     }
 }
