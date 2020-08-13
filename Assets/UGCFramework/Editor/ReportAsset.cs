@@ -6,109 +6,112 @@ using System.Reflection;
 using System;
 using System.Text;
 
-public partial class ReportAsset
+namespace UGCF.Editor
 {
-    [MenuItem("自定义工具/打印脚本Static引用")]
-    static void StaticRef()
+    public partial class ReportAsset
     {
-        //静态引用
-        LoadAssembly("Assembly-CSharp-firstpass");
-        LoadAssembly("Assembly-CSharp");
+        [MenuItem("自定义工具/打印脚本Static引用")]
+        static void StaticRef()
+        {
+            //静态引用
+            LoadAssembly("Assembly-CSharp-firstpass");
+            LoadAssembly("Assembly-CSharp");
 
-    }
+        }
 
-    static void LoadAssembly(string name)
-    {
-        Assembly assembly = null;
-        try
+        static void LoadAssembly(string name)
         {
-            assembly = Assembly.Load(name);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning(ex.Message);
-        }
-        finally
-        {
-            if (assembly != null)
+            Assembly assembly = null;
+            try
             {
-                foreach (Type type in assembly.GetTypes())
+                assembly = Assembly.Load(name);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(ex.Message);
+            }
+            finally
+            {
+                if (assembly != null)
                 {
-                    try
+                    foreach (Type type in assembly.GetTypes())
                     {
-                        HashSet<string> assetPaths = new HashSet<string>();
-                        FieldInfo[] listFieldInfo = type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-                        foreach (FieldInfo fieldInfo in listFieldInfo)
+                        try
                         {
-                            if (!fieldInfo.FieldType.IsValueType)
+                            HashSet<string> assetPaths = new HashSet<string>();
+                            FieldInfo[] listFieldInfo = type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                            foreach (FieldInfo fieldInfo in listFieldInfo)
                             {
-                                SearchProperties(fieldInfo.GetValue(null), assetPaths);
+                                if (!fieldInfo.FieldType.IsValueType)
+                                {
+                                    SearchProperties(fieldInfo.GetValue(null), assetPaths);
+                                }
+                            }
+                            if (assetPaths.Count > 0)
+                            {
+                                StringBuilder sb = new StringBuilder();
+                                sb.AppendFormat("{0}.cs\n", type.ToString());
+                                foreach (string path in assetPaths)
+                                {
+                                    sb.AppendFormat("\t{0}\n", path);
+                                }
+                                Debug.LogError(sb.ToString());
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogWarning(ex.Message);
+                        }
+                    }
+                }
+            }
+        }
+
+        static HashSet<string> SearchProperties(object obj, HashSet<string> assetPaths)
+        {
+            if (obj != null)
+            {
+                if (obj is UnityEngine.Object)
+                {
+                    UnityEngine.Object[] depen = EditorUtility.CollectDependencies(new UnityEngine.Object[] { obj as UnityEngine.Object });
+                    foreach (var item in depen)
+                    {
+                        string assetPath = AssetDatabase.GetAssetPath(item);
+                        if (!string.IsNullOrEmpty(assetPath))
+                        {
+                            if (!assetPaths.Contains(assetPath))
+                            {
+                                assetPaths.Add(assetPath);
                             }
                         }
-                        if (assetPaths.Count > 0)
+                    }
+                }
+                else if (obj is IEnumerable)
+                {
+                    foreach (object child in (obj as IEnumerable))
+                    {
+                        SearchProperties(child, assetPaths);
+                    }
+                }
+                else if (obj is System.Object)
+                {
+                    if (!obj.GetType().IsValueType)
+                    {
+                        FieldInfo[] fieldInfos = obj.GetType().GetFields();
+                        foreach (FieldInfo fieldInfo in fieldInfos)
                         {
-                            StringBuilder sb = new StringBuilder();
-                            sb.AppendFormat("{0}.cs\n", type.ToString());
-                            foreach (string path in assetPaths)
+                            object o = fieldInfo.GetValue(obj);
+                            if (o != obj)
                             {
-                                sb.AppendFormat("\t{0}\n", path);
+                                SearchProperties(fieldInfo.GetValue(obj), assetPaths);
                             }
-                            Debug.LogError(sb.ToString());
                         }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogWarning(ex.Message);
                     }
                 }
             }
+            return assetPaths;
         }
-    }
 
-    static HashSet<string> SearchProperties(object obj, HashSet<string> assetPaths)
-    {
-        if (obj != null)
-        {
-            if (obj is UnityEngine.Object)
-            {
-                UnityEngine.Object[] depen = EditorUtility.CollectDependencies(new UnityEngine.Object[] { obj as UnityEngine.Object });
-                foreach (var item in depen)
-                {
-                    string assetPath = AssetDatabase.GetAssetPath(item);
-                    if (!string.IsNullOrEmpty(assetPath))
-                    {
-                        if (!assetPaths.Contains(assetPath))
-                        {
-                            assetPaths.Add(assetPath);
-                        }
-                    }
-                }
-            }
-            else if (obj is IEnumerable)
-            {
-                foreach (object child in (obj as IEnumerable))
-                {
-                    SearchProperties(child, assetPaths);
-                }
-            }
-            else if (obj is System.Object)
-            {
-                if (!obj.GetType().IsValueType)
-                {
-                    FieldInfo[] fieldInfos = obj.GetType().GetFields();
-                    foreach (FieldInfo fieldInfo in fieldInfos)
-                    {
-                        object o = fieldInfo.GetValue(obj);
-                        if (o != obj)
-                        {
-                            SearchProperties(fieldInfo.GetValue(obj), assetPaths);
-                        }
-                    }
-                }
-            }
-        }
-        return assetPaths;
     }
-
 }

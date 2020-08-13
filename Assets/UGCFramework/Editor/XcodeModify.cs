@@ -8,11 +8,13 @@ using System.IO;
 using UnityEditor.iOS.Xcode;
 #endif
 
-public class XcodeModify
+namespace UGCF.Editor
 {
-    [PostProcessBuild(100)]
-    public static void OnPostprocessBuild(BuildTarget buildTarget, string path)
+    public class XcodeModify
     {
+        [PostProcessBuild(100)]
+        public static void OnPostprocessBuild(BuildTarget buildTarget, string path)
+        {
 #if UNITY_IOS
         // 修改xcode工程 
         string projPath = PBXProject.GetPBXProjectPath(path);
@@ -81,7 +83,7 @@ public class XcodeModify
 
         plist.WriteToFile(plistPath);
 #endif
-    }
+        }
 
 #if UNITY_IOS
     private static void AddUrlType(PlistElementDict dict, string role, string name, string scheme)
@@ -112,62 +114,63 @@ public class XcodeModify
         schemes.AddString(name);
     }
 #endif
-}
-
-public partial class XClassExt : System.IDisposable
-{
-    private string filePath;
-    public XClassExt(string fPath)
-    {
-        filePath = fPath;
-        if (!System.IO.File.Exists(filePath))
-        {
-            Debug.LogError(filePath + "not found in path.");
-            return;
-        }
     }
 
-    public void WriteBelow(string below, string text)
+    public partial class XClassExt : System.IDisposable
     {
-        StreamReader streamReader = new StreamReader(filePath);
-        string text_all = streamReader.ReadToEnd();
-        streamReader.Close();
-
-        int beginIndex = text_all.IndexOf(below);
-        if (beginIndex == -1)
+        private string filePath;
+        public XClassExt(string fPath)
         {
-            Debug.LogError(filePath + " not found sign in " + below);
-            return;
+            filePath = fPath;
+            if (!System.IO.File.Exists(filePath))
+            {
+                Debug.LogError(filePath + "not found in path.");
+                return;
+            }
         }
 
-        int endIndex = text_all.LastIndexOf("\n", beginIndex + below.Length);
-
-        text_all = text_all.Substring(0, endIndex) + "\n" + text + "\n" + text_all.Substring(endIndex);
-
-        StreamWriter streamWriter = new StreamWriter(filePath);
-        streamWriter.Write(text_all);
-        streamWriter.Close();
-    }
-
-    public void Replace(string below, string newText)
-    {
-        StreamReader streamReader = new StreamReader(filePath);
-        string text_all = streamReader.ReadToEnd();
-        streamReader.Close();
-
-        int beginIndex = text_all.IndexOf(below);
-        if (beginIndex == -1)
+        public void WriteBelow(string below, string text)
         {
-            Debug.LogError(filePath + " not found sign in " + below);
-            return;
+            StreamReader streamReader = new StreamReader(filePath);
+            string text_all = streamReader.ReadToEnd();
+            streamReader.Close();
+
+            int beginIndex = text_all.IndexOf(below);
+            if (beginIndex == -1)
+            {
+                Debug.LogError(filePath + " not found sign in " + below);
+                return;
+            }
+
+            int endIndex = text_all.LastIndexOf("\n", beginIndex + below.Length);
+
+            text_all = text_all.Substring(0, endIndex) + "\n" + text + "\n" + text_all.Substring(endIndex);
+
+            StreamWriter streamWriter = new StreamWriter(filePath);
+            streamWriter.Write(text_all);
+            streamWriter.Close();
         }
 
-        text_all = text_all.Replace(below, newText);
-        StreamWriter streamWriter = new StreamWriter(filePath);
-        streamWriter.Write(text_all);
-        streamWriter.Close();
+        public void Replace(string below, string newText)
+        {
+            StreamReader streamReader = new StreamReader(filePath);
+            string text_all = streamReader.ReadToEnd();
+            streamReader.Close();
 
+            int beginIndex = text_all.IndexOf(below);
+            if (beginIndex == -1)
+            {
+                Debug.LogError(filePath + " not found sign in " + below);
+                return;
+            }
+
+            text_all = text_all.Replace(below, newText);
+            StreamWriter streamWriter = new StreamWriter(filePath);
+            streamWriter.Write(text_all);
+            streamWriter.Close();
+
+        }
+
+        public void Dispose() { }
     }
-
-    public void Dispose() { }
 }
