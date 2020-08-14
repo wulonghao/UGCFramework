@@ -11,7 +11,7 @@ extern "C"
     void RegisterApp_iOS(const char* appId, const char* appSecret){
         mWXAppid =_CreateNSString(appId);
         mWXSecret =_CreateNSString(appSecret);
-        [WXApi registerApp:_CreateNSString(appId) universalLink:@"https://dxzk.eletell.com/"];
+        [WXApi registerApp:_CreateNSString(appId) universalLink:@"你的universalLink"];
     }
     
     void OpenWechat(){
