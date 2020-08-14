@@ -85,7 +85,7 @@ namespace UGCF.Utils
         {
             if (string.IsNullOrEmpty(logErrorPath))
             {
-                logErrorPath = LogErrorRootPath + MiscUtils.GetTimeStampByDateTime(DateTime.Now) + ".log";
+                logErrorPath = LogErrorRootPath + MiscUtils.DateTimeToTimestampInMilliseconds(DateTime.Now) + ".log";
                 MiscUtils.CreateTextFile(logErrorPath, "");
                 logWrite = new StreamWriter(logErrorPath) { AutoFlush = false };
             }

@@ -133,32 +133,48 @@ namespace UGCF.Utils
             return newTexture;
         }
 
-        /// <summary>时间戳转DateTime</summary>
-        public static DateTime GetDateTimeByTimeStamp(long timeStamp)
+        /// <summary>
+        /// 返回时间戳（单位：毫秒）代表的时间。
+        /// </summary>
+        /// <param name="timestamp">时间戳（单位：毫秒）。</param>
+        /// <returns>时间戳（单位：毫秒）代表的时间。</returns>
+        public static DateTime TimestampInMillisecondsToDateTime(long timestamp)
         {
-            DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1, 0, 0, 0));
-            return startTime.AddSeconds(timeStamp);
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return dateTime19700101.AddMilliseconds(timestamp) + TimeZoneInfo.Local.GetUtcOffset(dateTime19700101);
         }
 
-        /// <summary>时间戳转DateTime</summary>
-        public static DateTime GetDateTimeByMillisecondsTimeStamp(long timeStamp)
+        /// <summary>
+        /// 返回时间戳（单位：秒）代表的时间。
+        /// </summary>
+        /// <param name="timestamp">时间戳（单位：秒）。</param>
+        /// <returns>时间戳（单位：秒）代表的时间。</returns>
+        public static DateTime TimestampInSecondsToDateTime(long timestamp)
         {
-            DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1, 0, 0, 0));
-            return startTime.AddMilliseconds(timeStamp);
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return dateTime19700101.AddSeconds(timestamp) + TimeZoneInfo.Local.GetUtcOffset(dateTime19700101);
         }
 
-        /// <summary>DateTime转时间戳</summary>
-        public static long GetTimeStampByDateTime(DateTime time)
+        /// <summary>
+        /// 返回时间代表的时间戳（单位：毫秒）。
+        /// </summary>
+        /// <param name="dateTime">时间。</param>
+        /// <returns>时间代表的时间戳（单位：毫秒）。</returns>
+        public static long DateTimeToTimestampInMilliseconds(DateTime dateTime)
         {
-            TimeSpan ts = time - new DateTime(1970, 1, 1, 8, 0, 0, 0);
-            return Convert.ToInt64(ts.TotalSeconds);
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalMilliseconds);
         }
 
-        /// <summary>DateTime转时间戳,毫秒</summary>
-        public static long GetMillisecondsTimeStampByDateTime(DateTime time)
+        /// <summary>
+        /// 返回时间代表的时间戳（单位：秒）。
+        /// </summary>
+        /// <param name="dateTime">时间。</param>
+        /// <returns>时间代表的时间戳（单位：秒）。</returns>
+        public static long DateTimeToTimestampInSeconds(DateTime dateTime)
         {
-            TimeSpan ts = time - new DateTime(1970, 1, 1, 8, 0, 0, 0);
-            return Convert.ToInt64(ts.TotalMilliseconds);
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalSeconds);
         }
 
         /// <summary> 数字转换中文 工具 </summary>
@@ -278,21 +294,30 @@ namespace UGCF.Utils
         /// <summary>对指定字符串进行Base64加密</summary>
         public static string EncodeBase64(Encoding encode, string source)
         {
-            if (string.IsNullOrEmpty(source)) return null;
-            byte[] bytes = encode.GetBytes(source);
-            if (bytes.Length > 0)
-                source = Convert.ToBase64String(bytes);
-            return source;
+            return EncodeBase64(encode.GetBytes(source));
+        }
+
+        /// <summary>对指定字节组进行Base64加密</summary>
+        public static string EncodeBase64(byte[] source)
+        {
+            if (source.Length > 0)
+                return Convert.ToBase64String(source);
+            return null;
         }
 
         /// <summary>对指定字符串进行Base64解密</summary>
         public static string DecodeBase64(Encoding encode, string result)
         {
-            if (string.IsNullOrEmpty(result)) return null;
             byte[] bytes = Convert.FromBase64String(result);
             if (bytes.Length > 0)
                 result = encode.GetString(bytes);
             return result;
+        }
+
+        /// <summary>对指定字符串进行Base64解密</summary>
+        public static byte[] DecodeBase64ToBytes(string result)
+        {
+            return Convert.FromBase64String(result);
         }
 
         /// <summary> 对指定字符串进行AES加密</summary>
@@ -313,10 +338,10 @@ namespace UGCF.Utils
         }
 
         /// <summary> 对指定字符串进行RSA加密</summary>
-        public static string RSAEncrypt(string content)
+        public static string RSAEncrypt(string content, string rsaKey)
         {
             if (string.IsNullOrEmpty(content)) return null;
-            string xmlPublicKey = "<RSAKeyValue><Modulus>r15c6EQULYxTPDpUisrUwvvdyTfsfa0fI2fp2ISjJqSfQpzoeSRMZb0ObtCKwHYYsOB3GtFC4gCGes5aQ3sd8Q==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+            string xmlPublicKey = $"<RSAKeyValue><Modulus>{rsaKey}</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
             string encryptedContent = string.Empty;
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {

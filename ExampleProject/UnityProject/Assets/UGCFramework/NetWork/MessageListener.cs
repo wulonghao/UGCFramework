@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
 
-public class MessageListener : MonoBehaviour
+namespace UGCF.Network
 {
-    void OnDestroy()
+    public class MessageListener : MonoBehaviour
     {
-        gameObject.RemoveAllListener();
+        void OnDestroy()
+        {
+            gameObject.RemoveAllListener();
+        }
     }
 }
