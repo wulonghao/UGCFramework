@@ -20,7 +20,7 @@ unity-ILRuntime客户端框架1.0(UGUI+C#+protocol+ILRuntime)
   12、ILRuntime热更机制</p>
 
 
-2020.8.13更新日志</p>
+<span style="color:green;"><b>2020.8.13更新日志</b></span></p>
   1、优化网络框架，优化在网络不稳定情况下的处理，优化网络重连逻辑</p>
   2、更新UI框架，优化跳转流程</p>
   3、更新工具类，新增部分工具函数</p>
