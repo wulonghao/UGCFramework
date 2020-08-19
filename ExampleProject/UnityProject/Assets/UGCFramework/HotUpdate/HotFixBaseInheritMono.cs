@@ -15,7 +15,7 @@ namespace UGCF.HotUpdate
         ILType type;
         string hotFixTypeName;
         Dictionary<string, IMethod> iMethods = new Dictionary<string, IMethod>();
-        const string HotTypeNameFormat = "DxzkHotFix.{0}HotFix";
+        const string HotTypeNameFormat = "HotFix.{0}HotFix";
 
         /// <summary>
         /// 初始化热更类，加载相关资源

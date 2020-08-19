@@ -271,8 +271,7 @@ namespace UGCF.Utils
             yield return WaitForUtils.WaitFrame;
             texture.ReadPixels(rect, (int)dest.x, (int)dest.y);
             texture.Apply();
-            if (ua != null)
-                ua(texture);
+            ua?.Invoke(texture);
         }
 
         /// <summary>
@@ -280,25 +279,12 @@ namespace UGCF.Utils
         /// </summary>
         /// <param name="rect">截图的rect信息</param>
         /// <param name="dest">截图的偏移量</param>
-        public static Texture2D PrintScreen(Rect rect, Vector2 dest = default(Vector2))
+        public static Texture2D PrintScreen(Rect rect, Vector2 dest = default)
         {
             Texture2D texture = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGB24, false);
             texture.ReadPixels(rect, (int)dest.x, (int)dest.y);
             texture.Apply();
             return texture;
-        }
-
-        /// <summary>
-        /// 添加组件
-        /// </summary>
-        /// <param name="go">要添加组件的物体</param>
-        /// <param name="tp">组件类型</param>
-        public static Component GetOrCreate(GameObject go, Type tp)
-        {
-            Component c = go.GetComponent(tp);
-            if (c == null)
-                c = go.AddComponent(tp);
-            return c;
         }
 
         /// <summary>
