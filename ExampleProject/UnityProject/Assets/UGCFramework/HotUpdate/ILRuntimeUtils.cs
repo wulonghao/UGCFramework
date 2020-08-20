@@ -58,7 +58,6 @@ namespace UGCF.HotUpdate
             appdomain.RegisterCrossBindingAdaptor(new NodeAdapter());
 
             JsonMapper.RegisterILRuntimeCLRRedirection(appdomain);
-            ILRuntime.Runtime.Generated.CLRBindings.Initialize(appdomain);
             RegisterDelegate();
         }
 
