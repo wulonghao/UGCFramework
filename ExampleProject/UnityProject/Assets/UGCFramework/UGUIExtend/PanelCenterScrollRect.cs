@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
-    public class PanelScrollRectCenter : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+    public class PanelCenterScrollRect : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
         public delegate void ScrollRectValueChangeEvent(GameObject go, float scaleSpaceToCenter);
         public ScrollRectValueChangeEvent onValueChanged;
