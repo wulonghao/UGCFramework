@@ -146,41 +146,46 @@ namespace UGCF.UGUIExtend
         {
             if (!isCircle || (horizontal && vertical))
                 return;
-            if (scaleSpaceToCenter == 0)
-                return;
             RectTransform rtfFirst = content.GetChild(0).GetComponent<RectTransform>();
+            Vector2 firstV2 = rtfFirst.rect.size;
             RectTransform rtfLast = content.GetChild(content.childCount - 1).GetComponent<RectTransform>();
-            RectTransform contentParent = content.parent.GetComponent<RectTransform>();
+            Vector2 listV2 = rtfLast.rect.size;
+            Rect contentRect = content.parent.GetComponent<RectTransform>().rect;
+            Vector2 contentParentPotsition = content.parent.position;
             if (horizontal)
             {
                 HorizontalLayoutGroup horizontalLayout = content.GetComponent<HorizontalLayoutGroup>();
-                if (scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfLast.transform.position.x - content.parent.position.x) * screenToCanvasScale < Mathf.Max(rtfLast.rect.width, contentParent.rect.width) * 0.5f)
+                if ((scaleSpaceToCenter < 0
+                    && Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(listV2.x, contentRect.width) * 0.5f)
+                    || rtfLast.position.x <= contentParentPotsition.x)
                 {
                     rtfFirst.SetAsLastSibling();
-                    content.localPosition += Vector3.right * (rtfFirst.rect.width + (horizontalLayout ? horizontalLayout.spacing : 0));
+                    content.localPosition += Vector3.right * (firstV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
                 }
-                else if (scaleSpaceToCenter > 0 
-                    && Mathf.Abs(rtfFirst.transform.position.x - content.parent.position.x) * screenToCanvasScale < Mathf.Max(rtfFirst.rect.width, contentParent.rect.width) * 0.5f)
+                else if ((scaleSpaceToCenter > 0
+                    && Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(firstV2.x, contentRect.width) * 0.5f)
+                    || rtfFirst.position.x >= contentParentPotsition.x)
                 {
                     rtfLast.SetAsFirstSibling();
-                    content.localPosition += Vector3.left * (rtfLast.rect.width + (horizontalLayout ? horizontalLayout.spacing : 0));
+                    content.localPosition += Vector3.left * (listV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
                 }
             }
             else if (vertical)
             {
                 VerticalLayoutGroup verticalLayout = content.GetComponent<VerticalLayoutGroup>();
-                if (scaleSpaceToCenter > 0 
-                    && Mathf.Abs(rtfLast.transform.position.y - content.parent.position.y) * screenToCanvasScale < Mathf.Max(rtfLast.rect.height, contentParent.rect.height) * 0.5f)
+                if (scaleSpaceToCenter > 0
+                    && Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(listV2.y, contentRect.height) * 0.5f
+                    || rtfLast.position.y >= contentParentPotsition.y)
                 {
                     rtfFirst.SetAsLastSibling();
-                    content.localPosition += Vector3.down * (rtfFirst.rect.height + (verticalLayout ? verticalLayout.spacing : 0));
+                    content.localPosition += Vector3.down * (firstV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
-                else if (scaleSpaceToCenter < 0 
-                    && Mathf.Abs(rtfFirst.transform.position.y - content.parent.position.y) * screenToCanvasScale < Mathf.Max(rtfFirst.rect.height, contentParent.rect.height) * 0.5f)
+                else if (scaleSpaceToCenter < 0
+                    && Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(firstV2.y, contentRect.height) * 0.5f
+                    || rtfFirst.position.y <= contentParentPotsition.y)
                 {
                     rtfLast.SetAsFirstSibling();
-                    content.localPosition += Vector3.up * (rtfLast.rect.height + (verticalLayout ? verticalLayout.spacing : 0));
+                    content.localPosition += Vector3.up * (listV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
             }
         }
@@ -247,13 +252,14 @@ namespace UGCF.UGUIExtend
 
             Vector2 startMovingPosition = content.localPosition;
             Vector2 targetMovingPosition = content.localPosition;
+            Vector2 centerPosition = (Vector2)center.localPosition - center.rect.size * (center.pivot - Vector2.one * 0.5f);
 
             if (horizontal && vertical)
-                targetMovingPosition = new Vector2(-center.localPosition.x, -center.localPosition.y);
+                targetMovingPosition = new Vector2(-centerPosition.x, -centerPosition.y);
             else if (horizontal)
-                targetMovingPosition = new Vector2(-center.localPosition.x, startMovingPosition.y);
+                targetMovingPosition = new Vector2(-centerPosition.x, startMovingPosition.y);
             else if (vertical)
-                targetMovingPosition = new Vector2(startMovingPosition.x, -center.localPosition.y);
+                targetMovingPosition = new Vector2(startMovingPosition.x, -centerPosition.y);
 
             if (isPlayAnimation)
                 StartCoroutine(Moving(startMovingPosition, targetMovingPosition));
