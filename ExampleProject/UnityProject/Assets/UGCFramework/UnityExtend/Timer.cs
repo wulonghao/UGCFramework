@@ -207,24 +207,25 @@ namespace UGCF.UnityExtend
         string GetTimerText(float time, TimeFormat timeFormat)
         {
             StringBuilder sb = new StringBuilder();
+            int timeInt = Mathf.RoundToInt(time);
             switch (timeFormat)
             {
                 case TimeFormat.HHMMSS:
-                    seconds = (int)time % 60;
-                    hours = time >= 3600 ? (int)time / 3600 : 0;
-                    minutes = (int)(time - hours * 3600 - seconds) / 60;
+                    seconds = timeInt % 60;
+                    hours = timeInt >= 3600 ? timeInt / 3600 : 0;
+                    minutes = (timeInt - hours * 3600 - seconds) / 60;
                     sb.Append(GetTimeText(hours) + ":" + GetTimeText(minutes) + ":" + GetTimeText(seconds));
                     break;
                 case TimeFormat.MMSS:
-                    seconds = (int)time % 60;
-                    minutes = (int)(time - seconds) / 60;
+                    seconds = timeInt % 60;
+                    minutes = (timeInt - seconds) / 60;
                     sb.Append(GetTimeText(minutes) + ":" + GetTimeText(seconds));
                     break;
                 case TimeFormat.SS:
-                    sb.Append(GetTimeText(time));
+                    sb.Append(GetTimeText(timeInt));
                     break;
                 case TimeFormat.S:
-                    sb.Append(GetTimeText(time, false));
+                    sb.Append(GetTimeText(timeInt, false));
                     break;
             }
             return sb.ToString();
