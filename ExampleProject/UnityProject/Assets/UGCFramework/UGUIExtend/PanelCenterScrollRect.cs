@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 using UGCF.Manager;
 using UGCF.Utils;
 using UnityEngine;
@@ -9,8 +11,6 @@ namespace UGCF.UGUIExtend
 {
     public class PanelCenterScrollRect : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
-        public delegate void ScrollRectValueChangeEvent(GameObject go, float scaleSpaceToCenter);
-        public ScrollRectValueChangeEvent onValueChanged;
         public delegate void ScrollRectItemChangeEvent(GameObject go);
         public ScrollRectItemChangeEvent onItemChanged;
 
@@ -21,6 +21,7 @@ namespace UGCF.UGUIExtend
         public float loopTimeSpace = 5;
         public float dragThresholdTime = 0.3f;//拖拽检测时间阈值，低于阈值取最后一帧操作判断行为，否则以最近元素为目标元素
         public int speed = 10;//拖拽检测时间阈值，低于阈值取最后一帧操作判断行为，否则以最近元素为目标元素
+        public RectTransform viewport;
         public RectTransform content;
         bool moving;
         float startDragTime;
@@ -78,20 +79,6 @@ namespace UGCF.UGUIExtend
             }
             else
                 return;
-
-            for (int i = 0; i < content.childCount; i++)
-            {
-                RectTransform crtf = content.GetChild(i).GetComponent<RectTransform>();
-                Vector2 diff = crtf.localPosition - transform.localPosition;
-                float scale = 0;
-                if (horizontal)
-                    scale = Mathf.Abs(diff.x) / crtf.rect.width;
-                else if (vertical)
-                    scale = Mathf.Abs(diff.y) / crtf.rect.height;
-                if (scale > 1)
-                    scale = 1;
-                onValueChanged?.Invoke(crtf.gameObject, scale);
-            }
         }
 
         public virtual void OnEndDrag(PointerEventData eventData)
@@ -146,24 +133,26 @@ namespace UGCF.UGUIExtend
         {
             if (!isCircle || (horizontal && vertical))
                 return;
+            if (content.childCount < 3)
+                return;
             RectTransform rtfFirst = content.GetChild(0).GetComponent<RectTransform>();
             Vector2 firstV2 = rtfFirst.rect.size;
             RectTransform rtfLast = content.GetChild(content.childCount - 1).GetComponent<RectTransform>();
             Vector2 listV2 = rtfLast.rect.size;
-            Rect contentRect = content.parent.GetComponent<RectTransform>().rect;
-            Vector2 contentParentPotsition = content.parent.position;
+            Rect contentParentRect = viewport.rect;
+            Vector2 contentParentPotsition = viewport.position;
             if (horizontal)
             {
                 HorizontalLayoutGroup horizontalLayout = content.GetComponent<HorizontalLayoutGroup>();
                 if ((scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(listV2.x, contentRect.width) * 0.5f)
+                    && Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(listV2.x, contentParentRect.width) * 0.5f)
                     || rtfLast.position.x <= contentParentPotsition.x)
                 {
                     rtfFirst.SetAsLastSibling();
                     content.localPosition += Vector3.right * (firstV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
                 }
                 else if ((scaleSpaceToCenter > 0
-                    && Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(firstV2.x, contentRect.width) * 0.5f)
+                    && Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(firstV2.x, contentParentRect.width) * 0.5f)
                     || rtfFirst.position.x >= contentParentPotsition.x)
                 {
                     rtfLast.SetAsFirstSibling();
@@ -174,14 +163,14 @@ namespace UGCF.UGUIExtend
             {
                 VerticalLayoutGroup verticalLayout = content.GetComponent<VerticalLayoutGroup>();
                 if (scaleSpaceToCenter > 0
-                    && Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(listV2.y, contentRect.height) * 0.5f
+                    && Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(listV2.y, contentParentRect.height) * 0.5f
                     || rtfLast.position.y >= contentParentPotsition.y)
                 {
                     rtfFirst.SetAsLastSibling();
                     content.localPosition += Vector3.down * (firstV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
                 else if (scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(firstV2.y, contentRect.height) * 0.5f
+                    && Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(firstV2.y, contentParentRect.height) * 0.5f
                     || rtfFirst.position.y <= contentParentPotsition.y)
                 {
                     rtfLast.SetAsFirstSibling();
