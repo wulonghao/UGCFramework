@@ -24,7 +24,7 @@ namespace UGCF.UnityExtend
         public VoidDelegate OnExit { get; set; }
         public VoidDelegate OnUp { get; set; }
         public VoidDelegateDrag OnDragStart { get; set; }
-        public VoidDelegateDrag OnDrag1 { get; set; }
+        public VoidDelegateDrag OnDraging { get; set; }
         public VoidDelegateDrag OnDragEnd { get; set; }
 
         private string mAudioType;
@@ -54,7 +54,7 @@ namespace UGCF.UnityExtend
         public void OnPointerExit(PointerEventData eventData) { OnExit?.Invoke(gameObject); isDown = false; }
         public void OnPointerUp(PointerEventData eventData) { OnUp?.Invoke(gameObject); isDown = false; time = Time.realtimeSinceStartup; }
         public void OnBeginDrag(PointerEventData eventData) { OnDragStart?.Invoke(gameObject, eventData); }
-        public void OnDrag(PointerEventData eventData) { OnDrag1?.Invoke(gameObject, eventData); }
+        public void OnDrag(PointerEventData eventData) { OnDraging?.Invoke(gameObject, eventData); }
         public void OnEndDrag(PointerEventData eventData) { OnDragEnd?.Invoke(gameObject, eventData); }
 
         public static UGUIEventListenerContainDrag Get(GameObject go, string clickAudio = null)
