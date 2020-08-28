@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UGCF.Manager
 {
@@ -21,10 +19,10 @@ namespace UGCF.Manager
             return androidBuildChannel;
         }
 #elif UNITY_IOS
-    public IOSBuildChannel GetCurrentChannel()
-    {
-        return iOSBuildChannel;
-    }
+        public IOSBuildChannel GetCurrentChannel()
+        {
+            return iOSBuildChannel;
+        }
 #endif
 
         public enum AndroidBuildChannel

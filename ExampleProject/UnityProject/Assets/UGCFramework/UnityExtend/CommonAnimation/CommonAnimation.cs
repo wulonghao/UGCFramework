@@ -1,28 +1,73 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
-using UGCF.Manager;
 using UGCF.Utils;
 
 namespace UGCF.UnityExtend
 {
     public class CommonAnimation : MonoBehaviour
     {
-        public bool point, scale, alpha, color, size, angle, fillAmount;
-        public bool isLoop, isPingPong, isFoward = true, isBackInit, isAutoPlay, isPlayOnDisable, isDisappear;
-        public DisappearType disType;
-        public UnityAction lastEndAction;
-        public List<CommonAnimationPoint> pointAnimationList = new List<CommonAnimationPoint>();
-        public List<CommonAnimationAngle> angleAnimationList = new List<CommonAnimationAngle>();
-        public List<CommonAnimationScale> scaleAnimationList = new List<CommonAnimationScale>();
-        public List<CommonAnimationColor> colorAnimationList = new List<CommonAnimationColor>();
-        public List<CommonAnimationAlpha> alphaAnimationList = new List<CommonAnimationAlpha>();
-        public List<CommonAnimationSize> sizeAnimationList = new List<CommonAnimationSize>();
-        public List<CommonAnimationFillAmount> fillAmountAnimationList = new List<CommonAnimationFillAmount>();
-        bool isPause, isStop;
+        #region ...所有字段
+        [SerializeField] bool point;
+        [SerializeField] bool scale;
+        [SerializeField] bool alpha;
+        [SerializeField] bool color;
+        [SerializeField] bool size;
+        [SerializeField] bool angle;
+        [SerializeField] bool fillAmount;
+
+        [SerializeField] bool isDisappear;
+        [SerializeField] bool isLoop;
+        [SerializeField] bool isPingPong;
+        [SerializeField] bool isFoward;
+        [SerializeField] bool isBackInit;
+        [SerializeField] bool isAutoPlay;
+        [SerializeField] bool isPlayOnDisable;
+        [SerializeField] DisappearType disType;
+
+        [SerializeField] List<CommonAnimationPoint> pointAnimationList = new List<CommonAnimationPoint>();
+        [SerializeField] List<CommonAnimationAngle> angleAnimationList = new List<CommonAnimationAngle>();
+        [SerializeField] List<CommonAnimationScale> scaleAnimationList = new List<CommonAnimationScale>();
+        [SerializeField] List<CommonAnimationColor> colorAnimationList = new List<CommonAnimationColor>();
+        [SerializeField] List<CommonAnimationAlpha> alphaAnimationList = new List<CommonAnimationAlpha>();
+        [SerializeField] List<CommonAnimationSize> sizeAnimationList = new List<CommonAnimationSize>();
+        [SerializeField] List<CommonAnimationFillAmount> fillAmountAnimationList = new List<CommonAnimationFillAmount>();
+
+        private bool isPause, isStop;
+        private MonoBehaviour playBaseMb;
+        private int currentPlayingCount = 0;
+        #endregion
+
+        #region ...所有属性
+        public bool Point { get => point; set => point = value; }
+        public bool Scale { get => scale; set => scale = value; }
+        public bool Alpha { get => alpha; set => alpha = value; }
+        public bool Color { get => color; set => color = value; }
+        public bool Size { get => size; set => size = value; }
+        public bool Angle { get => angle; set => angle = value; }
+        public bool FillAmount { get => fillAmount; set => fillAmount = value; }
+
+        public bool IsLoop { get => isLoop; set => isLoop = value; }
+        public bool IsPingPong { get => isPingPong; set => isPingPong = value; }
+        public bool IsFoward { get => isFoward; set => isFoward = value; }
+        public bool IsBackInit { get => isBackInit; set => isBackInit = value; }
+        public bool IsAutoPlay { get => isAutoPlay; set => isAutoPlay = value; }
+        public bool IsPlayOnDisable { get => isPlayOnDisable; set => isPlayOnDisable = value; }
+        public bool IsDisappear { get => isDisappear; set => isDisappear = value; }
+        public DisappearType DisType { get => disType; set => disType = value; }
+
+        public UnityAction LastEndAction { get; set; }
+
+        public List<CommonAnimationPoint> PointAnimationList { get => pointAnimationList; set => pointAnimationList = value; }
+        public List<CommonAnimationAngle> AngleAnimationList { get => angleAnimationList; set => angleAnimationList = value; }
+        public List<CommonAnimationScale> ScaleAnimationList { get => scaleAnimationList; set => scaleAnimationList = value; }
+        public List<CommonAnimationColor> ColorAnimationList { get => colorAnimationList; set => colorAnimationList = value; }
+        public List<CommonAnimationAlpha> AlphaAnimationList { get => alphaAnimationList; set => alphaAnimationList = value; }
+        public List<CommonAnimationSize> SizeAnimationList { get => sizeAnimationList; set => sizeAnimationList = value; }
+        public List<CommonAnimationFillAmount> FillAmountAnimationList { get => fillAmountAnimationList; set => fillAmountAnimationList = value; }
+        #endregion
 
         /// <summary>
         /// 播放所有启用了的动画
@@ -44,12 +89,12 @@ namespace UGCF.UnityExtend
         /// <param name="index">位移动画组中的索引，不传即播放所有位移动画</param>
         public CommonAnimation PlayPoint(int index = -1)
         {
-            if (!point)
+            if (!Point)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(pointAnimationList.ConvertAll(new Converter<CommonAnimationPoint, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(PointAnimationList.ConvertAll(new Converter<CommonAnimationPoint, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(pointAnimationList[index]);
+                return PlayOneByAnimation(PointAnimationList[index]);
         }
 
         /// <summary>
@@ -58,12 +103,12 @@ namespace UGCF.UnityExtend
         /// <param name="index">旋转动画组中的索引，不传即播放所有旋转动画</param>
         public CommonAnimation PlayAngle(int index = -1)
         {
-            if (!angle)
+            if (!Angle)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(angleAnimationList.ConvertAll(new Converter<CommonAnimationAngle, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(AngleAnimationList.ConvertAll(new Converter<CommonAnimationAngle, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(angleAnimationList[index]);
+                return PlayOneByAnimation(AngleAnimationList[index]);
         }
 
         /// <summary>
@@ -72,12 +117,12 @@ namespace UGCF.UnityExtend
         /// <param name="index">缩放动画组中的索引，不传即播放所有缩放动画</param>
         public CommonAnimation PlayScale(int index = -1)
         {
-            if (!scale)
+            if (!Scale)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(scaleAnimationList.ConvertAll(new Converter<CommonAnimationScale, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(ScaleAnimationList.ConvertAll(new Converter<CommonAnimationScale, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(scaleAnimationList[index]);
+                return PlayOneByAnimation(ScaleAnimationList[index]);
         }
 
         /// <summary>
@@ -86,12 +131,12 @@ namespace UGCF.UnityExtend
         /// <param name="index">颜色动画组中的索引，不传即播放所有颜色变化动画</param>
         public CommonAnimation PlayColor(int index = -1)
         {
-            if (!color)
+            if (!Color)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(colorAnimationList.ConvertAll(new Converter<CommonAnimationColor, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(ColorAnimationList.ConvertAll(new Converter<CommonAnimationColor, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(colorAnimationList[index]);
+                return PlayOneByAnimation(ColorAnimationList[index]);
         }
 
         /// <summary>
@@ -100,12 +145,12 @@ namespace UGCF.UnityExtend
         /// <param name="index">透明度动画组中的索引，不传即播放所有透明度变化动画</param>
         public CommonAnimation PlayAlpha(int index = -1)
         {
-            if (!alpha)
+            if (!Alpha)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(alphaAnimationList.ConvertAll(new Converter<CommonAnimationAlpha, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(AlphaAnimationList.ConvertAll(new Converter<CommonAnimationAlpha, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(alphaAnimationList[index]);
+                return PlayOneByAnimation(AlphaAnimationList[index]);
         }
 
         /// <summary>
@@ -114,12 +159,12 @@ namespace UGCF.UnityExtend
         /// <param name="index">尺寸动画组中的索引，不传即播放所有尺寸变化动画</param>
         public CommonAnimation PlaySize(int index = -1)
         {
-            if (!size)
+            if (!Size)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(sizeAnimationList.ConvertAll(new Converter<CommonAnimationSize, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(SizeAnimationList.ConvertAll(new Converter<CommonAnimationSize, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(sizeAnimationList[index]);
+                return PlayOneByAnimation(SizeAnimationList[index]);
         }
 
         /// <summary>
@@ -128,43 +173,71 @@ namespace UGCF.UnityExtend
         /// <param name="index">填充动画组中的索引，不传即播放所有填充动画</param>
         public CommonAnimation PlayFillAmount(int index = -1)
         {
-            if (!fillAmount)
+            if (!FillAmount)
                 return this;
             if (index < 0)
-                return PlayAllByAnimationType(fillAmountAnimationList.ConvertAll(new Converter<CommonAnimationFillAmount, CommonAnimationBase>(ca => ca)));
+                return PlayAllByAnimationType(FillAmountAnimationList.ConvertAll(new Converter<CommonAnimationFillAmount, CommonAnimationBase>(ca => ca)));
             else
-                return PlayOneByAnimation(fillAmountAnimationList[index]);
+                return PlayOneByAnimation(FillAmountAnimationList[index]);
         }
 
         public CommonAnimationPoint CreatePointAnimation(Vector3 startPoint, CommonAnimationPoint.CASpace caSpace = CommonAnimationPoint.CASpace.RectTransformSelf, bool foward = true, int index = 0)
         {
-            point = true;
+            Point = true;
             CommonAnimationPoint animationPoint = new CommonAnimationPoint();
-            animationPoint.foward = foward;
-            animationPoint.pointList.Add(startPoint);
-            animationPoint.caSpace = caSpace;
-            if (pointAnimationList.Count > index)
-                pointAnimationList[index] = animationPoint;
+            animationPoint.Foward = foward;
+            animationPoint.PointList.Add(startPoint);
+            animationPoint.CaSpace = caSpace;
+            if (PointAnimationList.Count > index)
+                PointAnimationList[index] = animationPoint;
             else
-                pointAnimationList.Add(animationPoint);
+                PointAnimationList.Add(animationPoint);
             return animationPoint;
         }
 
         public CommonAnimationScale CreateScaleAnimation(Vector3 startScale, bool foward = true, int index = 0)
         {
-            scale = true;
+            Scale = true;
             CommonAnimationScale animationScale = new CommonAnimationScale();
-            animationScale.foward = foward;
-            animationScale.scaleList.Add(startScale);
-            if (scaleAnimationList.Count > index)
-                scaleAnimationList[index] = animationScale;
+            animationScale.Foward = foward;
+            animationScale.ScaleList.Add(startScale);
+            if (ScaleAnimationList.Count > index)
+                ScaleAnimationList[index] = animationScale;
             else
-                scaleAnimationList.Add(animationScale);
+                ScaleAnimationList.Add(animationScale);
             return animationScale;
         }
 
-        #region ...内部函数
-        MonoBehaviour playBaseMb;
+        public void Pause()
+        {
+            isPause = true;
+        }
+
+        public void Continue()
+        {
+            isPause = false;
+        }
+
+        public void Stop()
+        {
+            isStop = true;
+        }
+
+        public void Clear()
+        {
+            PointAnimationList.Clear();
+            AngleAnimationList.Clear();
+            AlphaAnimationList.Clear();
+            ScaleAnimationList.Clear();
+            SizeAnimationList.Clear();
+            ColorAnimationList.Clear();
+            FillAmountAnimationList.Clear();
+            IsLoop = IsPingPong = IsAutoPlay = IsBackInit = IsDisappear = IsPlayOnDisable = isPause = isStop = false;
+            IsFoward = true;
+            LastEndAction = null;
+            DisType = DisappearType.Destroy;
+        }
+
         CommonAnimation PlayAllByAnimationType(List<CommonAnimationBase> allAnimations)
         {
             if (!gameObject || !gameObject.activeInHierarchy)
@@ -172,11 +245,11 @@ namespace UGCF.UnityExtend
             if (allAnimations.Count == 0)
                 return this;
             if (!isStop) Stop();
-            playBaseMb = isPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
-            if (isFoward)
-                playBaseMb.StartCoroutine(PlayAnimation(allAnimations, isFoward));
+            playBaseMb = IsPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
+            if (IsFoward)
+                playBaseMb.StartCoroutine(PlayAnimation(allAnimations, IsFoward));
             else
-                playBaseMb.StartCoroutine(PlayAnimation(allAnimations, isFoward, allAnimations.Count - 1));
+                playBaseMb.StartCoroutine(PlayAnimation(allAnimations, IsFoward, allAnimations.Count - 1));
             return this;
         }
 
@@ -187,20 +260,11 @@ namespace UGCF.UnityExtend
             if (commonAnimation == null)
                 return this;
             if (!isStop) Stop();
-            playBaseMb = isPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
-            playBaseMb.StartCoroutine(PlayAnimation(new List<CommonAnimationBase>() { commonAnimation }, isFoward));
+            playBaseMb = IsPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
+            playBaseMb.StartCoroutine(PlayAnimation(new List<CommonAnimationBase>() { commonAnimation }, IsFoward));
             return this;
         }
 
-        int currentPlayingCount = 0;
-        /// <summary>
-        /// 播放指定动画
-        /// </summary>
-        /// <param name="type">动画类型</param>
-        /// <param name="delayTime">延迟时间</param>
-        /// <param name="time">播放总时长</param>
-        /// <param name="space">坐标空间</param>
-        /// <returns></returns>
         IEnumerator PlayAnimation(List<CommonAnimationBase> animations, bool isStartFoward, int currentIndex = 0)
         {
             currentPlayingCount++;
@@ -213,8 +277,8 @@ namespace UGCF.UnityExtend
                 playBaseMb.StartCoroutine(PlayAnimation(animations, isFoward, animations.Count - 1));
                 yield break;
             }
-            WaitForSecondsRealtime delayWait = WaitForUtils.WaitForSecondsRealtime(currentAnimation.delayTime);
-            if (currentAnimation.delayTime != 0)
+            WaitForSecondsRealtime delayWait = WaitForUtils.WaitForSecondsRealtime(currentAnimation.DelayTime);
+            if (currentAnimation.DelayTime != 0)
                 yield return delayWait;
             if (!this)
                 yield break;
@@ -223,8 +287,8 @@ namespace UGCF.UnityExtend
             int count = currentAnimation.GetAnimationListCount();
             int startIndex = currentAnimation.GetCurrentStartIndex();
             float currentSpeed = 0;
-            float progress = currentAnimation.foward ? 0 : 1;
-            while (currentAnimation.foward ? progress < 1 : progress > 0)
+            float progress = currentAnimation.Foward ? 0 : 1;
+            while (currentAnimation.Foward ? progress < 1 : progress > 0)
             {
                 #region ...循环执行动画
                 yield return WaitForUtils.WaitFrame;
@@ -236,27 +300,27 @@ namespace UGCF.UnityExtend
                 if (isStop || !this)
                     yield break;
                 currentSpeed = speed * Time.deltaTime;
-                progress += currentAnimation.foward ? currentSpeed : -currentSpeed;
+                progress += currentAnimation.Foward ? currentSpeed : -currentSpeed;
                 progress = Mathf.Clamp01(progress);
                 currentAnimation.PlayAnimation(startIndex, progress);
                 //一段动画播放结束
-                if (currentAnimation.foward ? progress >= 1 : progress <= 0)
+                if (currentAnimation.Foward ? progress >= 1 : progress <= 0)
                 {
-                    progress = currentAnimation.foward ? 0 : 1;
-                    if (currentAnimation.foward ? startIndex + 2 < count : startIndex > 0)
-                        startIndex += currentAnimation.foward ? 1 : -1;
+                    progress = currentAnimation.Foward ? 0 : 1;
+                    if (currentAnimation.Foward ? startIndex + 2 < count : startIndex > 0)
+                        startIndex += currentAnimation.Foward ? 1 : -1;
                     else
                     { //一组动画播放结束
                         currentPlayingCount--;
                         currentAnimation.PlayEndAction();
-                        if (currentAnimation.pingPong)
-                            currentAnimation.foward = !currentAnimation.foward;
+                        if (currentAnimation.PingPong)
+                            currentAnimation.Foward = !currentAnimation.Foward;
                         currentIndex += isFoward ? 1 : -1;
                         if (isFoward ? currentIndex == animations.Count : currentIndex < 0)
                         {
-                            if (isLoop)
+                            if (IsLoop)
                             {
-                                if (isPingPong)
+                                if (IsPingPong)
                                     isFoward = !isFoward;
                                 if (isFoward)
                                     playBaseMb.StartCoroutine(PlayAnimation(animations, isFoward));
@@ -265,7 +329,7 @@ namespace UGCF.UnityExtend
                             }
                             else
                             {
-                                if (isBackInit)
+                                if (IsBackInit)
                                 {
                                     if (isFoward)
                                         animations[0].Init(gameObject);
@@ -274,10 +338,10 @@ namespace UGCF.UnityExtend
                                 }
                                 if (currentPlayingCount <= 0)
                                 {
-                                    lastEndAction?.Invoke();
-                                    if (isDisappear)
+                                    LastEndAction?.Invoke();
+                                    if (IsDisappear)
                                     {
-                                        if (disType == DisappearType.Destroy)
+                                        if (DisType == DisappearType.Destroy)
                                             Destroy(gameObject);
                                         else
                                             gameObject.SetActive(false);
@@ -299,26 +363,26 @@ namespace UGCF.UnityExtend
 
         void OnEnable()
         {
-            if (isPlayOnDisable && currentPlayingCount > 0)
+            if (IsPlayOnDisable && currentPlayingCount > 0)
                 return;
-            if (isAutoPlay)
+            if (IsAutoPlay)
                 PlayAll();
             else
             {
-                if (point)
-                    PlayAllByAnimationType(pointAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationPoint, CommonAnimationBase>(ca => ca)));
-                if (angle)
-                    PlayAllByAnimationType(angleAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationAngle, CommonAnimationBase>(ca => ca)));
-                if (scale)
-                    PlayAllByAnimationType(scaleAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationScale, CommonAnimationBase>(ca => ca)));
-                if (color)
-                    PlayAllByAnimationType(colorAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationColor, CommonAnimationBase>(ca => ca)));
-                if (alpha)
-                    PlayAllByAnimationType(alphaAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationAlpha, CommonAnimationBase>(ca => ca)));
-                if (size)
-                    PlayAllByAnimationType(sizeAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationSize, CommonAnimationBase>(ca => ca)));
-                if (fillAmount)
-                    PlayAllByAnimationType(fillAmountAnimationList.FindAll((cac) => { return cac.autoPlay; }).ConvertAll(new Converter<CommonAnimationFillAmount, CommonAnimationBase>(ca => ca)));
+                if (Point)
+                    PlayAllByAnimationType(PointAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationPoint, CommonAnimationBase>(ca => ca)));
+                if (Angle)
+                    PlayAllByAnimationType(AngleAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationAngle, CommonAnimationBase>(ca => ca)));
+                if (Scale)
+                    PlayAllByAnimationType(ScaleAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationScale, CommonAnimationBase>(ca => ca)));
+                if (Color)
+                    PlayAllByAnimationType(ColorAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationColor, CommonAnimationBase>(ca => ca)));
+                if (Alpha)
+                    PlayAllByAnimationType(AlphaAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationAlpha, CommonAnimationBase>(ca => ca)));
+                if (Size)
+                    PlayAllByAnimationType(SizeAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationSize, CommonAnimationBase>(ca => ca)));
+                if (FillAmount)
+                    PlayAllByAnimationType(FillAmountAnimationList.FindAll((cac) => { return cac.AutoPlay; }).ConvertAll(new Converter<CommonAnimationFillAmount, CommonAnimationBase>(ca => ca)));
             }
         }
 
@@ -326,37 +390,6 @@ namespace UGCF.UnityExtend
         {
             StopAllCoroutines();
         }
-
-        public void Pause()
-        {
-            isPause = true;
-        }
-
-        public void Continue()
-        {
-            isPause = false;
-        }
-
-        public void Stop()
-        {
-            isStop = true;
-        }
-
-        public void Clear()
-        {
-            pointAnimationList.Clear();
-            angleAnimationList.Clear();
-            alphaAnimationList.Clear();
-            scaleAnimationList.Clear();
-            sizeAnimationList.Clear();
-            colorAnimationList.Clear();
-            fillAmountAnimationList.Clear();
-            isLoop = isPingPong = isAutoPlay = isBackInit = isDisappear = isPlayOnDisable = isPause = isStop = false;
-            isFoward = true;
-            lastEndAction = null;
-            disType = DisappearType.Destroy;
-        }
-        #endregion
 
         /// <summary>
         /// 消失方式

@@ -8,7 +8,7 @@ using System.IO;
 using UnityEditor.iOS.Xcode;
 #endif
 
-namespace UGCF.Editor
+namespace UGCF.UGCFEditor
 {
     public class XcodeModify
     {

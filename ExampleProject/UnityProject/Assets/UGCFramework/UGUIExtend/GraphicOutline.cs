@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using UGCF.UnityExtend;
+﻿using UGCF.UnityExtend;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
     [RequireComponent(typeof(Graphic))]
+    [AddComponentMenu("UI/Effects/Graphic Outline")]
     public class GraphicOutline : Shadow
     {
-        public float bevelAngleCoefficient = 0.7071f; //1除以根号2
+        [SerializeField][Tooltip("斜角系数")] float bevelAngleCoefficient = 0.7071f; //1除以根号2
 
         public override void ModifyMesh(VertexHelper vh)
         {

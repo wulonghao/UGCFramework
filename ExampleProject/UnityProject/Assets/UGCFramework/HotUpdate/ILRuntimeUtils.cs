@@ -5,7 +5,6 @@ using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
 using LitJson;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UGCF.Manager;

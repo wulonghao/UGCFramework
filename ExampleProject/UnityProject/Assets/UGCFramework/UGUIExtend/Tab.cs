@@ -4,10 +4,14 @@ using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
+    [AddComponentMenu("UI/Tab")]
     public class Tab : Toggle
     {
-        public GameObject targetPage;
-        public bool isChangeActive;//切换选项时 是否使用显示隐藏方式
+        [SerializeField] GameObject targetPage;
+        public GameObject TargetPage { get => targetPage; set => targetPage = value; }
+
+        [SerializeField] [Tooltip("切换选项时 是否使用显示隐藏方式")] bool isChangeActive;
+        public bool IsChangeActive { get => isChangeActive; set => isChangeActive = value; }
 
         protected override void Start()
         {
@@ -16,9 +20,9 @@ namespace UGCF.UGUIExtend
             if (UnityEditor.EditorApplication.isPlaying)
 #endif
             {
-                if (targetPage)
-                    targetPage.SetActive(isOn);
-                if (isChangeActive)
+                if (TargetPage)
+                    TargetPage.SetActive(isOn);
+                if (IsChangeActive)
                 {
                     graphic.gameObject.SetActive(isOn);
                     targetGraphic.gameObject.SetActive(!isOn);
@@ -26,10 +30,9 @@ namespace UGCF.UGUIExtend
 
                 onValueChanged.AddListener((is_on) =>
                 {
-                //AudioManager.Instance.PlaySound(ConstantUtils.AudioBtnPageChange);
-                if (targetPage)
-                        targetPage.SetActive(is_on);
-                    if (isChangeActive)
+                    if (TargetPage)
+                        TargetPage.SetActive(is_on);
+                    if (IsChangeActive)
                     {
                         graphic.gameObject.SetActive(is_on);
                         targetGraphic.gameObject.SetActive(!is_on);
@@ -46,17 +49,17 @@ namespace UGCF.UGUIExtend
 
         void RefreshActive()
         {
-            if (targetPage)
-                targetPage.SetActive(isOn);
+            if (TargetPage)
+                TargetPage.SetActive(isOn);
             if (group)
             {
                 TabGroup tg = (TabGroup)group;
-                tg.currentSelectTab = this;
-                if (tg.currentActivityPage && tg.currentActivityPage != targetPage && isOn)
-                    tg.currentActivityPage.SetActive(false);
-                tg.currentActivityPage = targetPage;
+                tg.CurrentSelectTab = this;
+                if (tg.CurrentActivityPage && tg.CurrentActivityPage != TargetPage && isOn)
+                    tg.CurrentActivityPage.SetActive(false);
+                tg.CurrentActivityPage = TargetPage;
             }
-            if (isChangeActive)
+            if (IsChangeActive)
             {
                 graphic.gameObject.SetActive(isOn);
                 targetGraphic.gameObject.SetActive(!isOn);

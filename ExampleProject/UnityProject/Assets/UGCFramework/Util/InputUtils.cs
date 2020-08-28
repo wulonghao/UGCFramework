@@ -132,7 +132,7 @@ namespace UGCF.Utils
 #if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.Backspace))
 #else
-        if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape))
 #endif
             {
                 Application.Quit();

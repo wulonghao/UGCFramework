@@ -1,23 +1,19 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Threading;
 using UGCF.Utils;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace UGCF.Manager
 {
     public class DownloadItem
     {
-        public DownloadManager.BundleInfo info;
-        public const string tempFileExt = ".temp";   // 临时文件后缀名
-        int fileLength;                // 原文件大小
-        int currentLength;             // 当前下载好了的大小
-        string tempSaveFilePath;        // 临时文件全路径
-        float progress;
+        private const string tempFileExt = ".temp";   // 临时文件后缀名
+        private DownloadManager.BundleInfo info;
+        private int fileLength;                // 原文件大小
+        private int currentLength;             // 当前下载好了的大小
+        private string tempSaveFilePath;        // 临时文件全路径
+        private float progress;
 
         public DownloadItem(DownloadManager.BundleInfo _info)
         {

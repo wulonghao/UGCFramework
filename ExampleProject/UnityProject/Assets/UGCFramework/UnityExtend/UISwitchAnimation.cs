@@ -1,28 +1,28 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.UnityExtend;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 namespace UGCF.UnityExtend
 {
     public class UISwitchAnimation : MonoBehaviour
     {
-        #region ...字段定义
         /// <summary> 入场动画 </summary>
         [SerializeField] NodeSwitchAnimationType enterAnimationType;
         /// <summary> 入场动画播放时间 </summary>
         [SerializeField] float enterAnimationTime = 1;
         /// <summary> 离场动画 </summary>
-        [SerializeField] public NodeSwitchAnimationType exitAnimationType;
+        [SerializeField] NodeSwitchAnimationType exitAnimationType;
         /// <summary> 离场动画播放时间 </summary>
         [SerializeField] float exitAnimationTime = 1;
         /// <summary> 是否是弹性动画 </summary>
         [SerializeField, Tooltip("是否是弹性动画")] bool elasticAnimation = false;
-        /// <summary> 动画播放中 </summary>
-        [HideInInspector] public bool isSwitchAnimPlaying;
         CommonAnimation switchAnimation;
-        #endregion
+
+        public bool IsSwitchAnimPlaying { get; set; }
+        public NodeSwitchAnimationType EnterAnimationType { get => enterAnimationType; set => enterAnimationType = value; }
+        public float EnterAnimationTime { get => enterAnimationTime; set => enterAnimationTime = value; }
+        public NodeSwitchAnimationType ExitAnimationType { get => exitAnimationType; set => exitAnimationType = value; }
+        public float ExitAnimationTime { get => exitAnimationTime; set => exitAnimationTime = value; }
+        public bool ElasticAnimation { get => elasticAnimation; set => elasticAnimation = value; }
 
         /// <summary>
         /// 播放入场动画
@@ -30,13 +30,13 @@ namespace UGCF.UnityExtend
         /// <param name="animaFinishUA"></param>
         public bool PlayEnterAnimation(UnityAction animaFinishUA = null)
         {
-            if (isSwitchAnimPlaying) return false;
+            if (IsSwitchAnimPlaying) return false;
             if (!ValidEnterAnimation())
             {
                 animaFinishUA?.Invoke();
                 return true;
             }
-            SetSwitchAnimation(enterAnimationType, true, animaFinishUA);
+            SetSwitchAnimation(EnterAnimationType, true, animaFinishUA);
             PlayAnimation();
             return true;
         }
@@ -47,32 +47,32 @@ namespace UGCF.UnityExtend
         /// <param name="animaFinishUA"></param>
         public bool PlayExitAnimation(UnityAction animaFinishUA = null)
         {
-            if (isSwitchAnimPlaying) return false;
+            if (IsSwitchAnimPlaying) return false;
             if (!ValidExitAnimation())
             {
                 animaFinishUA?.Invoke();
                 return true;
             }
-            SetSwitchAnimation(exitAnimationType, false, animaFinishUA);
+            SetSwitchAnimation(ExitAnimationType, false, animaFinishUA);
             PlayAnimation();
             return true;
         }
 
         public bool ValidEnterAnimation()
         {
-            return enterAnimationType > NodeSwitchAnimationType.None && enterAnimationTime > 0;
+            return EnterAnimationType > NodeSwitchAnimationType.None && EnterAnimationTime > 0;
         }
 
         public bool ValidExitAnimation()
         {
-            return exitAnimationType > NodeSwitchAnimationType.None && exitAnimationTime > 0;
+            return ExitAnimationType > NodeSwitchAnimationType.None && ExitAnimationTime > 0;
         }
 
         void PlayAnimation()
         {
-            if (switchAnimation && !isSwitchAnimPlaying)
+            if (switchAnimation && !IsSwitchAnimPlaying)
             {
-                isSwitchAnimPlaying = true;
+                IsSwitchAnimPlaying = true;
                 switchAnimation.PlayAll();
             }
         }
@@ -85,12 +85,12 @@ namespace UGCF.UnityExtend
         /// <param name="action"></param>
         void SetSwitchAnimation(NodeSwitchAnimationType type, bool isEnter = true, UnityAction action = null)
         {
-            if (isSwitchAnimPlaying) return;
+            if (IsSwitchAnimPlaying) return;
             switchAnimation = GetComponent<CommonAnimation>();
             if (!switchAnimation)
                 switchAnimation = gameObject.AddComponent<CommonAnimation>();
             switchAnimation.Clear();
-            switchAnimation.isPlayOnDisable = true;
+            switchAnimation.IsPlayOnDisable = true;
             switch (type)
             {
                 case NodeSwitchAnimationType.MoveFromLeft:
@@ -106,26 +106,26 @@ namespace UGCF.UnityExtend
                     CommonAnimationScale animationScale = switchAnimation.CreateScaleAnimation(Vector3.zero);
                     if (isEnter)
                     {
-                        if (elasticAnimation)
-                            animationScale.scaleList.Add(Vector3.one * 1.1f);
-                        animationScale.scaleList.Add(Vector3.one);
-                        animationScale.playTime = enterAnimationTime;
+                        if (ElasticAnimation)
+                            animationScale.ScaleList.Add(Vector3.one * 1.1f);
+                        animationScale.ScaleList.Add(Vector3.one);
+                        animationScale.PlayTime = EnterAnimationTime;
                     }
                     else
                     {
-                        if (elasticAnimation)
-                            animationScale.scaleList.Insert(0, Vector3.one * 1.1f);
-                        animationScale.scaleList.Insert(0, Vector3.one);
-                        animationScale.playTime = exitAnimationTime;
+                        if (ElasticAnimation)
+                            animationScale.ScaleList.Insert(0, Vector3.one * 1.1f);
+                        animationScale.ScaleList.Insert(0, Vector3.one);
+                        animationScale.PlayTime = ExitAnimationTime;
                     }
                     break;
                 case NodeSwitchAnimationType.None:
                     action?.Invoke();
                     return;
             }
-            switchAnimation.lastEndAction += () =>
+            switchAnimation.LastEndAction += () =>
             {
-                isSwitchAnimPlaying = false;
+                IsSwitchAnimPlaying = false;
                 action?.Invoke();
             };
         }
@@ -135,17 +135,17 @@ namespace UGCF.UnityExtend
             CommonAnimationPoint animationPoint = animation.CreatePointAnimation(Vector3.zero);
             if (!isEnter)
             {
-                if (elasticAnimation)
-                    animationPoint.pointList.Add(targetVector * -0.03f);
-                animationPoint.pointList.Add(targetVector);
-                animationPoint.playTime = exitAnimationTime;
+                if (ElasticAnimation)
+                    animationPoint.PointList.Add(targetVector * -0.03f);
+                animationPoint.PointList.Add(targetVector);
+                animationPoint.PlayTime = ExitAnimationTime;
             }
             else
             {
-                if (elasticAnimation)
-                    animationPoint.pointList.Insert(0, targetVector * -0.03f);
-                animationPoint.pointList.Insert(0, targetVector);
-                animationPoint.playTime = enterAnimationTime;
+                if (ElasticAnimation)
+                    animationPoint.PointList.Insert(0, targetVector * -0.03f);
+                animationPoint.PointList.Insert(0, targetVector);
+                animationPoint.PlayTime = EnterAnimationTime;
             }
         }
     }

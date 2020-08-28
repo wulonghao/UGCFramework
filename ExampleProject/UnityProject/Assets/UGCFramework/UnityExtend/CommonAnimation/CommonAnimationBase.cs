@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,20 +8,31 @@ namespace UGCF.UnityExtend
 {
     public abstract class CommonAnimationBase
     {
-        public bool pingPong, foward = true, autoPlay;
-        public float playTime = 1;
-        public float delayTime;
-        [HideInInspector]
-        public GameObject currentGameObject;
-        [HideInInspector]
-        public RectTransform rtf;
-        [HideInInspector]
-        public UnityAction endAction;
+        [SerializeField] bool autoPlay;
+        public bool AutoPlay { get => autoPlay; set => autoPlay = value; }
+
+        [SerializeField] bool pingPong;
+        public bool PingPong { get => pingPong; set => pingPong = value; }
+
+        [SerializeField] bool foward;
+        public bool Foward { get => foward; set => foward = value; }
+
+        [SerializeField] float playTime = 1;
+        public float PlayTime { get => playTime; set => playTime = value; }
+
+        [SerializeField] float delayTime;
+        public float DelayTime { get => delayTime; set => delayTime = value; }
+
+        public GameObject CurrentGameObject { get; set; }
+
+        public RectTransform Rtf { get; set; }
+
+        public UnityAction EndAction { get; set; }
 
         public virtual void Init(GameObject _currentGameObject)
         {
-            currentGameObject = _currentGameObject;
-            rtf = currentGameObject.GetComponent<RectTransform>();
+            CurrentGameObject = _currentGameObject;
+            Rtf = CurrentGameObject.GetComponent<RectTransform>();
         }
 
         public abstract float GetSpeed();
@@ -39,56 +49,60 @@ namespace UGCF.UnityExtend
     [Serializable]
     public class CommonAnimationPoint : CommonAnimationBase
     {
-        public List<Vector3> pointList = new List<Vector3>();
-        public CASpace caSpace = CASpace.TransformSelf;
+        [SerializeField] List<Vector3> pointList = new List<Vector3>();
+        public List<Vector3> PointList { get => pointList; set => pointList = value; }
+
+        [SerializeField] CASpace caSpace = CASpace.TransformSelf;
+
+        public CASpace CaSpace { get => caSpace; set => caSpace = value; }
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = pointList.Count - 1;
+            if (!Foward)
+                initIndex = PointList.Count - 1;
 
-            if (caSpace == CASpace.TransformSelf)
-                currentGameObject.transform.localPosition = pointList[initIndex];
-            else if (caSpace == CASpace.TransformWorld)
-                currentGameObject.transform.position = pointList[initIndex];
+            if (CaSpace == CASpace.TransformSelf)
+                CurrentGameObject.transform.localPosition = PointList[initIndex];
+            else if (CaSpace == CASpace.TransformWorld)
+                CurrentGameObject.transform.position = PointList[initIndex];
             else
-                currentGameObject.GetComponent<RectTransform>().anchoredPosition3D = pointList[initIndex];
+                CurrentGameObject.GetComponent<RectTransform>().anchoredPosition3D = PointList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return pointList.Count;
+            return PointList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
-            if (caSpace == CASpace.TransformSelf)
-                currentGameObject.transform.localPosition = Vector3.Lerp(pointList[startIndex], pointList[startIndex + 1], progress);
-            else if (caSpace == CASpace.TransformWorld)
-                currentGameObject.transform.position = Vector3.Lerp(pointList[startIndex], pointList[startIndex + 1], progress);
+            if (CaSpace == CASpace.TransformSelf)
+                CurrentGameObject.transform.localPosition = Vector3.Lerp(PointList[startIndex], PointList[startIndex + 1], progress);
+            else if (CaSpace == CASpace.TransformWorld)
+                CurrentGameObject.transform.position = Vector3.Lerp(PointList[startIndex], PointList[startIndex + 1], progress);
             else
             {
-                if (!rtf) rtf = currentGameObject.AddComponent<RectTransform>();
-                rtf.anchoredPosition3D = Vector3.Lerp(pointList[startIndex], pointList[startIndex + 1], progress);
+                if (!Rtf) Rtf = CurrentGameObject.AddComponent<RectTransform>();
+                Rtf.anchoredPosition3D = Vector3.Lerp(PointList[startIndex], PointList[startIndex + 1], progress);
             }
         }
 
         public override float GetSpeed()
         {
-            return (pointList.Count - 1) / playTime;
+            return (PointList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : pointList.Count - 2;
+            return Foward ? 0 : PointList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
 
         public enum CASpace
@@ -102,272 +116,281 @@ namespace UGCF.UnityExtend
     [Serializable]
     public class CommonAnimationAngle : CommonAnimationBase
     {
-        public List<Vector3> angleList = new List<Vector3>();
+        [SerializeField] List<Vector3> angleList = new List<Vector3>();
+        public List<Vector3> AngleList { get => angleList; set => angleList = value; }
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = angleList.Count - 1;
-            currentGameObject.transform.localEulerAngles = angleList[initIndex];
+            if (!Foward)
+                initIndex = AngleList.Count - 1;
+            CurrentGameObject.transform.localEulerAngles = AngleList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return angleList.Count;
+            return AngleList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
-            currentGameObject.transform.localEulerAngles = Vector3.Lerp(angleList[startIndex], angleList[startIndex + 1], progress);
+            CurrentGameObject.transform.localEulerAngles = Vector3.Lerp(AngleList[startIndex], AngleList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()
         {
-            return (angleList.Count - 1) / playTime;
+            return (AngleList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : angleList.Count - 2;
+            return Foward ? 0 : AngleList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
     }
 
     [Serializable]
     public class CommonAnimationScale : CommonAnimationBase
     {
-        public List<Vector3> scaleList = new List<Vector3>();
+        [SerializeField] List<Vector3> scaleList = new List<Vector3>();
+        public List<Vector3> ScaleList { get => scaleList; set => scaleList = value; }
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = scaleList.Count - 1;
-            currentGameObject.transform.localScale = scaleList[initIndex];
+            if (!Foward)
+                initIndex = ScaleList.Count - 1;
+            CurrentGameObject.transform.localScale = ScaleList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return scaleList.Count;
+            return ScaleList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
-            currentGameObject.transform.localScale = Vector3.Lerp(scaleList[startIndex], scaleList[startIndex + 1], progress);
+            CurrentGameObject.transform.localScale = Vector3.Lerp(ScaleList[startIndex], ScaleList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()
         {
-            return (scaleList.Count - 1) / playTime;
+            return (ScaleList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : scaleList.Count - 2;
+            return Foward ? 0 : ScaleList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
     }
 
     [Serializable]
     public class CommonAnimationSize : CommonAnimationBase
     {
-        public List<Vector2> sizeList = new List<Vector2>();
+        [SerializeField] List<Vector2> sizeList = new List<Vector2>();
+        public List<Vector2> SizeList { get => sizeList; set => sizeList = value; }
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = sizeList.Count - 1;
-            if (rtf) rtf.sizeDelta = sizeList[initIndex];
+            if (!Foward)
+                initIndex = SizeList.Count - 1;
+            if (Rtf) Rtf.sizeDelta = SizeList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return sizeList.Count;
+            return SizeList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
-            if (rtf) rtf.sizeDelta = Vector2.Lerp(sizeList[startIndex], sizeList[startIndex + 1], progress);
+            if (Rtf) Rtf.sizeDelta = Vector2.Lerp(SizeList[startIndex], SizeList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()
         {
-            return (sizeList.Count - 1) / playTime;
+            return (SizeList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : sizeList.Count - 2;
+            return Foward ? 0 : SizeList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
     }
 
     [Serializable]
     public class CommonAnimationAlpha : CommonAnimationBase
     {
-        public List<float> alphaList = new List<float>();
+        [SerializeField] List<float> alphaList = new List<float>();
+        public List<float> AlphaList { get => alphaList; set => alphaList = value; }
+
         CanvasGroup cg;
         bool hadCanvas;
+
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = alphaList.Count - 1;
-            cg = currentGameObject.GetComponent<CanvasGroup>();
+            if (!Foward)
+                initIndex = AlphaList.Count - 1;
+            cg = CurrentGameObject.GetComponent<CanvasGroup>();
             hadCanvas = cg;
             if (!cg)
             {
-                cg = currentGameObject.AddComponent<CanvasGroup>();
+                cg = CurrentGameObject.AddComponent<CanvasGroup>();
                 cg.interactable = true;
                 cg.blocksRaycasts = true;
             }
-            cg.alpha = alphaList[initIndex];
+            cg.alpha = AlphaList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return alphaList.Count;
+            return AlphaList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
             if (!cg)
             {
-                cg = currentGameObject.AddComponent<CanvasGroup>();
+                cg = CurrentGameObject.AddComponent<CanvasGroup>();
                 cg.interactable = true;
                 cg.blocksRaycasts = true;
             }
-            cg.alpha = Mathf.Lerp(alphaList[startIndex], alphaList[startIndex + 1], progress);
+            cg.alpha = Mathf.Lerp(AlphaList[startIndex], AlphaList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()
         {
-            return (alphaList.Count - 1) / playTime;
+            return (AlphaList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : alphaList.Count - 2;
+            return Foward ? 0 : AlphaList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
             if (!hadCanvas)
                 UnityEngine.Object.Destroy(cg);
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
     }
 
     [Serializable]
     public class CommonAnimationColor : CommonAnimationBase
     {
-        public List<Color> colorList = new List<Color>();
+        [SerializeField] List<Color> colorList = new List<Color>();
+        public List<Color> ColorList { get => colorList; set => colorList = value; }
         Graphic graphic;
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = colorList.Count - 1;
-            graphic = currentGameObject.GetComponent<Graphic>();
+            if (!Foward)
+                initIndex = ColorList.Count - 1;
+            graphic = CurrentGameObject.GetComponent<Graphic>();
             if (graphic)
-                graphic.color = colorList[initIndex];
+                graphic.color = ColorList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return colorList.Count;
+            return ColorList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
             if (graphic)
-                graphic.color = Color.Lerp(colorList[startIndex], colorList[startIndex + 1], progress);
+                graphic.color = Color.Lerp(ColorList[startIndex], ColorList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()
         {
-            return (colorList.Count - 1) / playTime;
+            return (ColorList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : colorList.Count - 2;
+            return Foward ? 0 : ColorList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
     }
 
     [Serializable]
     public class CommonAnimationFillAmount : CommonAnimationBase
     {
-        public List<float> fillAmountList = new List<float>();
+        [SerializeField] List<float> fillAmountList = new List<float>();
+        public List<float> FillAmountList { get => fillAmountList; set => fillAmountList = value; }
+
         Image image;
 
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!foward)
-                initIndex = fillAmountList.Count - 1;
-            image = currentGameObject.GetComponent<Image>();
+            if (!Foward)
+                initIndex = FillAmountList.Count - 1;
+            image = CurrentGameObject.GetComponent<Image>();
             if (image)
-                image.fillAmount = fillAmountList[initIndex];
+                image.fillAmount = FillAmountList[initIndex];
         }
 
         public override int GetAnimationListCount()
         {
-            return fillAmountList.Count;
+            return FillAmountList.Count;
         }
 
         public override void PlayAnimation(int startIndex, float progress)
         {
             if (image)
-                image.fillAmount = Mathf.Lerp(fillAmountList[startIndex], fillAmountList[startIndex + 1], progress);
+                image.fillAmount = Mathf.Lerp(FillAmountList[startIndex], FillAmountList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()
         {
-            return (fillAmountList.Count - 1) / playTime;
+            return (FillAmountList.Count - 1) / PlayTime;
         }
 
         public override int GetCurrentStartIndex()
         {
-            return foward ? 0 : fillAmountList.Count - 2;
+            return Foward ? 0 : FillAmountList.Count - 2;
         }
 
         public override void PlayEndAction()
         {
-            if (endAction != null)
-                endAction();
+            if (EndAction != null)
+                EndAction();
         }
     }
 }

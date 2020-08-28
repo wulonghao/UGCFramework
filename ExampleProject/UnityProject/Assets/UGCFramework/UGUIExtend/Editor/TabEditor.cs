@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UGCF.UGUIExtend;
 using UnityEditor;
+using UnityEditor.UI;
 using UnityEngine;
 
-namespace UGCF.UGUIExtend
+namespace UGCF.UGCFEditor
 {
     [CustomEditor(typeof(Tab), true)]
     [CanEditMultipleObjects]
-    public class TabEditor : UnityEditor.UI.SelectableEditor
+    public class TabEditor : SelectableEditor
     {
         SerializedProperty m_OnValueChangedProperty;
         SerializedProperty m_TransitionProperty;

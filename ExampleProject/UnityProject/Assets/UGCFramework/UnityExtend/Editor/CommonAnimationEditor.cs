@@ -1,15 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.UnityExtend;
+﻿using UGCF.UnityExtend;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UGCF.UGUIExtend
+namespace UGCF.UGCFEditor
 {
     [CustomEditor(typeof(CommonAnimation))]
     [CanEditMultipleObjects]
-    public class CommonAnimationEditor : UnityEditor.Editor
+    public class CommonAnimationEditor : Editor
     {
         SerializedObject obj;
         SerializedProperty point, scale, alpha, color, size, angle, fillAmount;

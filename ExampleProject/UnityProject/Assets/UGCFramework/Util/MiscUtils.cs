@@ -1,138 +1,21 @@
-﻿using LitJson;
-using System;
+﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using UGCF.Manager;
 using UnityEngine;
+using UnityEngine.Events;
 #if UNITY_IOS
 using UnityEngine.iOS;
 #endif
-using UnityEngine.Networking;
-using UnityEngine.UI;
 
 namespace UGCF.Utils
 {
-    public partial class MiscUtils
+    public static class MiscUtils
     {
-        /// <summary> 初始化目标的UI属性 </summary>
-        public static void AttachAndReset(GameObject go, Transform parent, GameObject prefab = null)
-        {
-            RectTransform rectTrans = go.transform as RectTransform;
-            if (rectTrans)
-            {
-                rectTrans.SetParent(parent);
-                rectTrans.localPosition = Vector3.zero;
-                rectTrans.localScale = Vector3.one;
-                if (prefab == null)
-                {
-                    rectTrans.sizeDelta = Vector2.zero;
-                    rectTrans.localPosition = Vector2.zero;
-                    rectTrans.offsetMax = Vector2.zero;
-                    rectTrans.offsetMin = Vector2.zero;
-                }
-                else
-                {
-                    RectTransform prefabRectTrans = prefab.transform as RectTransform;
-                    if (prefabRectTrans)
-                    {
-                        rectTrans.sizeDelta = prefabRectTrans.sizeDelta;
-                        rectTrans.localPosition = prefabRectTrans.localPosition;
-                        rectTrans.offsetMax = prefabRectTrans.offsetMax;
-                        rectTrans.offsetMin = prefabRectTrans.offsetMin;
-                    }
-                }
-            }
-        }
-
-        /// <summary> 双线性插值法缩放图片，等比缩放 </summary>
-        public static Texture2D ScaleTextureBilinear(Texture2D originalTexture, float scaleFactor)
-        {
-            Texture2D newTexture = new Texture2D(Mathf.CeilToInt(originalTexture.width * scaleFactor), Mathf.CeilToInt(originalTexture.height * scaleFactor));
-            float scale = 1.0f / scaleFactor;
-            int maxX = originalTexture.width - 1;
-            int maxY = originalTexture.height - 1;
-            for (int y = 0; y < newTexture.height; y++)
-            {
-                for (int x = 0; x < newTexture.width; x++)
-                {
-                    float targetX = x * scale;
-                    float targetY = y * scale;
-                    int x1 = Mathf.Min(maxX, Mathf.FloorToInt(targetX));
-                    int y1 = Mathf.Min(maxY, Mathf.FloorToInt(targetY));
-                    int x2 = Mathf.Min(maxX, x1 + 1);
-                    int y2 = Mathf.Min(maxY, y1 + 1);
-
-                    float u = targetX - x1;
-                    float v = targetY - y1;
-                    float w1 = (1 - u) * (1 - v);
-                    float w2 = u * (1 - v);
-                    float w3 = (1 - u) * v;
-                    float w4 = u * v;
-                    Color color1 = originalTexture.GetPixel(x1, y1);
-                    Color color2 = originalTexture.GetPixel(x2, y1);
-                    Color color3 = originalTexture.GetPixel(x1, y2);
-                    Color color4 = originalTexture.GetPixel(x2, y2);
-                    Color color = new Color(Mathf.Clamp01(color1.r * w1 + color2.r * w2 + color3.r * w3 + color4.r * w4),
-                        Mathf.Clamp01(color1.g * w1 + color2.g * w2 + color3.g * w3 + color4.g * w4),
-                        Mathf.Clamp01(color1.b * w1 + color2.b * w2 + color3.b * w3 + color4.b * w4),
-                        Mathf.Clamp01(color1.a * w1 + color2.a * w2 + color3.a * w3 + color4.a * w4)
-                    );
-                    newTexture.SetPixel(x, y, color);
-
-                }
-            }
-            newTexture.Apply();
-            return newTexture;
-        }
-
-        /// <summary> 双线性插值法缩放图片为指定尺寸 </summary>
-        public static Texture2D SizeTextureBilinear(Texture2D originalTexture, Vector2 size)
-        {
-            Texture2D newTexture = new Texture2D(Mathf.CeilToInt(size.x), Mathf.CeilToInt(size.y));
-            float scaleX = originalTexture.width / size.x;
-            float scaleY = originalTexture.height / size.y;
-            int maxX = originalTexture.width - 1;
-            int maxY = originalTexture.height - 1;
-            for (int y = 0; y < newTexture.height; y++)
-            {
-                for (int x = 0; x < newTexture.width; x++)
-                {
-                    float targetX = x * scaleX;
-                    float targetY = y * scaleY;
-                    int x1 = Mathf.Min(maxX, Mathf.FloorToInt(targetX));
-                    int y1 = Mathf.Min(maxY, Mathf.FloorToInt(targetY));
-                    int x2 = Mathf.Min(maxX, x1 + 1);
-                    int y2 = Mathf.Min(maxY, y1 + 1);
-
-                    float u = targetX - x1;
-                    float v = targetY - y1;
-                    float w1 = (1 - u) * (1 - v);
-                    float w2 = u * (1 - v);
-                    float w3 = (1 - u) * v;
-                    float w4 = u * v;
-                    Color color1 = originalTexture.GetPixel(x1, y1);
-                    Color color2 = originalTexture.GetPixel(x2, y1);
-                    Color color3 = originalTexture.GetPixel(x1, y2);
-                    Color color4 = originalTexture.GetPixel(x2, y2);
-                    Color color = new Color(Mathf.Clamp01(color1.r * w1 + color2.r * w2 + color3.r * w3 + color4.r * w4),
-                        Mathf.Clamp01(color1.g * w1 + color2.g * w2 + color3.g * w3 + color4.g * w4),
-                        Mathf.Clamp01(color1.b * w1 + color2.b * w2 + color3.b * w3 + color4.b * w4),
-                        Mathf.Clamp01(color1.a * w1 + color2.a * w2 + color3.a * w3 + color4.a * w4)
-                    );
-                    newTexture.SetPixel(x, y, color);
-
-                }
-            }
-            newTexture.Apply();
-            return newTexture;
-        }
-
+        #region ...时间戳转换
         /// <summary>
         /// 返回时间戳（单位：毫秒）代表的时间。
         /// </summary>
@@ -176,7 +59,9 @@ namespace UGCF.Utils
             var dateTime19700101 = new DateTime(1970, 1, 1);
             return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalSeconds);
         }
+        #endregion
 
+        #region ...字符串相关处理
         /// <summary> 数字转换中文 工具 </summary>
         public static string NumToString(int num)
         {
@@ -241,6 +126,42 @@ namespace UGCF.Utils
                 sb.Append(str.Substring(UnityEngine.Random.Range(0, str.Length), 1));
             return sb.ToString();
         }
+
+        /// <summary>采用GBK编码缩减字符串到指定字节长度，超出部分使用指定文本代替</summary>
+        public static string ReduceStringToLength(string str, int length, string replaceTxt = "...")
+        {
+            try
+            {
+                int byteCount = GetStringLengthByGBK(str);
+                if (byteCount > length)
+                {
+                    length -= 2;//超出指定长度，则缩减2个字节，使用"..."结尾
+                    while (byteCount > length)
+                    {
+                        str = str.Substring(0, str.Length - 1);
+                        byteCount = GetStringLengthByGBK(str);
+                    }
+                    return str + replaceTxt;
+                }
+                else
+                    return str;
+            }
+            catch (Exception e)
+            {
+                LogUtils.Log(e.ToString());
+                return str;
+            }
+        }
+
+        /// <summary> 采用GBK编码的字节结构计算字符串的字节长度 中文2个字节 英文及符号1个字节 </summary>
+        public static int GetStringLengthByGBK(string str)
+        {
+            if (string.IsNullOrEmpty(str))
+                return 0;
+            int byteCount = Encoding.UTF8.GetByteCount(str);
+            return (byteCount - str.Length) / 2 + str.Length;
+        }
+        #endregion
 
         #region ...加密解密相关
         /// <summary>获取文件的md5校验码</summary>
@@ -353,147 +274,7 @@ namespace UGCF.Utils
         }
         #endregion
 
-        /// <summary>获取当前平台类型字符串</summary>
-        public static string GetCurrentPlatform()
-        {
-#if UNITY_ANDROID
-            return "Android";
-#elif UNITY_IOS
-            return "iOS";
-#else
-            return string.Empty;
-#endif
-        }
-
-        /// <summary>Key和Value都需支持ToString</summary>
-        public static JsonData GetJsonDataByDictionary<TKey, TValue>(Dictionary<TKey, TValue> dict)
-        {
-            JsonData data = new JsonData();
-            foreach (var p in dict)
-            {
-                data[p.Key.ToString()] = p.Value.ToString();
-            }
-            return data;
-        }
-
-        /// <summary>
-        /// 匹配对应Json的对应数值并全部返回
-        /// </summary>
-        /// <param name="self"></param>
-        /// <param name="value">对比的目标值</param>
-        /// <param name="columnIndex">对比 列索引</param>
-        /// <param name="isMultiple">是否返回多条</param>
-        /// <returns></returns>
-        public static JsonData MathJsonByIndex(JsonData self, string value, int columnIndex = 0, bool isMultiple = true)
-        {
-            if (self == null || self.Count <= 0)
-            {
-                return null;
-            }
-            if (isMultiple)
-            {
-                JsonData _localjson = new JsonData();
-                bool _result = false;
-                for (int i = 0; i < self.Count; i++)
-                {
-                    if (self[i][columnIndex].ToString() == value)
-                    {
-                        _localjson.Add(self[i]);
-                        _result = true;
-                    }
-                }
-                if (_result)
-                {
-                    return _localjson;
-                }
-
-            }
-            else
-            {
-                for (int i = 0; i < self.Count; i++)
-                {
-                    if (self[i][columnIndex].ToString() == value)
-                    {
-                        return self[i];
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 匹配对应Json的对应数值并全部返回
-        /// </summary>
-        /// <param name="self"></param>
-        /// <param name="value">对比的目标值</param>
-        /// <param name="key">对比的目标key</param>
-        /// <param name="isMultiple">是否返回多条</param>
-        /// <returns></returns>
-        public static JsonData MathJsonByIndex(JsonData self, string value, string key, bool isMultiple = true)
-        {
-            if (self == null || self.Count <= 0)
-            {
-                LogUtils.Log("传入的表是空的");
-                return null;
-            }
-            if (isMultiple)
-            {
-                JsonData _localjson = new JsonData();
-                bool _result = false;
-                for (int i = 0; i < self.Count; i++)
-                {
-                    if (self[i][key].ToString() == value)
-                    {
-                        _localjson.Add(self[i]);
-                        _result = true;
-                    }
-                }
-                if (_result)
-                {
-                    return _localjson;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < self.Count; i++)
-                {
-                    if (self[i][key].ToString() == value)
-                    {
-                        return self[i];
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>获取OrderedDictionary对应索引的Key</summary>
-        public static object GetKeyFromIndex(OrderedDictionary od, int index)
-        {
-            int i = -1;
-            foreach (object key in od.Keys)
-                if (++i == index)
-                    return key;
-            return null;
-        }
-
-        /// <summary>获取摄像机视图，显示在指定RawImage组件中</summary>
-        public static void GetCameraRawImage(ref RawImage img, Camera ca, int depthBuffer = 24, RenderTextureFormat format = RenderTextureFormat.ARGB32)
-        {
-            if (img && ca)
-            {
-                Rect rect = img.GetComponent<RectTransform>().rect;
-                RenderTexture rt = RenderTexture.GetTemporary((int)rect.width, (int)rect.height, depthBuffer, format);
-                rt.useMipMap = false;
-                rt.filterMode = FilterMode.Bilinear;
-                rt.antiAliasing = 4;
-                rt.Create();
-                ca.targetTexture = rt;
-                img.texture = rt;
-            }
-            else
-                LogUtils.Log("RowImage或Camera不存在！");
-        }
-
+        #region ...文件创建、复制、处理等
         /// <summary> 复制文件夹到指定目录</summary>
         public static void CopyDirectory(string sourceDirectoryPath, string targetDirectoryPath, bool isDeleteExist, bool isReplace = false, string searchPattern = "*.*")
         {
@@ -521,58 +302,6 @@ namespace UGCF.Utils
                     File.Copy(file, newPath);
                 }
             }
-        }
-
-        /// <summary> Texture转Sprite</summary>
-        public static Sprite TextureToSprite(Texture texture)
-        {
-            Sprite sprite = null;
-            if (texture)
-            {
-                Texture2D t2d = (Texture2D)texture;
-                sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
-            }
-            return sprite;
-        }
-
-        /// <summary> Texture旋转</summary>
-        public static Texture2D RotateTexture(Texture2D texture, float eulerAngles)
-        {
-            int x;
-            int y;
-            int i;
-            int j;
-            float phi = eulerAngles / (180 / Mathf.PI);
-            float sn = Mathf.Sin(phi);
-            float cs = Mathf.Cos(phi);
-            Color32[] arr = texture.GetPixels32();
-            Color32[] arr2 = new Color32[arr.Length];
-            int W = texture.width;
-            int H = texture.height;
-            int xc = W / 2;
-            int yc = H / 2;
-
-            for (j = 0; j < H; j++)
-            {
-                for (i = 0; i < W; i++)
-                {
-                    arr2[j * W + i] = new Color32(0, 0, 0, 0);
-
-                    x = (int)(cs * (i - xc) + sn * (j - yc) + xc);
-                    y = (int)(-sn * (i - xc) + cs * (j - yc) + yc);
-
-                    if ((x > -1) && (x < W) && (y > -1) && (y < H))
-                    {
-                        arr2[j * W + i] = arr[y * W + x];
-                    }
-                }
-            }
-
-            Texture2D newImg = new Texture2D(W, H);
-            newImg.SetPixels32(arr2);
-            newImg.Apply();
-
-            return newImg;
         }
 
         /// <summary> 在指定目录下创建文本文件</summary>
@@ -610,79 +339,9 @@ namespace UGCF.Utils
                 return false;
             }
         }
+        #endregion
 
-        /// <summary>字节转兆,B->MB</summary>
-        public static float GetMillionFromByte(long bytes)
-        {
-            return bytes / 1048576f;
-        }
-
-        /// <summary>获取枚举成员总数</summary>
-        public static int GetEnumCount<T>()
-        {
-            if (typeof(T).IsEnum)
-                return Enum.GetNames(typeof(T)).GetLength(0);
-            return 0;
-        }
-
-        /// <summary>采用GBK编码缩减字符串到指定字节长度，超出部分使用“...”代替</summary>
-        public static string ReduceStringToLength(string str, int length)
-        {
-            try
-            {
-                int byteCount = GetStringLengthByGBK(str);
-                if (byteCount > length)
-                {
-                    length -= 2;//超出指定长度，则缩减2个字节，使用"..."结尾
-                    while (byteCount > length)
-                    {
-                        str = str.Substring(0, str.Length - 1);
-                        byteCount = GetStringLengthByGBK(str);
-                    }
-                    return str + "...";
-                }
-                else
-                    return str;
-            }
-            catch (Exception e)
-            {
-                LogUtils.Log(e.ToString());
-                return str;
-            }
-        }
-
-        /// <summary> 采用GBK编码的字节结构计算字符串的字节长度 中文2个字节 英文及符号1个字节 </summary>
-        public static int GetStringLengthByGBK(string str)
-        {
-            if (string.IsNullOrEmpty(str))
-                return 0;
-            int byteCount = Encoding.UTF8.GetByteCount(str);
-            return (byteCount - str.Length) / 2 + str.Length;
-        }
-
-        /// <summary>
-        /// 返回两个向量的夹角
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
-        public static float VectorAngle(Vector2 from, Vector2 to)
-        {
-            float angle;
-            Vector3 cross = Vector3.Cross(from, to);
-            angle = Vector2.Angle(from, to);
-            return cross.z > 0 ? -angle : angle;
-        }
-
-        /// <summary>
-        /// 网络是否出于连接状态
-        /// </summary>
-        /// <returns></returns>
-        public static bool IsNetworkConnecting()
-        {
-            return Application.internetReachability != NetworkReachability.NotReachable;
-        }
-
+        #region ...本机设备信息获取
         /// <summary>
         /// 获取设备的mac地址
         /// </summary>
@@ -790,6 +449,70 @@ namespace UGCF.Utils
 #else
             return null;
 #endif
+        }
+        #endregion
+
+        #region ...延迟执行函数
+        /// <summary> 延迟一段时间执行目标函数，基于真实时间 </summary>
+        public static Coroutine InvokeForRealTime(this MonoBehaviour mono, UnityAction ua, float delayTime)
+        {
+            return mono.StartCoroutine(InvokeForRealTimeAc(delayTime, ua));
+        }
+
+        private static IEnumerator InvokeForRealTimeAc(float delayTime, UnityAction ua)
+        {
+            if (delayTime > 0)
+                yield return WaitForUtils.WaitForSecondsRealtime(delayTime);
+            ua?.Invoke();
+        }
+
+        /// <summary> 延迟一段时间执行目标函数，基于非真实时间 </summary>
+        public static Coroutine InvokeForUnrealTime(this MonoBehaviour mono, UnityAction ua, float delayTime)
+        {
+            return mono.StartCoroutine(InvokeForUnrealTimeAc(delayTime, ua));
+        }
+
+        private static IEnumerator InvokeForUnrealTimeAc(float delayTime, UnityAction ua)
+        {
+            if (delayTime > 0)
+                yield return WaitForUtils.WaitForSecond(delayTime);
+            ua?.Invoke();
+        }
+        #endregion
+
+        /// <summary>获取当前平台类型字符串</summary>
+        public static string GetCurrentPlatform()
+        {
+#if UNITY_ANDROID
+            return "Android";
+#elif UNITY_IOS
+            return "iOS";
+#else
+            return string.Empty;
+#endif
+        }
+
+        /// <summary>字节转兆,B->MB</summary>
+        public static float GetMillionFromByte(long bytes)
+        {
+            return bytes / 1048576f;
+        }
+
+        /// <summary>获取枚举成员总数</summary>
+        public static int GetEnumCount<T>()
+        {
+            if (typeof(T).IsEnum)
+                return Enum.GetNames(typeof(T)).GetLength(0);
+            return 0;
+        }
+
+        /// <summary>
+        /// 网络是否出于连接状态
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsNetworkConnecting()
+        {
+            return Application.internetReachability != NetworkReachability.NotReachable;
         }
     }
 }

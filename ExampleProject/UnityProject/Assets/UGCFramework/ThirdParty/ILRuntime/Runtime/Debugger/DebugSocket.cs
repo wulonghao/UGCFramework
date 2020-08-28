@@ -142,7 +142,7 @@ namespace ILRuntime.Runtime.Debugger
                     if (OnReciveMessage != null)
                         OnReciveMessage((DebugMessageType)type, msgBuff);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
                 }
@@ -232,10 +232,7 @@ namespace ILRuntime.Runtime.Debugger
             _socket.Close();
             _socket = null;
             _ready = false;
-            if (OnClose != null)
-            {
-                OnClose();
-            }
+            OnClose?.Invoke();
         }
     }
 }

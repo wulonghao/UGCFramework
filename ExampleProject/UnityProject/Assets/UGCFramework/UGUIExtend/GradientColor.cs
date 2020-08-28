@@ -4,27 +4,38 @@ using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
-    [AddComponentMenu("UI/Effects/Gradient Color"), RequireComponent(typeof(Graphic))]
+    [AddComponentMenu("UI/Effects/Gradient Color")]
+    [RequireComponent(typeof(Graphic))]
 #if USE_BASE_VERTEX_EFFECT
     public class GradientColor : BaseVertexEffect
 #else
     public class GradientColor : BaseMeshEffect
 #endif
     {
-        public enum DIRECTION
-        {
-            Vertical,
-            Horizontal,
-            Both,
-        }
+        [SerializeField] DIRECTION direction = DIRECTION.Both;
+        public DIRECTION Direction { get => direction; set => direction = value; }
 
-        public DIRECTION direction = DIRECTION.Both;
-        public Color colorTop = Color.white;
-        public Color colorBottom = Color.black;
-        public Color colorLeft = Color.red;
-        public Color colorRight = Color.blue;
-        public bool isBeAffectedBySelfColor;//是否受自身Griphic组件颜色影响
-        public bool isGradientAlpha = true;//是否渐变透明度
+        [SerializeField] Color colorTop = Color.white;
+        public Color ColorTop { get => colorTop; set => colorTop = value; }
+
+        [SerializeField] Color colorBottom = Color.black;
+        public Color ColorBottom { get => colorBottom; set => colorBottom = value; }
+
+        [SerializeField] Color colorLeft = Color.red;
+        public Color ColorLeft { get => colorLeft; set => colorLeft = value; }
+
+        [SerializeField] Color colorRight = Color.blue;
+        public Color ColorRight { get => colorRight; set => colorRight = value; }
+
+        [SerializeField]
+        [Tooltip("是否受自身Griphic组件颜色影响")]
+        bool isBeAffectedBySelfColor;
+        public bool IsBeAffectedBySelfColor { get => isBeAffectedBySelfColor; set => isBeAffectedBySelfColor = value; }
+
+        [SerializeField]
+        [Tooltip("是否启用透明效果")]
+        bool isGradientAlpha = true;
+        public bool IsGradientAlpha { get => isGradientAlpha; set => isGradientAlpha = value; }
 
 #if USE_BASE_VERTEX_EFFECT
         public override void ModifyVertices (List<UIVertex> vList)
@@ -73,11 +84,11 @@ namespace UGCF.UGUIExtend
                 tempVertex = vList[i];
                 byte orgAlpha = tempVertex.color.a;
                 Color colorOrg = tempVertex.color;
-                if (!isBeAffectedBySelfColor)
+                if (!IsBeAffectedBySelfColor)
                     colorOrg = Color.white;
-                Color colorV = Color.Lerp(colorBottom, colorTop, (tempVertex.position.y - bottomY) / height);
-                Color colorH = Color.Lerp(colorLeft, colorRight, (tempVertex.position.x - bottomX) / width);
-                switch (direction)
+                Color colorV = Color.Lerp(ColorBottom, ColorTop, (tempVertex.position.y - bottomY) / height);
+                Color colorH = Color.Lerp(ColorLeft, ColorRight, (tempVertex.position.x - bottomX) / width);
+                switch (Direction)
                 {
                     case DIRECTION.Both:
                         tempVertex.color = colorOrg * colorV * colorH;
@@ -89,7 +100,7 @@ namespace UGCF.UGUIExtend
                         tempVertex.color = colorOrg * colorH;
                         break;
                 }
-                if (!isGradientAlpha) tempVertex.color.a = orgAlpha;
+                if (!IsGradientAlpha) tempVertex.color.a = orgAlpha;
                 vList[i] = tempVertex;
             }
         }
@@ -103,6 +114,13 @@ namespace UGCF.UGUIExtend
             {
                 graphic.SetVerticesDirty();
             }
+        }
+
+        public enum DIRECTION
+        {
+            Vertical,
+            Horizontal,
+            Both,
         }
     }
 }

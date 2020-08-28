@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using UGCF.Utils;
@@ -22,8 +21,7 @@ namespace UGCF.Manager
                 return instance;
             }
         }
-        // 当前Page
-        [HideInInspector] public Page currentPage;
+        public Page CurrentPage { get; set; }
         // Page历史，用于返回时检索
         private static List<string> pageHistory = new List<string>();
         private const string DefaultPageDirectoryPath = "UIResources/Page";
@@ -70,7 +68,7 @@ namespace UGCF.Manager
             {
                 page.transform.SetAsFirstSibling();
                 page.Open();
-                if (currentPage != page)
+                if (CurrentPage != page)
                     AudioManager.Instance.PlayMusic(Path.GetFileNameWithoutExtension(pagePath), DefaultPageDirectoryPath + "/" + pagePath);
             }
             return page;
@@ -82,8 +80,8 @@ namespace UGCF.Manager
         /// <param name="newPageName"></param>
         void DestroyCurrentPage(string newPageName)
         {
-            if (currentPage != null)
-                DestroyPage(currentPage);
+            if (CurrentPage != null)
+                DestroyPage(CurrentPage);
             RefreshHistory(newPageName);
         }
 
@@ -94,8 +92,8 @@ namespace UGCF.Manager
         void DestroyPage(Page page)
         {
             page.Close();
-            if (currentPage.GetSpriteAB() != null)
-                currentPage.GetSpriteAB().Unload(true);
+            if (CurrentPage.GetSpriteAB() != null)
+                CurrentPage.GetSpriteAB().Unload(true);
             AudioManager.Instance.ClearAllTempAudio();
             DestroyImmediate(page.gameObject);
             Resources.UnloadUnusedAssets();
@@ -111,8 +109,8 @@ namespace UGCF.Manager
             if (string.IsNullOrEmpty(pagePath))
                 return null;
             string pageName = Path.GetFileNameWithoutExtension(pagePath);
-            if (currentPage != null && pageName == currentPage.name)
-                return currentPage;
+            if (CurrentPage != null && pageName == CurrentPage.name)
+                return CurrentPage;
 
             Page page = GetComponentInChildren<Page>(true);
             if (page == null || page.name != pagePath)
@@ -130,13 +128,13 @@ namespace UGCF.Manager
                         return null;
                     }
                 }
-                MiscUtils.AttachAndReset(go, transform);
+                UIUtils.AttachAndReset(go, transform);
                 page = go.GetComponent<Page>();
                 if (page)
                 {
                     page.InitData(ab, path);
                     DestroyCurrentPage(page.name);
-                    currentPage = page;
+                    CurrentPage = page;
                     page.Init();
                 }
                 else

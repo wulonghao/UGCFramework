@@ -1,10 +1,6 @@
 ﻿using LitJson;
 using System.IO;
 using UnityEngine;
-using System.Runtime.InteropServices;
-using protocol;
-using System.Collections;
-using System;
 using System.Collections.Generic;
 using UnityEngine.SignInWithApple;
 using UGCF.Utils;
@@ -28,25 +24,25 @@ namespace UGCF.Manager
                 return instance;
             }
         }
-        public bool isRegisterToWechat = false;
-        public bool isRegisterToQQ = false;
-        public AndroidJavaClass tool;
-        public AndroidJavaObject currentActivity;
+        public bool IsRegisterToWechat { get; set; }
+        public bool IsRegisterToQQ { get; set; }
+        public AndroidJavaClass Tool { get; set; }
+        public AndroidJavaObject CurrentActivity { get; set; }
 
         void Init()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-        currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        tool = new AndroidJavaClass(ConstantUtils.BundleIdentifier + ".Tool");
+            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            tool = new AndroidJavaClass(ConstantUtils.BundleIdentifier + ".Tool");
 #endif
             RegisterAppWechat();
             RegisterAppQQ();
         }
 
         #region ...wechat
-        public const string WXAppID = "你的微信APPID";
-        const string WXAppSecret = "你的微信AppSecret";
+        private const string WXAppID = "你的微信APPID";
+        private const string WXAppSecret = "你的微信AppSecret";
 
 #if UNITY_IOS
     [DllImport("__Internal")]
@@ -56,18 +52,18 @@ namespace UGCF.Manager
     [DllImport("__Internal")]
     static extern void OpenWechat_iOS(string state);
 #elif UNITY_ANDROID
-        static string WechatToolStr = ConstantUtils.BundleIdentifier + ".wechat.WechatTool";
-        static string WechatLoginStr = ConstantUtils.BundleIdentifier + ".wechat.WechatLogin";
-        static string WechatPayStr = ConstantUtils.BundleIdentifier + ".wechat.WechatPay";
+        private static string WechatToolStr = ConstantUtils.BundleIdentifier + ".wechat.WechatTool";
+        private static string WechatLoginStr = ConstantUtils.BundleIdentifier + ".wechat.WechatLogin";
+        private static string WechatPayStr = ConstantUtils.BundleIdentifier + ".wechat.WechatPay";
 #endif
 
         /// <summary> 注册微信 </summary>
         public bool RegisterAppWechat()
         {
-            if (!isRegisterToWechat)
+            if (!IsRegisterToWechat)
             {
 #if UNITY_EDITOR
-                isRegisterToWechat = true;
+                IsRegisterToWechat = true;
 #elif UNITY_IOS
             RegisterApp_iOS(WXAppID, WXAppSecret);
 #elif UNITY_ANDROID
@@ -75,13 +71,13 @@ namespace UGCF.Manager
             wechatTool.CallStatic<bool>("RegisterToWechat", currentActivity, WXAppID, WXAppSecret);
 #endif
             }
-            return isRegisterToWechat;
+            return IsRegisterToWechat;
         }
 
         /// <summary> 是否安装了微信 </summary>
         public bool IsWechatInstalled()
         {
-            bool isRegister = isRegisterToWechat;
+            bool isRegister = IsRegisterToWechat;
 #if UNITY_EDITOR
             isRegister = false;
 #elif UNITY_IOS
@@ -180,7 +176,7 @@ namespace UGCF.Manager
         #endregion
 
         #region ...QQ
-        public const string QQAppID = "你的QQAppID";
+        private const string QQAppID = "你的QQAppID";
 
 #if UNITY_IOS
     [DllImport("__Internal")]
@@ -190,13 +186,13 @@ namespace UGCF.Manager
     [DllImport("__Internal")]
     static extern void LoginByQQ();
 #elif UNITY_ANDROID
-        static string QQToolStr = ConstantUtils.BundleIdentifier + ".qq.QQTool";
-        static string QQLoginStr = ConstantUtils.BundleIdentifier + ".qq.QQLogin";
+        private static string QQToolStr = ConstantUtils.BundleIdentifier + ".qq.QQTool";
+        private static string QQLoginStr = ConstantUtils.BundleIdentifier + ".qq.QQLogin";
 #endif
 
         public bool IsQQInstalled()
         {
-            bool isRegister = isRegisterToQQ;
+            bool isRegister = IsRegisterToQQ;
 #if UNITY_EDITOR
             isRegister = false;
 #else
@@ -213,7 +209,7 @@ namespace UGCF.Manager
         /// <summary> 注册QQ </summary>
         public void RegisterAppQQ()
         {
-            if (!isRegisterToQQ)
+            if (!IsRegisterToQQ)
             {
 #if UNITY_EDITOR
 
@@ -223,13 +219,13 @@ namespace UGCF.Manager
             AndroidJavaClass qqTool = new AndroidJavaClass(QQToolStr);
             qqTool.CallStatic<bool>("RegisterToQQ", currentActivity, QQAppID);
 #endif
-                isRegisterToQQ = true;
+                IsRegisterToQQ = true;
             }
         }
 
         public void QQLogin()
         {
-            if (!isRegisterToQQ)
+            if (!IsRegisterToQQ)
                 return;
 #if UNITY_EDITOR
 
@@ -261,7 +257,7 @@ namespace UGCF.Manager
         #region ...alipay
 
 #if UNITY_ANDROID
-        public const string AlipayAppID = "你的AlipayAppID";
+        private const string AlipayAppID = "你的AlipayAppID";
         // <summary> 发起支付宝支付请求 </summary>
         public void SendAliPay(string payCode)
         {
@@ -281,7 +277,7 @@ namespace UGCF.Manager
         #endregion
 
         #region ...本机号码一键登录
-        AndroidJavaObject oneClickLogin;
+        private AndroidJavaObject oneClickLogin;
 
         /// <summary>
         /// 初始化一键登录界面

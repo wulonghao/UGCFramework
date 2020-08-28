@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
-using System;
 using System.Collections.Generic;
 using UGCF.Utils;
 
@@ -11,40 +9,8 @@ namespace UGCF.UGUIExtend
     [RequireComponent(typeof(Text))]
     public class TextSpacing : BaseMeshEffect
     {
-        #region Struct
-
-        public enum HorizontalAligmentType
-        {
-            Left,
-            Center,
-            Right
-        }
-
-        public class Line
-        {
-            // 起点索引
-            public int StartVertexIndex { get { return _startVertexIndex; } }
-            private int _startVertexIndex = 0;
-
-            // 终点索引
-            public int EndVertexIndex { get { return _endVertexIndex; } }
-            private int _endVertexIndex = 0;
-
-            // 该行占的点数目
-            public int VertexCount { get { return _vertexCount; } }
-            private int _vertexCount = 0;
-
-            public Line(int startVertexIndex, int length)
-            {
-                _startVertexIndex = startVertexIndex;
-                _endVertexIndex = length * 6 - 1 + startVertexIndex;
-                _vertexCount = length * 6;
-            }
-        }
-
-        #endregion
-
-        public float Spacing = 1f;
+        [SerializeField] float spacing = 1f;
+        public float Spacing { get => spacing; set => spacing = value; }
 
         public override void ModifyMesh(VertexHelper vh)
         {
@@ -147,6 +113,32 @@ namespace UGCF.UGUIExtend
                         vh.SetUIVertex(vt, (j / 6) * 4 + j % 6 - 1);
                     }
                 }
+            }
+        }
+
+        public enum HorizontalAligmentType
+        {
+            Left,
+            Center,
+            Right
+        }
+
+        public class Line
+        {
+            // 起点索引
+            public int StartVertexIndex { get; }
+
+            // 终点索引
+            public int EndVertexIndex { get; }
+
+            // 该行占的点数目
+            public int VertexCount { get; }
+
+            public Line(int startVertexIndex, int length)
+            {
+                StartVertexIndex = startVertexIndex;
+                EndVertexIndex = length * 6 - 1 + startVertexIndex;
+                VertexCount = length * 6;
             }
         }
     }

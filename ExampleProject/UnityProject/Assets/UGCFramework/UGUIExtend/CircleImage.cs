@@ -1,15 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Sprites;
 using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
+    [AddComponentMenu("UI/CircleImage")]
     public class CircleImage : Image
     {
-        public int segements = 40;
-        public float fillPercent = 1;
+        [SerializeField] [Tooltip("组成圆的三角面个数")] int segements = 40;
+        public int Segements { get => segements; set => segements = value; }
+
+        [SerializeField] [Tooltip("填充系数")] float fillPercent = 1;
+        public float FillPercent { get => fillPercent; set => fillPercent = value; }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
@@ -18,8 +20,8 @@ namespace UGCF.UGUIExtend
             float tw = rectTransform.rect.width;
             float th = rectTransform.rect.height;
             float outerRadius = 0.5f * Mathf.Min(tw, th);
-            float degreeDelta = 2 * Mathf.PI / segements;
-            int curSegements = (int)(segements * fillPercent);
+            float degreeDelta = 2 * Mathf.PI / Segements;
+            int curSegements = (int)(Segements * FillPercent);
 
             Vector2 pivotVector = new Vector2(tw * (0.5f - rectTransform.pivot.x), th * (0.5f - rectTransform.pivot.y));
             Vector4 uv = overrideSprite != null ? DataUtility.GetOuterUV(overrideSprite) : Vector4.zero;
@@ -62,7 +64,7 @@ namespace UGCF.UGUIExtend
             {
                 vh.AddTriangle(vIdx, 0, vIdx + 1);
             }
-            if (fillPercent == 1)
+            if (FillPercent == 1)
             {
                 //首尾顶点相连
                 vh.AddTriangle(verticeCount - 1, 0, 1);

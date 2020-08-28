@@ -6,7 +6,7 @@ using System.Reflection;
 using System;
 using System.Text;
 
-namespace UGCF.Editor
+namespace UGCF.UGCFEditor
 {
     public partial class ReportAsset
     {

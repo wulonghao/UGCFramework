@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.Networking;

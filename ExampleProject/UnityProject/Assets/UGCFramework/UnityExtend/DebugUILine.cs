@@ -7,7 +7,8 @@ namespace UGCF.UnityExtend
     public class DebugUILine : MonoBehaviour
     {
 #if UNITY_EDITOR
-        static Vector3[] fourCorners = new Vector3[4];
+        Vector3[] fourCorners = new Vector3[4];
+
         void OnDrawGizmos()
         {
             foreach (MaskableGraphic g in FindObjectsOfType<MaskableGraphic>())

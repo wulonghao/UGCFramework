@@ -3,17 +3,13 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using System.Collections;
 using System;
-using System.Text;
-using System.IO;
-using UGCF.UnityExtend;
-using UGCF.Manager;
 
 namespace UGCF.Utils
 {
-    public class UIUtils
+    public static class UIUtils
     {
         /// <summary> 创建指定属性的物体 </summary>
-        public static GameObject CreateGameObject(Transform parent, string name = null, Vector3 position = default(Vector3), Vector3 angle = default(Vector3))
+        public static GameObject CreateGameObject(Transform parent, string name = null, Vector3 position = default, Vector3 angle = default)
         {
             GameObject go = new GameObject();
             if (name == null)
@@ -27,7 +23,7 @@ namespace UGCF.Utils
         }
 
         /// <summary> 创建指定属性和组件的物体 </summary>
-        public static T CreateGameObject<T>(Transform parent, string name = null, Vector3 position = default(Vector3), Vector3 angle = default(Vector3)) where T : MonoBehaviour
+        public static T CreateGameObject<T>(Transform parent, string name = null, Vector3 position = default, Vector3 angle = default) where T : MonoBehaviour
         {
             T t = new GameObject().AddComponent<T>();
             if (name == null)
@@ -70,18 +66,111 @@ namespace UGCF.Utils
             }
         }
 
-        /// <summary> 给指定物体指定路径下的按钮添加点击事件 </summary>
-        public static void RegisterButton(string buttonPath, UnityAction action, Transform parent)
+        /// <summary> 双线性插值法缩放图片，等比缩放 </summary>
+        public static Texture2D ScaleTextureBilinear(Texture2D originalTexture, float scaleFactor)
         {
-            Transform child = parent.Find(buttonPath);
-            if (child)
-                UGUIEventListener.Get(child.gameObject).onClick = delegate { action(); };
+            Texture2D newTexture = new Texture2D(Mathf.CeilToInt(originalTexture.width * scaleFactor), Mathf.CeilToInt(originalTexture.height * scaleFactor));
+            float scale = 1.0f / scaleFactor;
+            int maxX = originalTexture.width - 1;
+            int maxY = originalTexture.height - 1;
+            for (int y = 0; y < newTexture.height; y++)
+            {
+                for (int x = 0; x < newTexture.width; x++)
+                {
+                    float targetX = x * scale;
+                    float targetY = y * scale;
+                    int x1 = Mathf.Min(maxX, Mathf.FloorToInt(targetX));
+                    int y1 = Mathf.Min(maxY, Mathf.FloorToInt(targetY));
+                    int x2 = Mathf.Min(maxX, x1 + 1);
+                    int y2 = Mathf.Min(maxY, y1 + 1);
+
+                    float u = targetX - x1;
+                    float v = targetY - y1;
+                    float w1 = (1 - u) * (1 - v);
+                    float w2 = u * (1 - v);
+                    float w3 = (1 - u) * v;
+                    float w4 = u * v;
+                    Color color1 = originalTexture.GetPixel(x1, y1);
+                    Color color2 = originalTexture.GetPixel(x2, y1);
+                    Color color3 = originalTexture.GetPixel(x1, y2);
+                    Color color4 = originalTexture.GetPixel(x2, y2);
+                    Color color = new Color(Mathf.Clamp01(color1.r * w1 + color2.r * w2 + color3.r * w3 + color4.r * w4),
+                        Mathf.Clamp01(color1.g * w1 + color2.g * w2 + color3.g * w3 + color4.g * w4),
+                        Mathf.Clamp01(color1.b * w1 + color2.b * w2 + color3.b * w3 + color4.b * w4),
+                        Mathf.Clamp01(color1.a * w1 + color2.a * w2 + color3.a * w3 + color4.a * w4)
+                    );
+                    newTexture.SetPixel(x, y, color);
+
+                }
+            }
+            newTexture.Apply();
+            return newTexture;
         }
 
-        /// <summary> 得到鼠标相对Canvas中心的位置 </summary>
+        /// <summary> 双线性插值法缩放图片为指定尺寸 </summary>
+        public static Texture2D SizeTextureBilinear(Texture2D originalTexture, Vector2 size)
+        {
+            Texture2D newTexture = new Texture2D(Mathf.CeilToInt(size.x), Mathf.CeilToInt(size.y));
+            float scaleX = originalTexture.width / size.x;
+            float scaleY = originalTexture.height / size.y;
+            int maxX = originalTexture.width - 1;
+            int maxY = originalTexture.height - 1;
+            for (int y = 0; y < newTexture.height; y++)
+            {
+                for (int x = 0; x < newTexture.width; x++)
+                {
+                    float targetX = x * scaleX;
+                    float targetY = y * scaleY;
+                    int x1 = Mathf.Min(maxX, Mathf.FloorToInt(targetX));
+                    int y1 = Mathf.Min(maxY, Mathf.FloorToInt(targetY));
+                    int x2 = Mathf.Min(maxX, x1 + 1);
+                    int y2 = Mathf.Min(maxY, y1 + 1);
+
+                    float u = targetX - x1;
+                    float v = targetY - y1;
+                    float w1 = (1 - u) * (1 - v);
+                    float w2 = u * (1 - v);
+                    float w3 = (1 - u) * v;
+                    float w4 = u * v;
+                    Color color1 = originalTexture.GetPixel(x1, y1);
+                    Color color2 = originalTexture.GetPixel(x2, y1);
+                    Color color3 = originalTexture.GetPixel(x1, y2);
+                    Color color4 = originalTexture.GetPixel(x2, y2);
+                    Color color = new Color(Mathf.Clamp01(color1.r * w1 + color2.r * w2 + color3.r * w3 + color4.r * w4),
+                        Mathf.Clamp01(color1.g * w1 + color2.g * w2 + color3.g * w3 + color4.g * w4),
+                        Mathf.Clamp01(color1.b * w1 + color2.b * w2 + color3.b * w3 + color4.b * w4),
+                        Mathf.Clamp01(color1.a * w1 + color2.a * w2 + color3.a * w3 + color4.a * w4)
+                    );
+                    newTexture.SetPixel(x, y, color);
+
+                }
+            }
+            newTexture.Apply();
+            return newTexture;
+        }
+
+        /// <summary>获取摄像机视图，显示在指定RawImage组件中</summary>
+        public static void GetCameraRawImage(ref RawImage img, Camera ca, int depthBuffer = 24, RenderTextureFormat format = RenderTextureFormat.ARGB32)
+        {
+            if (img && ca)
+            {
+                Rect rect = img.GetComponent<RectTransform>().rect;
+                RenderTexture rt = RenderTexture.GetTemporary((int)rect.width, (int)rect.height, depthBuffer, format);
+                rt.useMipMap = false;
+                rt.filterMode = FilterMode.Bilinear;
+                rt.antiAliasing = 4;
+                rt.Create();
+                ca.targetTexture = rt;
+                img.texture = rt;
+            }
+            else
+                LogUtils.Log("RowImage或Camera不存在！");
+        }
+
+        /// <summary> 得到鼠标/触点相对Canvas中心的位置 </summary>
         public static Vector2 GetMouseCenterPosInCanvas()
         {
-            Vector2 mousePosition = Input.mousePosition;
+            Vector2 mousePosition = InputUtils.GetTouchPosition();
 
             Vector2 middlePos = new Vector2(Screen.width / 2, Screen.height / 2);
 
@@ -92,15 +181,13 @@ namespace UGCF.Utils
         /// <summary> 获取当前Canvas的Rect值,通过屏幕坐标转化 </summary>
         public static Rect GetRectInCanvas(Canvas canvas, RectTransform rectTrans)
         {
-            Vector2 pos;
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform,
-                             rectTrans.position, canvas.worldCamera, out pos))
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, rectTrans.position, canvas.worldCamera, out Vector2 pos))
             {
                 var rect = new Rect(new Vector2(pos.x - rectTrans.pivot.x * rectTrans.rect.width, pos.y - rectTrans.pivot.y * rectTrans.rect.height), rectTrans.rect.size);
                 return rect;
             }
 
-            throw new System.Exception("Error! Get RectTransform rect in canvas fail.");
+            throw new Exception("Error! Get RectTransform rect in canvas fail.");
         }
 
         /// <summary> 销毁目标物体的所有子物体 </summary>
@@ -125,12 +212,56 @@ namespace UGCF.Utils
                 tf.GetChild(i).gameObject.layer = layer;
         }
 
-        /// <summary> 设置Canvas的GraphicRaycaster的状态 </summary>
-        public static void SetCanvasRaycaster(Transform canvasTransform, bool isEnable)
+        /// <summary> Texture转Sprite</summary>
+        public static Sprite TextureToSprite(Texture texture)
         {
-            GraphicRaycaster gr = canvasTransform.GetComponent<GraphicRaycaster>();
-            if (gr)
-                gr.enabled = isEnable;
+            Sprite sprite = null;
+            if (texture)
+            {
+                Texture2D t2d = (Texture2D)texture;
+                sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+            }
+            return sprite;
+        }
+
+        /// <summary> Texture旋转</summary>
+        public static Texture2D RotateTexture(Texture2D texture, float eulerAngles)
+        {
+            int x;
+            int y;
+            int i;
+            int j;
+            float phi = eulerAngles / (180 / Mathf.PI);
+            float sn = Mathf.Sin(phi);
+            float cs = Mathf.Cos(phi);
+            Color32[] arr = texture.GetPixels32();
+            Color32[] arr2 = new Color32[arr.Length];
+            int W = texture.width;
+            int H = texture.height;
+            int xc = W / 2;
+            int yc = H / 2;
+
+            for (j = 0; j < H; j++)
+            {
+                for (i = 0; i < W; i++)
+                {
+                    arr2[j * W + i] = new Color32(0, 0, 0, 0);
+
+                    x = (int)(cs * (i - xc) + sn * (j - yc) + xc);
+                    y = (int)(-sn * (i - xc) + cs * (j - yc) + yc);
+
+                    if ((x > -1) && (x < W) && (y > -1) && (y < H))
+                    {
+                        arr2[j * W + i] = arr[y * W + x];
+                    }
+                }
+            }
+
+            Texture2D newImg = new Texture2D(W, H);
+            newImg.SetPixels32(arr2);
+            newImg.Apply();
+
+            return newImg;
         }
 
         /// <summary> 在指定物体上添加指定图片 </summary>
@@ -153,103 +284,18 @@ namespace UGCF.Utils
             return new Vector2(Mathf.Cos(radian), Mathf.Sin(radian)).normalized;
         }
 
-        /// <summary> 延迟销毁或隐藏目标物体 </summary>
-        public static void DelayDesOrDisObject(GameObject target, float delayTime, bool isDestroy = true, bool isFadeOut = false, UnityAction ua = null)
+        /// <summary>
+        /// 返回两个向量的夹角
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public static float VectorAngle(Vector2 from, Vector2 to)
         {
-            UGCFMain.Instance.StartCoroutine(DelayDesOrDisObjectAs(target, delayTime, isDestroy, isFadeOut, ua));
-        }
-
-        private static IEnumerator DelayDesOrDisObjectAs(GameObject target, float delayTime, bool isDestroy, bool isFadeOut, UnityAction ua)
-        {
-            bool hasCG = true;
-            if (isFadeOut)
-            {
-                CanvasGroup cg = target.GetComponent<CanvasGroup>();
-                if (!cg)
-                {
-                    cg = target.AddComponent<CanvasGroup>();
-                    hasCG = false;
-                }
-                cg.blocksRaycasts = false;
-                cg.interactable = false;
-                float speed = 1 / delayTime;
-                while (cg && cg.alpha > 0)
-                {
-                    cg.alpha -= speed * Time.deltaTime;
-                    yield return WaitForUtils.WaitFrame;
-                }
-            }
-            else
-                yield return WaitForUtils.WaitForSecondsRealtime(delayTime);
-            if (target)
-                if (isDestroy)
-                {
-                    GameObject.Destroy(target);
-                }
-                else
-                {
-                    target.SetActive(false);
-                    if (isFadeOut)
-                    {
-                        CanvasGroup cg = target.GetComponent<CanvasGroup>();
-                        cg.alpha = 1;
-                        if (!hasCG)
-                            GameObject.Destroy(cg);
-                    }
-                }
-            if (ua != null) ua();
-        }
-
-        /// <summary> 延迟目标时间执行目标函数 </summary>
-        public static Coroutine DelayExecuteAction(float delayTime, UnityAction ua)
-        {
-            return UGCFMain.Instance.StartCoroutine(DelayExecuteActionAc(delayTime, ua));
-        }
-
-        private static IEnumerator DelayExecuteActionAc(float delayTime, UnityAction ua)
-        {
-            if (delayTime > 0)
-                yield return WaitForUtils.WaitForSecondsRealtime(delayTime);
-            if (ua != null)
-            {
-                try { ua(); } catch (Exception e) { LogUtils.Log(e.ToString()); }
-            }
-        }
-
-        /// <summary> 时间转分秒结构 MM:SS </summary>
-        public static string GetTimeStrToMS(int time)
-        {
-            int minute1 = time / 600;
-            time -= minute1 * 600;
-
-            int minute2 = time / 60;
-            time -= minute2 * 60;
-
-            int second1 = time / 10;
-            time -= second1 * 10;
-
-            return string.Format("{0}{1}:{2}{3}", minute1, minute2, second1, time);
-        }
-
-        /// <summary> 时间转时分秒结构 HH:MM:SS </summary>
-        public static string GetTimeStrToHMS(int time)
-        {
-            int hour1 = time / 36000;
-            time -= hour1 * 36000;
-
-            int hour2 = time / 3600;
-            time -= hour2 * 3600;
-
-            int minute1 = time / 600;
-            time -= minute1 * 600;
-
-            int minute2 = time / 60;
-            time -= minute2 * 60;
-
-            int second1 = time / 10;
-            time -= second1 * 10;
-
-            return string.Format("{0}{1}:{2}{3}:{4}{5}", hour1, hour2, minute1, minute2, second1, time);
+            float angle;
+            Vector3 cross = Vector3.Cross(from, to);
+            angle = Vector2.Angle(from, to);
+            return cross.z > 0 ? -angle : angle;
         }
 
         /// <summary>
@@ -258,15 +304,14 @@ namespace UGCF.Utils
         /// <param name="ua">截图完毕后执行的函数</param>
         /// <param name="rect">截图的rect信息,不传则默认全屏</param>
         /// <param name="dest">截图的偏移量，不传则为(0,0)</param>
-        public static void PrintScreenNextFrame(UnityAction<Texture2D> ua = null, Rect rect = default(Rect), Vector2 dest = default(Vector2))
+        public static void PrintScreenNextFrame(this MonoBehaviour mono, UnityAction<Texture2D> ua = null, Rect rect = default, Vector2 dest = default)
         {
             if (rect == default) rect = new Rect(0, 0, Screen.width, Screen.height);
-            UGCFMain.Instance.StartCoroutine(PrintScreenAc(rect, ua, dest));
+            mono.StartCoroutine(PrintScreenAc(rect, ua, dest));
         }
 
         private static IEnumerator PrintScreenAc(Rect rect, UnityAction<Texture2D> ua, Vector2 dest)
         {
-            GameObject.Destroy(TipManager.Instance.gameObject);
             Texture2D texture = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGB24, false);
             yield return WaitForUtils.WaitFrame;
             texture.ReadPixels(rect, (int)dest.x, (int)dest.y);
@@ -285,42 +330,6 @@ namespace UGCF.Utils
             texture.ReadPixels(rect, (int)dest.x, (int)dest.y);
             texture.Apply();
             return texture;
-        }
-
-        /// <summary>
-        /// 卸载Canvas
-        /// </summary>
-        public static void DetachCanvas(GameObject _obj)
-        {
-            Canvas _Canvas = _obj.GetComponent<Canvas>();
-            if (_Canvas != null)
-            {
-                GameObject.Destroy(_Canvas);
-            }
-            GraphicRaycaster _Raycaster = _obj.GetComponent<GraphicRaycaster>();
-            if (_Raycaster != null)
-            {
-                GameObject.Destroy(_Raycaster);
-            }
-        }
-
-        /// <summary>
-        /// 挂在Canvas
-        /// </summary>
-        public static void AttachCanvas(GameObject _obj, int _layer)
-        {
-            Canvas _Canvas = _obj.GetComponent<Canvas>();
-            if (_Canvas == null)
-            {
-                _Canvas = _obj.AddComponent<Canvas>();
-            }
-            _Canvas.overrideSorting = true;
-            _Canvas.sortingOrder = _layer;
-            GraphicRaycaster _Raycaster = _obj.GetComponent<GraphicRaycaster>();
-            if (_Raycaster == null)
-            {
-                _Raycaster = _obj.AddComponent<GraphicRaycaster>();
-            }
         }
     }
 }

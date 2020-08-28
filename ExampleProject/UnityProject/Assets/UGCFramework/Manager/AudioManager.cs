@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using LitJson;
 using System;
-using System.Linq;
 using UGCF.Utils;
 
 namespace UGCF.Manager
@@ -151,7 +149,7 @@ namespace UGCF.Manager
             try
             {
                 if (string.IsNullOrEmpty(directoryPath))
-                    directoryPath = PageManager.Instance.currentPage.GetType().ToString();
+                    directoryPath = PageManager.Instance.CurrentPage.GetType().ToString();
                 AudioSource ase;
                 if (soundClipDict.ContainsKey(soundName))
                     ase = soundASDict[soundName];
@@ -172,7 +170,7 @@ namespace UGCF.Manager
             }
             catch (Exception e)
             {
-                LogUtils.LogError("播放音效失败：" + soundName);
+                LogUtils.LogError("播放音效失败：" + soundName + "\n"+ e.ToString());
                 return null;
             }
         }
@@ -209,7 +207,7 @@ namespace UGCF.Manager
             }
             catch (Exception e)
             {
-                LogUtils.LogError("播放音效失败：" + soundName);
+                LogUtils.LogError("播放音效失败：" + soundName + "\n" + e.ToString());
                 return;
             }
         }
@@ -231,7 +229,7 @@ namespace UGCF.Manager
             }
             catch (Exception e)
             {
-                LogUtils.LogError("播放音乐失败：" + musicName);
+                LogUtils.LogError("播放音乐失败：" + musicName + "\n" + e.ToString());
                 return null;
             }
         }

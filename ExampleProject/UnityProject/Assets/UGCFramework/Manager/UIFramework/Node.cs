@@ -1,7 +1,4 @@
 ﻿using LitJson;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UGCF.HotUpdate;
 using UGCF.UnityExtend;
 using UGCF.Utils;
@@ -12,30 +9,40 @@ namespace UGCF.Manager
 {
     public partial class Node : HotFixBaseInheritMono
     {
+        #region ...字段
         /// <summary> 受适配影响的页面主体 </summary>
-        public RectTransform main;
+        [SerializeField] private RectTransform main;
         /// <summary> 播放动画的主体 </summary>
-        public UISwitchAnimation animationMian;
+        [SerializeField] private UISwitchAnimation animationMian;
         /// <summary> 关闭按钮 </summary>
-        public GameObject btnClose;
+        [SerializeField] private GameObject btnClose;
         /// <summary> 蒙层 </summary>
-        public GameObject maskLayer;
+        [SerializeField] private GameObject maskLayer;
         /// <summary> 点击蒙层是否关闭Node </summary>
-        public bool isClickMaskClose = false;
-        /// <summary> 是否响应设备键盘 </summary>
-        public bool isRespondDeviceKeyboard = false;
-
-        [HideInInspector]
-        public string nodePath, directoryPath;
+        [SerializeField] private bool isClickMaskClose = false;
+        /// <summary> 是否响应设备键盘（用于返回等） </summary>
+        [SerializeField] private bool isRespondDeviceKeyboard = false;
         protected AssetBundle spriteAB;
+        #endregion
+
+        #region ...属性
+        public RectTransform Main { get => main; set => main = value; }
+        public UISwitchAnimation AnimationMian { get => animationMian; set => animationMian = value; }
+        public GameObject BtnClose { get => btnClose; set => btnClose = value; }
+        public GameObject MaskLayer { get => maskLayer; set => maskLayer = value; }
+        public bool IsClickMaskClose { get => isClickMaskClose; set => isClickMaskClose = value; }
+        public bool IsRespondDeviceKeyboard { get => isRespondDeviceKeyboard; set => isRespondDeviceKeyboard = value; }
+        public string NodePath { get; set; }
+        public string DirectoryPath { get; set; }
+        #endregion
 
         public virtual void Init()
         {
             LogUtils.Log(name + "：Init");
-            if (isClickMaskClose && maskLayer)
-                UGUIEventListener.Get(maskLayer).onClick += delegate { Close(); };
-            if (btnClose)
-                UGUIEventListener.Get(btnClose).onClick += delegate { Close(); };
+            if (IsClickMaskClose && MaskLayer)
+                UGUIEventListener.Get(MaskLayer).OnClick += delegate { Close(); };
+            if (BtnClose)
+                UGUIEventListener.Get(BtnClose).OnClick += delegate { Close(); };
             gameObject.SetActive(false);
         }
 
@@ -73,22 +80,22 @@ namespace UGCF.Manager
             if (isEnter)
             {
                 callback += EnterAnimationEndAction;
-                if (!animationMian)
+                if (!AnimationMian)
                 {
                     callback?.Invoke();
                     return true;
                 }
-                return animationMian.PlayEnterAnimation(callback);
+                return AnimationMian.PlayEnterAnimation(callback);
             }
             else
             {
                 callback += ExitAnimationEndAction;
-                if (!animationMian)
+                if (!AnimationMian)
                 {
                     callback?.Invoke();
                     return true;
                 }
-                return animationMian.PlayExitAnimation(callback);
+                return AnimationMian.PlayExitAnimation(callback);
             }
         }
 
@@ -102,7 +109,7 @@ namespace UGCF.Manager
             if (!this)
                 return;
             bool closeSuccess = false;
-            if (isActiveClose && animationMian && animationMian.exitAnimationType != NodeSwitchAnimationType.None)
+            if (isActiveClose && AnimationMian && AnimationMian.ExitAnimationType != NodeSwitchAnimationType.None)
             {
                 closeSuccess = PlayAnimation(false, () => CloseNode(isActiveClose));
             }
@@ -114,7 +121,7 @@ namespace UGCF.Manager
 
             if (closeSuccess)
             {
-                NodeManager.currentNode = NodeManager.GetLastNode(false, false);
+                NodeManager.CurrentNode = NodeManager.GetLastNode(false, false);
             }
         }
 
@@ -148,12 +155,12 @@ namespace UGCF.Manager
 
         public JsonData GetJsonData(string jsonName)
         {
-            return BundleManager.Instance.GetCommonJsonData(jsonName, directoryPath + "/" + nodePath);
+            return BundleManager.Instance.GetCommonJsonData(jsonName, DirectoryPath + "/" + NodePath);
         }
 
         public GameObject GetPrefab(string gameObjectName)
         {
-            return BundleManager.Instance.GetGameObjectByUI(directoryPath + "/" + nodePath + "/" + gameObjectName + "/Prefab");
+            return BundleManager.Instance.GetGameObjectByUI(DirectoryPath + "/" + NodePath + "/" + gameObjectName + "/Prefab");
         }
         #endregion
     }

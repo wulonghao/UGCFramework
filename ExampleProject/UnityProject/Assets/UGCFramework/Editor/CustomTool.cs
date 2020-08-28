@@ -5,9 +5,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UGCF.Editor
+namespace UGCF.UGCFEditor
 {
-    public class CustomTool : UnityEditor.Editor
+    public class CustomTool : Editor
     {
         [MenuItem("自定义工具/清除缓存")]
         static void ClearPlayerPrefs()

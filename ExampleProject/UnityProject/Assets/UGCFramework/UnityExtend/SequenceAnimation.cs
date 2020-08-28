@@ -13,29 +13,32 @@ namespace UGCF.UnityExtend
         private Image ImageSource;
         private int mCurFrame = 0;
         private float mDelta = 0;
+        private Dictionary<int, UnityAction> diu = new Dictionary<int, UnityAction>();
 
-        public float FPS = 5;
-        public List<Sprite> SpriteFrames = new List<Sprite>();
-        public bool IsPlaying = false;
-        public bool Foward = true;
-        public bool AutoPlay = false;
-        public bool PingPong = false;
-        public bool Loop = false;
-        public bool isAutoDisable = false;
-        public bool isSetNativeSize = true;
-        public float delayTime;
-        public UnityAction onPlayEndCall;//播放结束的回调
-        Dictionary<int, UnityAction> diu = new Dictionary<int, UnityAction>();
-        [HideInInspector]
-        public bool IsStart;
+        [SerializeField] float fPS = 5;
+        [SerializeField] List<Sprite> spriteFrames = new List<Sprite>();
+        [SerializeField] bool isPlaying;
+        [SerializeField] bool foward = true;
+        [SerializeField] bool autoPlay;
+        [SerializeField] bool pingPong;
+        [SerializeField] bool loop;
+        [SerializeField] bool isAutoDisable;
+        [SerializeField] bool isSetNativeSize = true;
+        [SerializeField] float delayTime;
 
-        public int FrameCount
-        {
-            get
-            {
-                return SpriteFrames.Count;
-            }
-        }
+        public int FrameCount { get => SpriteFrames.Count; }
+        public float FPS { get => fPS; set => fPS = value; }
+        public List<Sprite> SpriteFrames { get => spriteFrames; set => spriteFrames = value; }
+        public bool IsPlaying { get => isPlaying; set => isPlaying = value; }
+        public bool Foward { get => foward; set => foward = value; }
+        public bool AutoPlay { get => autoPlay; set => autoPlay = value; }
+        public bool PingPong { get => pingPong; set => pingPong = value; }
+        public bool Loop { get => loop; set => loop = value; }
+        public bool IsAutoDisable { get => isAutoDisable; set => isAutoDisable = value; }
+        public bool IsSetNativeSize { get => isSetNativeSize; set => isSetNativeSize = value; }
+        public float DelayTime { get => delayTime; set => delayTime = value; }
+        public UnityAction OnPlayEndCall { get; set; }
+        public bool IsStart { get; set; }
 
         void Awake()
         {
@@ -51,10 +54,12 @@ namespace UGCF.UnityExtend
             if (AutoPlay)
                 Play();
         }
-        private void OnDisable()
+
+        void OnDisable()
         {
             IsStart = false;
         }
+
         private void SetSprite(int idx)
         {
             if (ImageSource != null)
@@ -63,7 +68,7 @@ namespace UGCF.UnityExtend
                 {
                     ImageSource.sprite = SpriteFrames[idx];
                 }
-                if (isSetNativeSize)
+                if (IsSetNativeSize)
                 {
                     ImageSource.SetNativeSize();
                 }
@@ -87,7 +92,7 @@ namespace UGCF.UnityExtend
         IEnumerator PlayAnimation()
         {
             IsStart = true;
-            yield return WaitForUtils.WaitForSecondsRealtime(delayTime);
+            yield return WaitForUtils.WaitForSecond(DelayTime);
             while (true)
             {
                 yield return WaitForUtils.WaitFrame;
@@ -111,12 +116,12 @@ namespace UGCF.UnityExtend
                         else
                         {
                             IsPlaying = false;
-                            if (isAutoDisable)
+                            if (IsAutoDisable)
                                 gameObject.SetActive(false);
-                            if (onPlayEndCall != null)
+                            if (OnPlayEndCall != null)
                             {
-                                onPlayEndCall();
-                                onPlayEndCall = null;
+                                OnPlayEndCall();
+                                OnPlayEndCall = null;
                             }
                             break;
                         }
@@ -136,7 +141,7 @@ namespace UGCF.UnityExtend
                         else
                         {
                             IsPlaying = false;
-                            if (isAutoDisable)
+                            if (IsAutoDisable)
                                 gameObject.SetActive(false);
                             break;
                         }

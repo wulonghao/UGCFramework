@@ -145,7 +145,7 @@ namespace UGCF.Manager
         public AssetBundle GetBundle(string bundlePath)
         {
             string path = ConstantUtils.AssetBundleFolderPath + bundlePath.ToLower();
-            if (UGCFMain.Instance.useLocalSource || !File.Exists(path))
+            if (UGCFMain.Instance.UseLocalSource || !File.Exists(path))
             {
                 path = ConstantUtils.StreamingAssetBundleFolderPath + bundlePath.ToLower();
                 if (!ThirdPartySdkManager.Instance.FileExistByStreaming(path))
@@ -203,7 +203,7 @@ namespace UGCF.Manager
                 T asset = null;
                 string relativePathLower = relativePath.ToLower();
                 string path = ConstantUtils.AssetBundleFolderPath + relativePathLower;
-                if (UGCFMain.Instance.useLocalSource || !File.Exists(path))
+                if (UGCFMain.Instance.UseLocalSource || !File.Exists(path))
                 {
                     path = ConstantUtils.StreamingAssetBundleFolderPath + relativePathLower;
                     if (ThirdPartySdkManager.Instance.FileExistByStreaming(path))

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UGCF.Utils;
 using UnityEngine;
 
@@ -7,7 +6,7 @@ namespace UGCF.Manager
 {
     public partial class NodeManager
     {
-        public static Node currentNode;//当前新打开的Node，包括FloatNode
+        public static Node CurrentNode;//当前新打开的Node，包括FloatNode
         const string DefaultNodeDirectoryPath = "UIResources/Node";
 
         /// <summary> 打开一个不记录也不影响任何流程的Node，该Node将自动播放入场动画 </summary>
@@ -55,7 +54,7 @@ namespace UGCF.Manager
             Node node = CreateNode(nodePath, directoryPath);
             if (node)
             {
-                if (node.animationMian && node.animationMian.isSwitchAnimPlaying)
+                if (node.AnimationMian && node.AnimationMian.IsSwitchAnimPlaying)
                     return node;
                 node.transform.SetAsLastSibling();
                 node.Open();
@@ -63,9 +62,9 @@ namespace UGCF.Manager
                 //AudioManager.Instance.PlayMusic(Path.GetFileNameWithoutExtension(nodePath), directoryPath + "/" + nodePath);
 
                 if (isAutoPlayEnter)
-                    node.PlayAnimation(true, () => CloseLastNodeAndRefreshData(isCloseLastNode, node, currentNode));
+                    node.PlayAnimation(true, () => CloseLastNodeAndRefreshData(isCloseLastNode, node, CurrentNode));
                 else
-                    CloseLastNodeAndRefreshData(isCloseLastNode, node, currentNode);
+                    CloseLastNodeAndRefreshData(isCloseLastNode, node, CurrentNode);
             }
             return node;
         }
@@ -93,13 +92,13 @@ namespace UGCF.Manager
                         return null;
                     }
                 }
-                MiscUtils.AttachAndReset(go, PageManager.Instance.currentPage.transform);
+                UIUtils.AttachAndReset(go, PageManager.Instance.CurrentPage.transform);
                 node = go.GetComponent<Node>();
                 if (node)
                 {
                     node.SetSpriteAB(ab);
-                    node.nodePath = nodePath;
-                    node.directoryPath = directoryPath;
+                    node.NodePath = nodePath;
+                    node.DirectoryPath = directoryPath;
                     node.Init();
                 }
                 else
@@ -115,7 +114,7 @@ namespace UGCF.Manager
         {
             if (isCloseLastNode && lastNode)
                 lastNode.Close(false);
-            NodeManager.currentNode = currentNode;
+            NodeManager.CurrentNode = currentNode;
         }
 
         /// <summary>
@@ -153,7 +152,7 @@ namespace UGCF.Manager
             Node[] nodes = PageManager.Instance.GetComponentsInChildren<Node>(includeInactive);
             if (nodes.Length > 0)
             {
-                if (isContainSelf || nodes[nodes.Length - 1] != currentNode)
+                if (isContainSelf || nodes[nodes.Length - 1] != CurrentNode)
                     return nodes[nodes.Length - 1];
                 else
                     return nodes.Length > 1 ? nodes[nodes.Length - 2] : null;
@@ -167,7 +166,7 @@ namespace UGCF.Manager
             Node[] nodes = PageManager.Instance.GetComponentsInChildren<Node>(includeInactive);
             if (nodes.Length > 1)
             {
-                if (isContainSelf || nodes[nodes.Length - 2] != currentNode)
+                if (isContainSelf || nodes[nodes.Length - 2] != CurrentNode)
                     return nodes[nodes.Length - 2];
                 else
                     return nodes.Length > 2 ? nodes[nodes.Length - 3] : null;

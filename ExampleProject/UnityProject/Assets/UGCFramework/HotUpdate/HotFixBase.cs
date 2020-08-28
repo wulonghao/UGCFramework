@@ -8,11 +8,11 @@ namespace UGCF.HotUpdate
 {
     public class HotFixBase
     {
-        public object instanceHotFix;
-        ILType type;
-        string hotFixTypeName;
-        Dictionary<string, IMethod> iMethods = new Dictionary<string, IMethod>();
-        const string HotTypeNameFormat = "HotFix.{0}HotFix";
+        private object instanceHotFix;
+        private ILType type;
+        private string hotFixTypeName;
+        private Dictionary<string, IMethod> iMethods = new Dictionary<string, IMethod>();
+        private const string HotTypeNameFormat = "HotFix.{0}HotFix";
 
         /// <summary>
         /// 初始化热更类，加载相关资源

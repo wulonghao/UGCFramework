@@ -5,13 +5,15 @@ using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
+    [AddComponentMenu("UI/CustomImage")]
     public class CustomImage : Image
     {
-        public List<Vector2> allPoints = new List<Vector2>();
+        [SerializeField] [Tooltip("图片所有的点")] List<Vector2> allPoints = new List<Vector2>();
+        public List<Vector2> AllPoints { get => allPoints; }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
-            if (allPoints.Count == 0)
+            if (AllPoints.Count == 0)
                 base.OnPopulateMesh(vh);
             else
             {
@@ -29,7 +31,7 @@ namespace UGCF.UGUIExtend
                 UIVertex uiVertex;
                 int verticeCount;
                 Vector2 curVertice;
-                verticeCount = allPoints.Count;
+                verticeCount = AllPoints.Count;
 
                 curVertice = Vector2.zero;
                 uiVertex = new UIVertex
@@ -42,7 +44,7 @@ namespace UGCF.UGUIExtend
 
                 for (int i = 0; i < verticeCount; i++)
                 {
-                    curVertice = new Vector2(allPoints[i].x * tw, allPoints[i].y * th);
+                    curVertice = new Vector2(AllPoints[i].x * tw, AllPoints[i].y * th);
                     uiVertex = new UIVertex
                     {
                         color = color,

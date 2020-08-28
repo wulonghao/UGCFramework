@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,7 +25,6 @@ namespace UGCF.Manager
         }
         #endregion
         public static string shareComponent;
-        Texture2D shareThumbIcon;//自定义缩略图
 
         void Init()
         {
@@ -46,12 +44,12 @@ namespace UGCF.Manager
         }
 
 #if UNITY_IOS
-    [DllImport("__Internal")]
-    static extern void ShareImageWx_iOS(int scene, IntPtr ptr, int size, IntPtr ptrThumb, int sizeThumb);
-    [DllImport("__Internal")]
-    static extern void ShareTextWx_iOS(int scene, string content);
-    [DllImport("__Internal")]
-    static extern void ShareUrlWx_iOS(int scene, string url, string title, string content, IntPtr ptrThumb, int sizeThumb);
+        [DllImport("__Internal")]
+        static extern void ShareImageWx_iOS(int scene, IntPtr ptr, int size, IntPtr ptrThumb, int sizeThumb);
+        [DllImport("__Internal")]
+        static extern void ShareTextWx_iOS(int scene, string content);
+        [DllImport("__Internal")]
+        static extern void ShareUrlWx_iOS(int scene, string url, string title, string content, IntPtr ptrThumb, int sizeThumb);
 #elif UNITY_ANDROID
         static string WeChatShareUtils = ConstantUtils.BundleIdentifier + ".wechat.WechatShareUtil";
 #endif
@@ -59,7 +57,7 @@ namespace UGCF.Manager
         /// <summary>
         /// 分享微信回调
         /// </summary>
-        public UnityAction<WechatErrorCode> shareWechatCallback = null;
+        public UnityAction<WechatErrorCode> ShareWechatCallback { get; set; }
 
         /// <summary>
         /// 分享图片
@@ -133,10 +131,10 @@ namespace UGCF.Manager
                 if (code == WechatErrorCode.Success)
                 {
                     TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.SHARE_SUCCESS);
-                    if (shareWechatCallback != null)
+                    if (ShareWechatCallback != null)
                     {
-                        shareWechatCallback(code);
-                        shareWechatCallback = null;
+                        ShareWechatCallback(code);
+                        ShareWechatCallback = null;
                     }
                 }
                 else
@@ -153,13 +151,13 @@ namespace UGCF.Manager
 
         #region ...QQ
         /// <summary> QQ分享 回调 </summary>
-        public UnityAction<QQErrorCode> shareQQCallback = null;
+        public UnityAction<QQErrorCode> ShareQQCallback { get; set; }
 
 #if UNITY_IOS
-    [DllImport("__Internal")]
-    static extern void ShareImgByQQ(string imgPath);
-    [DllImport("__Internal")]
-    static extern void ShareUrlByQQ(string title, string desc, string iconUrl, string url);
+        [DllImport("__Internal")]
+        static extern void ShareImgByQQ(string imgPath);
+        [DllImport("__Internal")]
+        static extern void ShareUrlByQQ(string title, string desc, string iconUrl, string url);
 #elif UNITY_ANDROID
         static string QQShareUtils = ConstantUtils.BundleIdentifier + ".qq.QQShareUtil";
 #endif
@@ -171,15 +169,17 @@ namespace UGCF.Manager
         /// <param name="url">链接地址</param>
         /// <param name="title">标题</param>
         /// <param name="content">内容</param>
+        /// <param name="shareThumbIcon">分享的缩略图</param>
         /// <param name="imagePath">分享显示的缩略图Path</param>
-        public void QQShareUrl(string url, string title, string content, string imagePath = null)
+        public void QQShareUrl(string url, string title, string content, Texture2D shareThumbIcon = null, string imagePath = null)
         {
             if (string.IsNullOrEmpty(imagePath))
                 imagePath = printScreenPath;
 #if UNITY_IOS
-        ShareUrlByQQ(title, content, imagePath, url);
+            ShareUrlByQQ(title, content, imagePath, url);
 #elif UNITY_ANDROID
-            MiscUtils.CreateBytesFile(imagePath, shareThumbIcon.GetRawTextureData());
+            if (shareThumbIcon != null)
+                MiscUtils.CreateBytesFile(imagePath, shareThumbIcon.GetRawTextureData());
             AndroidJavaClass utils = new AndroidJavaClass(QQShareUtils);
             utils.CallStatic("QQShareUrl", title, content, url, imagePath, Application.productName);
 #endif
@@ -194,7 +194,7 @@ namespace UGCF.Manager
             if (MiscUtils.CreateBytesFile(printScreenPath, shareImg.EncodeToJPG()))
             {
 #if UNITY_IOS
-            ShareImgByQQ(ConstantUtils.PrintScreenPath);
+                ShareImgByQQ(ConstantUtils.PrintScreenPath);
 #elif UNITY_ANDROID
                 AndroidJavaClass utils = new AndroidJavaClass(QQShareUtils);
                 utils.CallStatic("QQShareImage", printScreenPath, Application.productName);
@@ -213,10 +213,10 @@ namespace UGCF.Manager
             {
                 case QQErrorCode.Success:
                     TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.SHARE_SUCCESS);//分享成功
-                    if (shareQQCallback != null)
+                    if (ShareQQCallback != null)
                     {
-                        shareQQCallback(code);
-                        shareQQCallback = null;
+                        ShareQQCallback(code);
+                        ShareQQCallback = null;
                     }
                     break;
                 case QQErrorCode.UserCancel:

@@ -107,4 +107,93 @@ public static class LitJsonExtension
         }
         return defvalue;
     }
+
+    /// <summary>
+    /// 匹配对应Json的对应数值并全部返回
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="value">对比的目标值</param>
+    /// <param name="columnIndex">对比 列索引</param>
+    /// <param name="isMultiple">是否返回多条</param>
+    /// <returns></returns>
+    public static JsonData MathJsonByIndex(this JsonData self, string value, int columnIndex = 0, bool isMultiple = true)
+    {
+        if (self == null || self.Count <= 0)
+        {
+            return null;
+        }
+        if (isMultiple)
+        {
+            JsonData _localjson = new JsonData();
+            bool _result = false;
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][columnIndex].ToString() == value)
+                {
+                    _localjson.Add(self[i]);
+                    _result = true;
+                }
+            }
+            if (_result)
+            {
+                return _localjson;
+            }
+
+        }
+        else
+        {
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][columnIndex].ToString() == value)
+                {
+                    return self[i];
+                }
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 匹配对应Json的对应数值并全部返回
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="value">对比的目标值</param>
+    /// <param name="key">对比的目标key</param>
+    /// <param name="isMultiple">是否返回多条</param>
+    /// <returns></returns>
+    public static JsonData MathJsonByIndex(this JsonData self, string value, string key, bool isMultiple = true)
+    {
+        if (self == null || self.Count <= 0)
+        {
+            return null;
+        }
+        if (isMultiple)
+        {
+            JsonData localjson = new JsonData();
+            bool result = false;
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][key].ToString() == value)
+                {
+                    localjson.Add(self[i]);
+                    result = true;
+                }
+            }
+            if (result)
+            {
+                return localjson;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < self.Count; i++)
+            {
+                if (self[i][key].ToString() == value)
+                {
+                    return self[i];
+                }
+            }
+        }
+        return null;
+    }
 }

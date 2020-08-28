@@ -10,30 +10,24 @@ namespace UGCF.UnityExtend
 {
     public class Timer : MonoBehaviour
     {
-        public bool isAutoPlay = false;
+        #region ...字段
+        [SerializeField] private bool isAutoPlay = false;
         /// <summary> 时间总长度 </summary>
-        public float allLength = 10;
+        [SerializeField] private float allLength = 10;
         /// <summary> 刷新间隔 小于0为倒计时，大于0为正计时 </summary>
-        public float refreshSpace = -1;
+        [SerializeField] private float refreshSpace = -1;
         /// <summary> 时间文本格式 HHMMSS-00:00:00, MMSS-00:00, SS-00, S-0 </summary>
-        [Tooltip("HHMMSS-00:00:00, MMSS-00:00, SS-00, S-0")]
-        public TimeFormat timeFormat = TimeFormat.SS;
-        /// <summary> 是否只执行一次 </summary>
-        public bool isOnce = false;
-        /// <summary> 计时器结束后执行的回调函数 </summary>
-        public UnityAction endAction = null;
-        /// <summary> 当前时间 </summary>
-        [HideInInspector]
-        public float currentTime;
-        /// <summary> 当前时间文本格式 </summary>
-        public string timeTxtFormat;
-        /// <summary> 是否处于计时中状态 </summary>
-        [HideInInspector]
-        public bool isTiming = false;
         [SerializeField]
-        Text timerText;
-        public bool isEnable = false;
+        [Tooltip("时间文本格式 HHMMSS-00:00:00, MMSS-00:00, SS-00, S-0")]
+        private TimeFormat timeFormat1 = TimeFormat.SS;
+        /// <summary> 是否只执行一次 </summary>
+        [SerializeField] private bool isOnce = false;
+        /// <summary> 当前时间文本格式 </summary>
+        [SerializeField] private string timeTxtFormat;
+        [SerializeField] private bool isEnable = false;
+        [SerializeField] private Text timerText;
         bool isBegin = false;
+        float nextTime;
 
         int hours = 0;
         int minutes = 0;
@@ -42,6 +36,20 @@ namespace UGCF.UnityExtend
         //全部的委托
         Dictionary<float, UnityAction> allUA = new Dictionary<float, UnityAction>();
         Dictionary<float, UnityAction> tempAllUA = new Dictionary<float, UnityAction>();
+        #endregion
+
+        #region ...属性
+        public bool IsAutoPlay { get => isAutoPlay; set => isAutoPlay = value; }
+        public float AllLength { get => allLength; set => allLength = value; }
+        public float RefreshSpace { get => refreshSpace; set => refreshSpace = value; }
+        public TimeFormat TimeFormat1 { get => timeFormat1; set => timeFormat1 = value; }
+        public bool IsOnce { get => isOnce; set => isOnce = value; }
+        public UnityAction EndAction { get; set; } = null;
+        public float CurrentTime { get; set; }
+        public string TimeTxtFormat { get => timeTxtFormat; set => timeTxtFormat = value; }
+        public bool IsTiming { get; set; } = false;
+        public bool IsEnable { get => isEnable; set => isEnable = value; }
+        #endregion
 
         #region ...计时器主体
         void Awake()
@@ -56,51 +64,50 @@ namespace UGCF.UnityExtend
 
         void OnEnable()
         {
-            isEnable = true;
-            if (isAutoPlay)
+            IsEnable = true;
+            if (IsAutoPlay)
                 ResetTimer(true);
         }
 
         void InitTimer(float _allLength = 0)
         {
             if (_allLength != 0)
-                allLength = _allLength;
-            if (Mathf.Abs(refreshSpace) > allLength)//刷新间隔大于总时长时，令间隔=时长
-                refreshSpace = refreshSpace > 0 ? allLength : -allLength;
-            currentTime = refreshSpace > 0 ? 0 : allLength;
-            nextTime = currentTime + refreshSpace;
-            SetTimeText(GetTimerText(currentTime, timeFormat));
+                AllLength = _allLength;
+            if (Mathf.Abs(RefreshSpace) > AllLength)//刷新间隔大于总时长时，令间隔=时长
+                RefreshSpace = RefreshSpace > 0 ? AllLength : -AllLength;
+            CurrentTime = RefreshSpace > 0 ? 0 : AllLength;
+            nextTime = CurrentTime + RefreshSpace;
+            SetTimeText(GetTimerText(CurrentTime, TimeFormat1));
         }
 
-        float nextTime;
         void Update()
         {
-            if (isTiming && isEnable)
+            if (IsTiming && IsEnable)
             {
-                currentTime += refreshSpace > 0 ? Time.deltaTime : -Time.deltaTime;
-                if (tempAllUA.ContainsKey(currentTime) && tempAllUA[currentTime] != null)
+                CurrentTime += RefreshSpace > 0 ? Time.deltaTime : -Time.deltaTime;
+                if (tempAllUA.ContainsKey(CurrentTime) && tempAllUA[CurrentTime] != null)
                 {
-                    tempAllUA[currentTime]();
-                    tempAllUA.Remove(currentTime);
+                    tempAllUA[CurrentTime]();
+                    tempAllUA.Remove(CurrentTime);
                 }
-                currentTime = Mathf.Clamp(currentTime, 0, allLength);
+                CurrentTime = Mathf.Clamp(CurrentTime, 0, AllLength);
 
-                if (refreshSpace > 0 ? currentTime >= nextTime : currentTime <= nextTime)
+                if (RefreshSpace > 0 ? CurrentTime >= nextTime : CurrentTime <= nextTime)
                 {
-                    SetTimeText(GetTimerText(currentTime, timeFormat));
-                    if (refreshSpace > 0 ? currentTime >= allLength : currentTime <= 0)
+                    SetTimeText(GetTimerText(CurrentTime, TimeFormat1));
+                    if (RefreshSpace > 0 ? CurrentTime >= AllLength : CurrentTime <= 0)
                     {
-                        if (!isOnce)
+                        if (!IsOnce)
                             ResetTimer(true);
                         else
                             CloseTimer();
-                        if (gameObject.activeSelf && endAction != null)
-                            endAction();
+                        if (gameObject.activeSelf && EndAction != null)
+                            EndAction();
                     }
                     else
                     {
-                        nextTime += refreshSpace;
-                        nextTime = Mathf.Clamp(nextTime, 0, allLength);
+                        nextTime += RefreshSpace;
+                        nextTime = Mathf.Clamp(nextTime, 0, AllLength);
                     }
                 }
             }
@@ -162,8 +169,8 @@ namespace UGCF.UnityExtend
                     tempAllUA.Add(key, allUA[key]);
                 if (this && gameObject.activeSelf)
                 {
-                    isTiming = true;
-                    isEnable = true;
+                    IsTiming = true;
+                    IsEnable = true;
                     isBegin = true;
                 }
             }
@@ -174,7 +181,7 @@ namespace UGCF.UnityExtend
         /// </summary>
         public void PauseTime()
         {
-            isTiming = false;
+            IsTiming = false;
         }
 
         /// <summary>
@@ -182,7 +189,7 @@ namespace UGCF.UnityExtend
         /// </summary>
         public void ContinueTime()
         {
-            isTiming = true;
+            IsTiming = true;
         }
 
         /// <summary>
@@ -191,8 +198,8 @@ namespace UGCF.UnityExtend
         public void CloseTimer()
         {
             isBegin = false;
-            isEnable = false;
-            isTiming = false;
+            IsEnable = false;
+            IsTiming = false;
         }
 
         /// <summary>
@@ -243,10 +250,10 @@ namespace UGCF.UnityExtend
         {
             if (timerText)
             {
-                if (string.IsNullOrEmpty(timeTxtFormat))
+                if (string.IsNullOrEmpty(TimeTxtFormat))
                     timerText.text = time;
                 else
-                    timerText.text = string.Format(timeTxtFormat, time);
+                    timerText.text = string.Format(TimeTxtFormat, time);
             }
         }
 
@@ -279,15 +286,15 @@ namespace UGCF.UnityExtend
             Timer timer = target.GetComponent<Timer>();
             if (!timer)
                 timer = target.AddComponent<Timer>();
-            timer.allLength = allLength;
-            timer.refreshSpace = refreshSpace;
-            timer.timeFormat = timeFormat;
-            timer.isOnce = isOnce;
-            timer.endAction = action;
-            timer.currentTime = refreshSpace > 0 ? 0 : allLength;
+            timer.AllLength = allLength;
+            timer.RefreshSpace = refreshSpace;
+            timer.TimeFormat1 = timeFormat;
+            timer.IsOnce = isOnce;
+            timer.EndAction = action;
+            timer.CurrentTime = refreshSpace > 0 ? 0 : allLength;
             timer.timerText = timer.GetComponent<Text>();
             if (timer.timerText)
-                timer.timerText.text = timer.GetTimerText(timer.currentTime, timeFormat);
+                timer.timerText.text = timer.GetTimerText(timer.CurrentTime, timeFormat);
             return timer;
         }
 
@@ -296,8 +303,8 @@ namespace UGCF.UnityExtend
             Timer timer = target.GetComponent<Timer>();
             if (!timer)
                 timer = target.AddComponent<Timer>();
-            timer.isOnce = true;
-            timer.endAction = action;
+            timer.IsOnce = true;
+            timer.EndAction = action;
             return timer;
         }
 

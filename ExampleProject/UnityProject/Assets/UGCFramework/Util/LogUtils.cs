@@ -7,7 +7,7 @@ namespace UGCF.Utils
 {
     public partial class LogUtils
     {
-        public static string LogErrorRootPath = Application.persistentDataPath + "/LogError/";
+        public static string LogErrorRootPath { get { return Application.persistentDataPath + "/LogError/"; } }
         static string logErrorPath;
         static StringBuilder allLogStr = new StringBuilder();
         static StreamWriter logWrite;
@@ -19,7 +19,7 @@ namespace UGCF.Utils
         /// <param name="isAppend">是否对日志进行保留拼接</param>
         public static void Log(object log, bool isAppend = true)
         {
-            if (UGCFMain.Instance.isDebugLog)
+            if (UGCFMain.Instance.IsDebugLog)
                 Debug.Log(log);
 
             if (isAppend)
@@ -29,7 +29,7 @@ namespace UGCF.Utils
         public static void LogError(object log, bool containStackTrace = true)
         {
             string messageStr = log.ToString();
-            if (UGCFMain.Instance.isDebugLog)
+            if (UGCFMain.Instance.IsDebugLog)
                 Log(log);
             if (containStackTrace)
                 LogToFile(messageStr, new System.Diagnostics.StackTrace().ToString(), LogType.Error);

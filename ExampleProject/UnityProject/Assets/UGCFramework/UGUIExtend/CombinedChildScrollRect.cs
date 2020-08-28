@@ -1,16 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.Utils;
+﻿using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
+    [AddComponentMenu("UI/CombinedChildScrollRect")]
     public class CombinedChildScrollRect : ScrollRect
     {
-        public ScrollRect parentScroll;
-        public PanelScrollRectCenter panelScrollRect;
+        [SerializeField] ScrollRect parentScroll;
+        public ScrollRect ParentScroll { get => parentScroll; set => parentScroll = value; }
+
+        [SerializeField] PanelCenterScrollRect panelScrollRect;
+        public PanelCenterScrollRect PanelScrollRect { get => panelScrollRect; set => panelScrollRect = value; }
 
         bool isScrollSelf = false;
 
@@ -24,8 +26,8 @@ namespace UGCF.UGUIExtend
                 base.OnBeginDrag(eventData);
             else
             {
-                if (panelScrollRect) panelScrollRect.OnBeginDrag(eventData);
-                if (parentScroll) parentScroll.OnBeginDrag(eventData);
+                if (PanelScrollRect) PanelScrollRect.OnBeginDrag(eventData);
+                if (ParentScroll) ParentScroll.OnBeginDrag(eventData);
             }
         }
 
@@ -35,8 +37,8 @@ namespace UGCF.UGUIExtend
                 base.OnDrag(eventData);
             else
             {
-                if (panelScrollRect) panelScrollRect.OnDrag(eventData);
-                if (parentScroll) parentScroll.OnDrag(eventData);
+                if (PanelScrollRect) PanelScrollRect.OnDrag(eventData);
+                if (ParentScroll) ParentScroll.OnDrag(eventData);
             }
         }
 
@@ -46,8 +48,8 @@ namespace UGCF.UGUIExtend
                 base.OnEndDrag(eventData);
             else
             {
-                if (panelScrollRect) panelScrollRect.OnEndDrag(eventData);
-                if (parentScroll) parentScroll.OnEndDrag(eventData);
+                if (PanelScrollRect) PanelScrollRect.OnEndDrag(eventData);
+                if (ParentScroll) ParentScroll.OnEndDrag(eventData);
             }
         }
     }

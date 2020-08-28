@@ -114,7 +114,7 @@ namespace UGCF.Manager
                             Directory.CreateDirectory(directoryPath);
                         File.WriteAllBytes(filePath, texture.EncodeToPNG());
                     }
-                    sprite = MiscUtils.TextureToSprite(texture);
+                    sprite = UIUtils.TextureToSprite(texture);
                     callback?.Invoke(sprite);
                 }
                 catch (Exception e)

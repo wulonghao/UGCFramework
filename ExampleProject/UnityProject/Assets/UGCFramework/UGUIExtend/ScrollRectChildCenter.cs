@@ -1,34 +1,34 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.Manager;
 using UGCF.UnityExtend;
 using UGCF.Utils;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
     [RequireComponent(typeof(ScrollRect))]
+    [AddComponentMenu("UI/ScrollRectChildCenter")]
     public class ScrollRectChildCenter : MonoBehaviour
     {
         /// <summary> 在ScrollRect的onValueChanged事件执行时每个Content中的元素均执行 </summary>
         /// <param name="go">当前元素</param>
         /// <param name="scaleSpaceToCenter">0-1的值，元素至ScrollRect中心的距离相对于元素宽/高度的系数，0表示元素在最中心</param>
         public delegate void ScrollRectItemChangeEvent(GameObject go, float scaleSpaceToCenter);
-        public ScrollRectItemChangeEvent onItemChanged;
+        public ScrollRectItemChangeEvent OnItemChanged { get; set; }
 
-        public float moveTime = 1;
-        public float minSpeed = 600;
-        [HideInInspector]
-        public GameObject currentCenter;
+        [SerializeField] private float moveTime = 1;
+        [SerializeField] private float minSpeed = 600;
 
-        ScrollRect scrollRect;
-        bool autoMoving;
-        Vector2 target;
-        Vector2 startPos;
-        float t;
-        ScrollRectCircle src;
+        private ScrollRect scrollRect;
+        private bool autoMoving;
+        private Vector2 target;
+        private Vector2 startPos;
+        private float t;
+        private ScrollRectCircle src;
+
+        public GameObject CurrentCenter { get; set; }
+        public float MoveTime { get => moveTime; set => moveTime = value; }
+        public float MinSpeed { get => minSpeed; set => minSpeed = value; }
 
         void Awake()
         {
@@ -42,8 +42,8 @@ namespace UGCF.UGUIExtend
             scrollRect.content.pivot = Vector2.one * 0.5f;
 
             scrollRect.onValueChanged.AddListener(ValueChange);
-            UGUIEventListenerContainDrag.Get(scrollRect.gameObject).onDrag += delegate { autoMoving = false; };
-            UGUIEventListenerContainDrag.Get(scrollRect.gameObject).onDragEnd += delegate { StartCoroutine(MoveCheck()); };
+            UGUIEventListenerContainDrag.Get(scrollRect.gameObject).OnDrag1 += delegate { autoMoving = false; };
+            UGUIEventListenerContainDrag.Get(scrollRect.gameObject).OnDragEnd += delegate { StartCoroutine(MoveCheck()); };
         }
 
         void OnEnable()
@@ -77,10 +77,10 @@ namespace UGCF.UGUIExtend
             while (true)
             {
                 yield return WaitForUtils.WaitFrame;
-                if ((scrollRect.horizontal && Mathf.Abs(scrollRect.velocity.x) < minSpeed)
-                    || (scrollRect.vertical && Mathf.Abs(scrollRect.velocity.y) < minSpeed))
+                if ((scrollRect.horizontal && Mathf.Abs(scrollRect.velocity.x) < MinSpeed)
+                    || (scrollRect.vertical && Mathf.Abs(scrollRect.velocity.y) < MinSpeed))
                 {
-                    if (src) src.isDraging = true;
+                    if (src) src.IsDraging = true;
                     UGCFMain.Instance.StartCoroutine(SetChildCenter());
                     break;
                 }
@@ -118,7 +118,7 @@ namespace UGCF.UGUIExtend
                     center = tf.gameObject;
                 }
             }
-            currentCenter = center;
+            CurrentCenter = center;
             startPos = scrollRect.content.localPosition;
             t = 0;
             autoMoving = true;
@@ -128,7 +128,7 @@ namespace UGCF.UGUIExtend
         {
             if (autoMoving)
             {
-                t += Time.deltaTime / moveTime;
+                t += Time.deltaTime / MoveTime;
                 if (scrollRect.horizontal)
                     scrollRect.content.localPosition = Vector2.Lerp(Vector2.right * startPos.x, -Vector2.right * target.x, t);
                 else if (scrollRect.vertical)
@@ -149,7 +149,7 @@ namespace UGCF.UGUIExtend
 
         void ValueChange(Vector2 v2)
         {
-            if (onItemChanged == null)
+            if (OnItemChanged == null)
                 return;
             if (scrollRect.content.childCount < 2)
                 return;
@@ -165,7 +165,7 @@ namespace UGCF.UGUIExtend
                     scale = Mathf.Abs(diff.y) / crtf.rect.height;
                 if (scale > 1)
                     scale = 1;
-                onItemChanged(crtf.gameObject, scale);
+                OnItemChanged(crtf.gameObject, scale);
             }
         }
 
@@ -181,7 +181,7 @@ namespace UGCF.UGUIExtend
             Transform goTf = goCenter.transform;
             if (goCenter && goTf.parent == scrollRect.content.transform)
             {
-                currentCenter = goCenter;
+                CurrentCenter = goCenter;
                 if (src)
                 {
                     int targetSibilingIndex = goTf.GetSiblingIndex();
@@ -203,7 +203,7 @@ namespace UGCF.UGUIExtend
 
         IEnumerator DelaySetCenter(Transform tfCenter)
         {
-            if (src) src.isDraging = true;
+            if (src) src.IsDraging = true;
             scrollRect.velocity = Vector2.zero;
             yield return WaitForUtils.WaitFrame;
             if (tfCenter == null) yield break;

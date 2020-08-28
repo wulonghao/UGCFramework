@@ -10,10 +10,10 @@ namespace UGCF.Manager
 {
     public class TipItem : MonoBehaviour
     {
-        public Text describeTxt;
-        public GameObject background, btnSure, btnCancel, btnClose;
-        public TipType tipType;
-        public float waitTime;
+        [SerializeField] Text describeTxt;
+        [SerializeField] GameObject background, btnSure, btnCancel, btnClose;
+        [SerializeField] TipType tipType;
+        [SerializeField] float waitTime;
         UnityAction sureAction, cancelAction;
         Coroutine delayClose;
 
@@ -25,13 +25,13 @@ namespace UGCF.Manager
             tf.localScale = Vector3.one;
 
             if (tipType == TipType.SimpleTip && background)
-                UGUIEventListener.Get(background).onClick = delegate { Close(true); };
+                UGUIEventListener.Get(background).OnClick = delegate { Close(true); };
             if (btnClose)
-                UGUIEventListener.Get(btnClose).onClick = delegate { Close(true); };
+                UGUIEventListener.Get(btnClose).OnClick = delegate { Close(true); };
             if (btnSure)
-                UGUIEventListener.Get(btnSure).onClick = delegate { gameObject.SetActive(false); sureAction?.Invoke(); };
+                UGUIEventListener.Get(btnSure).OnClick = delegate { gameObject.SetActive(false); sureAction?.Invoke(); };
             if (btnCancel)
-                UGUIEventListener.Get(btnCancel).onClick = delegate { gameObject.SetActive(false); cancelAction?.Invoke(); };
+                UGUIEventListener.Get(btnCancel).OnClick = delegate { gameObject.SetActive(false); cancelAction?.Invoke(); };
         }
 
         public void Init(string _describe, float _waitTime = 0, UnityAction _sureAction = null, UnityAction _cancelAction = null)
@@ -54,6 +54,11 @@ namespace UGCF.Manager
         {
             yield return WaitForUtils.WaitForSecondsRealtime(waitTime);
             Close(true);
+        }
+
+        public void SetDescript(string describe)
+        {
+            describeTxt.text = describe;
         }
 
         public void Close(bool isImplementCallBack = false)

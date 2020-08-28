@@ -6,7 +6,7 @@ using UGCF.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace UGCF.Editor
+namespace UGCF.UGCFEditor
 {
     public class BuildApkOrXcode : EditorWindow
     {
@@ -23,8 +23,8 @@ namespace UGCF.Editor
         {
             BuildApkOrXcode instance = GetWindow<BuildApkOrXcode>("生成APK或Xcode工程");
             ugcfMain = FindObjectOfType<UGCFMain>();
-            instance.isDebugLog = ugcfMain.isDebugLog;
-            instance.useLocalSource = ugcfMain.useLocalSource;
+            instance.isDebugLog = ugcfMain.IsDebugLog;
+            instance.useLocalSource = ugcfMain.UseLocalSource;
             instance.Show();
         }
 
@@ -121,8 +121,8 @@ namespace UGCF.Editor
                 //EditorCreateBundle.DeleteBundleFiles(BuildTarget.iOS);
                 if (buildTarget == BuildTarget.Android)
                 {
-                    ugcfMain.isDebugLog = isDebugLog;
-                    ugcfMain.useLocalSource = useLocalSource;
+                    ugcfMain.IsDebugLog = isDebugLog;
+                    ugcfMain.UseLocalSource = useLocalSource;
                     SetKetstore();
                     EditorCreateBundle.BuildReleaseAndroidBundle();
                     if (Directory.Exists(Application.streamingAssetsPath + "/AssetBundle"))
@@ -134,8 +134,8 @@ namespace UGCF.Editor
                 {
                     string channel = channelManager.iOSBuildChannel.ToString();
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS, channel);
-                    ugcfMain.isDebugLog = isDebugLog;
-                    ugcfMain.useLocalSource = useLocalSource;
+                    ugcfMain.IsDebugLog = isDebugLog;
+                    ugcfMain.UseLocalSource = useLocalSource;
                     EditorCreateBundle.BuildReleaseIOSBundle();
                     if (Directory.Exists(Application.streamingAssetsPath + "/AssetBundle"))
                         Directory.Delete(Application.streamingAssetsPath + "/AssetBundle", true);

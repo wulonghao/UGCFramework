@@ -5,23 +5,23 @@ using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
+    [AddComponentMenu("UI/RadioButton")]
     public class RadioButton : Selectable, IPointerClickHandler
     {
-        [SerializeField]
-        private bool m_IsTrue;
+        [SerializeField] bool m_IsTrue;
 
-        public bool isTrue
-        {
-            get { return m_IsTrue; }
-            set { SetValue(value); }
-        }
-        public GameObject trueOption;
-        public GameObject falseOption;
-        public UnityAction<bool> onValueChanged = null;
+        public bool IsTrue { get => m_IsTrue; set => SetValue(value); }
+
+        [SerializeField] GameObject trueOption;
+        public GameObject TrueOption { get => trueOption; set => trueOption = value; }
+
+        [SerializeField] GameObject falseOption;
+        public GameObject FalseOption { get => falseOption; set => falseOption = value; }
+
+        public UnityAction<bool> OnValueChanged { get; set; }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            //AudioManager.Instance.PlaySound(ConstantUtils.AudioBtnClick);
             SetValue(!m_IsTrue);
         }
 
@@ -34,16 +34,15 @@ namespace UGCF.UGUIExtend
         {
             m_IsTrue = isTrue;
             RefreshActive();
-            if (onValueChanged != null)
-                onValueChanged(isTrue);
+            OnValueChanged?.Invoke(isTrue);
         }
 
         void RefreshActive()
         {
-            if (trueOption)
-                trueOption.SetActive(m_IsTrue);
-            if (falseOption)
-                falseOption.SetActive(!m_IsTrue);
+            if (TrueOption)
+                TrueOption.SetActive(m_IsTrue);
+            if (FalseOption)
+                FalseOption.SetActive(!m_IsTrue);
         }
     }
 }

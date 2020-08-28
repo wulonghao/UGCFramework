@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UGCF.UGUIExtend;
 using UnityEditor;
+using UnityEditor.UI;
 using UnityEngine;
 
-namespace UGCF.UGUIExtend
+namespace UGCF.UGCFEditor
 {
     [CustomEditor(typeof(CustomImage))]
     [CanEditMultipleObjects]
-    public class CustomImageEditor : UnityEditor.UI.GraphicEditor
+    public class CustomImageEditor : GraphicEditor
     {
         SerializedProperty allPoints;
         SerializedProperty m_Sprite;

@@ -1,19 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Sprites;
 using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
+    [AddComponentMenu("UI/BrokenLineImage")]
     public class BrokenLineImage : Image
     {
-        public float height, width;
-        public List<Vector2> allPoints = new List<Vector2>();
+        [SerializeField] [Tooltip("折线图X轴的最大值")] float width;
+        public float Width { get => width; set => width = value; }
+
+        [SerializeField] [Tooltip("折线图Y轴的最大值")] float height;
+        public float Height { get => height; set => height = value; }
+
+        [SerializeField] [Tooltip("折线图所有的数据点")] List<Vector2> allPoints = new List<Vector2>();
+        public List<Vector2> AllPoints { get => allPoints; }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
-            if (allPoints.Count == 0)
+            if (AllPoints.Count == 0)
                 base.OnPopulateMesh(vh);
             else
             {
@@ -32,11 +38,11 @@ namespace UGCF.UGUIExtend
                 int verticeCount;
                 int triangleCount;
                 Vector2 curVertice;
-                verticeCount = allPoints.Count;
+                verticeCount = AllPoints.Count;
 
                 for (int i = 0; i < verticeCount; i++)
                 {
-                    curVertice = new Vector2(allPoints[i].x * tw / width, allPoints[i].y * th / height);
+                    curVertice = new Vector2(AllPoints[i].x * tw / Width, AllPoints[i].y * th / Height);
                     uiVertex = new UIVertex
                     {
                         color = color,
@@ -45,10 +51,10 @@ namespace UGCF.UGUIExtend
                     };
                     vh.AddVert(uiVertex);
                 }
-                for (int i = allPoints.Count - 3; i > 1; i--)
+                for (int i = AllPoints.Count - 3; i > 1; i--)
                 {
                     verticeCount++;
-                    curVertice = Vector2.right * allPoints[i].x * tw / width;
+                    curVertice = Vector2.right * AllPoints[i].x * tw / Width;
                     uiVertex = new UIVertex
                     {
                         color = color,

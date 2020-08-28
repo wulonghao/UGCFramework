@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UGCF.UGUIExtend;
 using UnityEditor;
 using UnityEditor.UI;
 using UnityEngine;
 
-namespace UGCF.UGUIExtend
+namespace UGCF.UGCFEditor
 {
     [CustomEditor(typeof(CombinedChildScrollRect), true)]
     [CanEditMultipleObjects]

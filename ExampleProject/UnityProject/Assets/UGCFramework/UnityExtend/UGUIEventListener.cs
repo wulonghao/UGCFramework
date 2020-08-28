@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 using UnityEngine.EventSystems;
-using UnityEngine.Events;
 using UGCF.Manager;
 
 namespace UGCF.UnityExtend
@@ -15,39 +13,39 @@ namespace UGCF.UnityExtend
                                 IPointerUpHandler
     {
         public delegate void VoidDelegate(GameObject go);
-        public string mAudioType;
+        public VoidDelegate OnClick { get; set; }
+        public VoidDelegate OnDown { get; set; }
+        public VoidDelegate OnEnter { get; set; }
+        public VoidDelegate OnExit { get; set; }
+        public VoidDelegate OnUp { get; set; }
+        public VoidDelegate OnLongPress { get; set; }
 
-        public VoidDelegate onClick;
-        public VoidDelegate onDown;
-        public VoidDelegate onEnter;
-        public VoidDelegate onExit;
-        public VoidDelegate onUp;
-        public VoidDelegate onLongPress;
-        //与长按配合使用
-        bool isDown = false;
-        float time = 0;
+        private string mAudioType;
+        //是否处于按下状态 与长按配合使用
+        private bool isDown = false;
+        private float time = 0;
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (onClick != null)
+            if (OnClick != null)
             {
                 if (!GetComponent<Button>() || GetComponent<Button>().interactable)
                 {
                     if (!string.IsNullOrEmpty(mAudioType) && !AudioManager.Instance.IsPlayingSound)
                         AudioManager.Instance.PlaySound(mAudioType);
-                    onClick(gameObject);
+                    OnClick(gameObject);
                 }
             }
         }
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (onDown != null) onDown(gameObject);
+            OnDown?.Invoke(gameObject);
             time = Time.realtimeSinceStartup;
             isDown = true;
         }
-        public void OnPointerEnter(PointerEventData eventData) { if (onEnter != null) onEnter(gameObject); }
-        public void OnPointerExit(PointerEventData eventData) { if (onExit != null) onExit(gameObject); isDown = false; }
-        public void OnPointerUp(PointerEventData eventData) { if (onUp != null) onUp(gameObject); isDown = false; time = Time.realtimeSinceStartup; }
+        public void OnPointerEnter(PointerEventData eventData) { OnEnter?.Invoke(gameObject); }
+        public void OnPointerExit(PointerEventData eventData) { OnExit?.Invoke(gameObject); isDown = false; }
+        public void OnPointerUp(PointerEventData eventData) { OnUp?.Invoke(gameObject); isDown = false; time = Time.realtimeSinceStartup; }
 
         public static UGUIEventListener Get(GameObject go, string clickAudio = null)
         {
@@ -61,9 +59,9 @@ namespace UGCF.UnityExtend
         void Update()
         {
             //长按
-            if (onLongPress != null && isDown && Time.realtimeSinceStartup - time > 0.8f)
+            if (OnLongPress != null && isDown && Time.realtimeSinceStartup - time > 0.8f)
             {
-                onLongPress(gameObject);
+                OnLongPress(gameObject);
                 isDown = false;
             }
         }

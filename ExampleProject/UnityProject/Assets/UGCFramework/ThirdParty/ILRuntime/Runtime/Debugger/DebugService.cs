@@ -4,12 +4,9 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Linq;
-
 using ILRuntime.CLR.Method;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
-using ILRuntime.CLR.Utils;
 
 namespace ILRuntime.Runtime.Debugger
 {

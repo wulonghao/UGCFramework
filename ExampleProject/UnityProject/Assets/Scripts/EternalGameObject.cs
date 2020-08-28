@@ -8,14 +8,12 @@ using UnityEngine.UI;
 
 public class EternalGameObject : HotFixBaseInheritMono
 {
-    public static EternalGameObject Instance;
     public static AssetBundle commonBasicspriteAb, commonButtonAb, fontDefault, imageColorChangeAb, imageColorChangeVAb;
     [SerializeField] bool isNeverSleep = true;
 
 
     void Awake()
     {
-        Instance = this;
         Application.targetFrameRate = 60;
         Screen.sleepTimeout = isNeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
         Application.logMessageReceived += LogUtils.LogToFile;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UGCF.Manager;
 using UGCF.UnityExtend;
 using UnityEngine;
+using UGCF.Utils;
 
 public class Test1Node : Node
 {
@@ -16,7 +17,7 @@ public class Test1Node : Node
             InvokeHotFix(methodName, null);
             return;
         }
-        UGUIEventListener.Get(btnTest2Node).onClick = delegate { NodeManager.OpenNode<Test2Node>(); };
+        UGUIEventListener.Get(btnTest2Node).OnClick = delegate { NodeManager.OpenNode<Test2Node>(); };
     }
 
     public void TempHotUpdate1(int test)

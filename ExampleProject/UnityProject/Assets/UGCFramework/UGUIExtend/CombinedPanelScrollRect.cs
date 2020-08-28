@@ -1,27 +1,28 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.Utils;
+﻿using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UGCF.UGUIExtend
 {
-    public class CombinedPanelScrollRect : PanelScrollRectCenter
+    [AddComponentMenu("UI/CombinedPanelScrollRect")]
+    public class CombinedPanelScrollRect : PanelCenterScrollRect
     {
-        public ScrollRect parentScroll;
+        [SerializeField] private ScrollRect parentScroll;
+        public ScrollRect ParentScroll { get => parentScroll; set => parentScroll = value; }
         bool isScrollSelf = false;
+
 
         public override void OnBeginDrag(PointerEventData eventData)
         {
             Vector2 touchDeltaPosition = InputUtils.GetTouchDeltaPosition();
             bool isVertical = Mathf.Abs(touchDeltaPosition.x) < Mathf.Abs(touchDeltaPosition.y);
 
-            isScrollSelf = (vertical && isVertical) || (horizontal && !isVertical);
+            isScrollSelf = (Vertical && isVertical) || (Horizontal && !isVertical);
             if (isScrollSelf)
                 base.OnBeginDrag(eventData);
             else
-                if (parentScroll) parentScroll.OnBeginDrag(eventData);
+                if (ParentScroll) ParentScroll.OnBeginDrag(eventData);
         }
 
         public override void OnDrag(PointerEventData eventData)
@@ -29,7 +30,7 @@ namespace UGCF.UGUIExtend
             if (isScrollSelf)
                 base.OnDrag(eventData);
             else
-                if (parentScroll) parentScroll.OnDrag(eventData);
+                if (ParentScroll) ParentScroll.OnDrag(eventData);
         }
 
         public override void OnEndDrag(PointerEventData eventData)
@@ -37,7 +38,7 @@ namespace UGCF.UGUIExtend
             if (isScrollSelf)
                 base.OnEndDrag(eventData);
             else
-                if (parentScroll) parentScroll.OnEndDrag(eventData);
+                if (ParentScroll) ParentScroll.OnEndDrag(eventData);
         }
     }
 }

@@ -6,12 +6,7 @@ namespace UGCF.Utils
     public partial class ConstantUtils
     {
         public static string BundleIdentifier { get { return Application.identifier; } }
-        public const string AudioBtnClick = "BtnClick";
-        public const string BundleInfoConfigName = "Bundle.txt";
-        public const string CommonResourcesFolderName = "CommonResources";
-        public const string OtherSundryFolderName = "OtherSundry";
-
-        public static string AssetBundleFolderPath = Application.persistentDataPath + "/AssetBundle/" + MiscUtils.GetCurrentPlatform() + "/";
+        public static string AssetBundleFolderPath { get { return Application.persistentDataPath + "/AssetBundle/" + MiscUtils.GetCurrentPlatform() + "/"; } }
         public static string StreamingAssetBundleFolderPath
         {
             get
@@ -23,11 +18,16 @@ namespace UGCF.Utils
             }
         }
 
-        public static string ConfigFolderPath = Application.persistentDataPath + "/config/";
-        public static string SpriteFolderPath = Application.persistentDataPath + "/sprite/";
-        public static string ArchiveFolderPath = Application.persistentDataPath + "/archive/";
-        public static string APKFolderPath = Application.persistentDataPath + "/apk/";
-        public static string AudioFolderPath = Application.persistentDataPath + "/audio/";
+        public static string ConfigFolderPath { get { return Application.persistentDataPath + "/config/"; } }
+        public static string SpriteFolderPath { get { return Application.persistentDataPath + "/sprite/"; } }
+        public static string ArchiveFolderPath { get { return Application.persistentDataPath + "/archive/"; } }
+        public static string APKFolderPath { get { return Application.persistentDataPath + "/apk/"; } }
+        public static string AudioFolderPath { get { return Application.persistentDataPath + "/audio/"; } }
+
+        public const string AudioBtnClick = "BtnClick";
+        public const string BundleInfoConfigName = "Bundle.txt";
+        public const string CommonResourcesFolderName = "CommonResources";
+        public const string OtherSundryFolderName = "OtherSundry";
 
         public const string LOGIN_FAIL = "登录失败";
         public const string SHARE_SUCCESS = "分享成功";
