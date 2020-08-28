@@ -9,11 +9,11 @@ namespace UGCF.Network
     {
         public delegate void MessageEvent(Msg_S2C msg);
         //公共的事件池
-        public static Dictionary<ProtoId, MessageEvent> commonMEs = new Dictionary<ProtoId, MessageEvent>();
+        public static Dictionary<ProtoId, MessageEvent> CommonMEs = new Dictionary<ProtoId, MessageEvent>();
         //对应协议的的物体关系池
-        public static Dictionary<ProtoId, GameObject> allProtoGos = new Dictionary<ProtoId, GameObject>();
+        public static Dictionary<ProtoId, GameObject> AllProtoGos = new Dictionary<ProtoId, GameObject>();
         //对应物体的的事件池
-        public static Dictionary<GameObject, Dictionary<ProtoId, MessageEvent>> gomes = new Dictionary<GameObject, Dictionary<ProtoId, MessageEvent>>();
+        public static Dictionary<GameObject, Dictionary<ProtoId, MessageEvent>> GameEvents = new Dictionary<GameObject, Dictionary<ProtoId, MessageEvent>>();
 
         /// <summary>
         /// 执行目标消息处理事件
@@ -22,12 +22,12 @@ namespace UGCF.Network
         /// <param name="msg"></param>
         public static void ExecuteTargetListener(Msg_S2C msg)
         {
-            if (commonMEs.ContainsKey(msg.protoId))
-                commonMEs[msg.protoId](msg);
+            if (CommonMEs.ContainsKey(msg.protoId))
+                CommonMEs[msg.protoId](msg);
             else
             {
-                if (allProtoGos.ContainsKey(msg.protoId))//commonGos 和 gomes一一对应，commonGos中包含的键值对在gomes中一定存在
-                    gomes[allProtoGos[msg.protoId]][msg.protoId](msg);
+                if (AllProtoGos.ContainsKey(msg.protoId))//commonGos 和 gomes一一对应，commonGos中包含的键值对在gomes中一定存在
+                    GameEvents[AllProtoGos[msg.protoId]][msg.protoId](msg);
             }
         }
 
@@ -39,7 +39,7 @@ namespace UGCF.Network
         /// <param name="action"></param>
         public static void AddMessageListener(ProtoId protoId, Action<Msg_S2C> action)
         {
-            commonMEs[protoId] = new MessageEvent(action);
+            CommonMEs[protoId] = new MessageEvent(action);
         }
 
         /// <summary>
@@ -54,16 +54,16 @@ namespace UGCF.Network
             if (!ml) ml = go.AddComponent<MessageListener>();
 
             Dictionary<ProtoId, MessageEvent> goDic;
-            if (gomes.ContainsKey(go))
-                goDic = gomes[go];
+            if (GameEvents.ContainsKey(go))
+                goDic = GameEvents[go];
             else
             {
                 goDic = new Dictionary<ProtoId, MessageEvent>();
-                gomes.Add(go, goDic);
+                GameEvents.Add(go, goDic);
             }
 
             goDic[protoId] = new MessageEvent(action);
-            allProtoGos[protoId] = go;
+            AllProtoGos[protoId] = go;
         }
 
         /// <summary>
@@ -73,10 +73,10 @@ namespace UGCF.Network
         /// <param name="protoId"></param>
         public static void RemoveTargetListener(this GameObject go, ProtoId protoId)
         {
-            if (allProtoGos.ContainsKey(protoId))
+            if (AllProtoGos.ContainsKey(protoId))
             {
-                allProtoGos.Remove(protoId);
-                gomes[go].Remove(protoId);
+                AllProtoGos.Remove(protoId);
+                GameEvents[go].Remove(protoId);
             }
         }
 
@@ -88,13 +88,13 @@ namespace UGCF.Network
         public static bool RemoveAllListener(this GameObject go)
         {
             List<ProtoId> pis = new List<ProtoId>();
-            foreach (ProtoId protoId in allProtoGos.Keys)
-                if (allProtoGos[protoId].Equals(go))
+            foreach (ProtoId protoId in AllProtoGos.Keys)
+                if (AllProtoGos[protoId].Equals(go))
                     pis.Add(protoId);
 
             for (int i = 0; i < pis.Count; i++)
-                allProtoGos.Remove(pis[i]);
-            return gomes.Remove(go);
+                AllProtoGos.Remove(pis[i]);
+            return GameEvents.Remove(go);
         }
     }
 }

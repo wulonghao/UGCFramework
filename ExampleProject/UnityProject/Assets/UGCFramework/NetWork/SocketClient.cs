@@ -21,41 +21,40 @@ namespace UGCF.Network
             {
                 if (instance == null)
                 {
-                    GameObject go = new GameObject();
-                    instance = go.AddComponent<SocketClient>();
-                    go.name = instance.GetType().ToString();
-                    DontDestroyOnLoad(go);
+                    instance = new GameObject().AddComponent<SocketClient>();
+                    instance.name = instance.GetType().ToString();
+                    DontDestroyOnLoad(instance);
                 }
                 return instance;
             }
             set { instance = value; }
         }
 
-        string ip;
-        int port;
-        const int packageMaxLength = 1024;
+        private string ip;
+        private int port;
+        private const int PackageMaxLength = 1024;
 
-        Socket mSocket;
-        Coroutine heart;
-        Thread threadSend;//发送消息线程
-        bool threadSendAlive = false;
-        Thread threadRecive;//接收消息线程
-        bool threadReciveAlive = false;
-        int isConnected = -1;// 判断当前连接状态 -1-未开始连接，0-连接失败，1-连接成功
-        int reconnectCount = 0;//当前重连次数
-        Queue<Msg_S2C> allPackages = new Queue<Msg_S2C>();//所有接收后还未处理的数据包
-        List<Msg_C2S> sendList = new List<Msg_C2S>();
-        List<Msg_C2S> tempSendList = new List<Msg_C2S>();
-        List<Msg_C2S> reconnectSendList = new List<Msg_C2S>();//重连后需要重新发送的消息
+        private Socket mSocket;
+        private Coroutine heart;
+
+        private Thread threadSend;//发送消息线程
+        private bool threadSendAlive;
+
+        private Thread threadRecive;//接收消息线程
+        private bool threadReciveAlive;
+
+        private int isConnected = -1;// 判断当前连接状态 -1-未开始连接，0-连接失败，1-连接成功
+        private Queue<Msg_S2C> allPackages = new Queue<Msg_S2C>();//所有接收后还未处理的数据包
+        private List<Msg_C2S> sendList = new List<Msg_C2S>();
+        private List<Msg_C2S> tempSendList = new List<Msg_C2S>();
+        private List<Msg_C2S> reconnectSendList = new List<Msg_C2S>();//重连后需要重新发送的消息
+        private ManualResetEvent manual = new ManualResetEvent(false);
 
         #region ...创建socket连接
         public bool Init(string ip, int port, bool isReconnect = false)
         {
-            if (string.IsNullOrEmpty(ip) || port == 0)
+            if (string.IsNullOrEmpty(ip))
                 return false;
-            if (threadSendAlive && threadReciveAlive && threadSend != null && threadRecive != null &&
-                threadSend.ThreadState == ThreadState.Running && threadRecive.ThreadState == ThreadState.Running)
-                return true;
             this.ip = ip;
             this.port = port;
             if (!isReconnect)
@@ -65,7 +64,6 @@ namespace UGCF.Network
                 tempSendList.Clear();
             }
             mSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            mSocket.Blocking = true;
             return SocketConnection(isReconnect);
         }
 
@@ -84,22 +82,31 @@ namespace UGCF.Network
                         Thread.Sleep(100);
                     if (isConnected == 1)
                     {
-                        threadSend = new Thread(new ThreadStart(SendMessage));
-                        threadSend.Start();
-                        threadSendAlive = true;
-                        threadRecive = new Thread(new ThreadStart(ReceiveMessage));
-                        threadRecive.Start();
-                        threadReciveAlive = true;
+                        isReconnecting = false;
+                        ContinueThread();
+                        if (threadSend == null)
+                        {
+                            threadSendAlive = true;
+                            threadSend = new Thread(new ThreadStart(SendMessage));
+                            threadSend.Start();
+                            LogUtils.Log("(Init):threadSend线程初始化");
+                        }
+
+                        if (threadRecive == null)
+                        {
+                            threadReciveAlive = true;
+                            threadRecive = new Thread(new ThreadStart(ReceiveMessage));
+                            threadRecive.Start();
+                            LogUtils.Log("(Init):threadRecive线程初始化");
+                        }
                         StartCoroutine(AnalysisMessage());
-                        if (heart != null)
-                            StopCoroutine(heart);
-                        heart = StartCoroutine(AddHeartPackage());
+                        CreateHeart();
                         if (reconnectSendList.Count > 0)
                         {
                             tempSendList.InsertRange(0, reconnectSendList);
                             reconnectSendList.Clear();
                         }
-                        LogUtils.Log("Socket连接建立成功!");
+                        LogUtils.Log("建立连接成功!");
                         return true;
                     }
                     else
@@ -124,10 +131,10 @@ namespace UGCF.Network
 
         void ConnectLose(bool isReconnect)
         {
+            isReconnecting = false;
             if (!isReconnect)
             {
-                OpenTipNetError();
-                Destroy(gameObject);
+                CloseSocket();
             }
         }
 
@@ -140,8 +147,7 @@ namespace UGCF.Network
             try
             {
                 isConnected = -1;
-                Socket socketClient = asyncresult.AsyncState as Socket;
-                if (socketClient != null)
+                if (asyncresult.AsyncState is Socket socketClient)
                 {
                     socketClient.EndConnect(asyncresult);
                     isConnected = 1;
@@ -157,22 +163,35 @@ namespace UGCF.Network
                 asyncresult.AsyncWaitHandle.Close();
             }
         }
-        #endregion
 
-        #region ...发送消息
         /// <summary>
-        /// 每10秒添加心跳包
+        /// 创建心跳，并停止旧的心跳协程
+        /// </summary>
+        public void CreateHeart()
+        {
+            if (heart != null)
+            {
+                StopCoroutine(heart);
+                heart = null;
+            }
+            heart = StartCoroutine(AddHeartPackage());
+        }
+
+        /// <summary>
+        /// 每5秒添加心跳包
         /// </summary>
         /// <returns></returns>
         IEnumerator AddHeartPackage()
         {
             while (true)
             {
-                MessageProcessor.SendMessage(ProtoId.SYSTEM_HEART);
                 yield return WaitForUtils.WaitForSecondsRealtime(10);
+                MessageProcessor.SendMessage(ProtoId.SYSTEM_HEART);
             }
         }
+        #endregion
 
+        #region ...发送消息
         /// <summary>
         /// 添加数据到发送队列
         /// </summary>
@@ -182,8 +201,7 @@ namespace UGCF.Network
             lock (tempSendList)
             {
                 tempSendList.Add(c2s);
-                if (c2s.protoId != ProtoId.SYSTEM_HEART)
-                    LogUtils.Log("添加消息到发送队列：" + c2s.protoId);
+                LogUtils.Log("添加消息到发送队列：" + c2s.protoId);
             }
         }
 
@@ -191,6 +209,13 @@ namespace UGCF.Network
         {
             while (threadSendAlive)
             {
+                manual.WaitOne();
+                if (mSocket == null)
+                {
+                    ToReconnect();
+                    continue;
+                }
+
                 if (sendList.Count == 0)
                 {
                     if (tempSendList.Count > 0)
@@ -202,30 +227,20 @@ namespace UGCF.Network
                         }
                     }
                     else
-                    {
                         Thread.Sleep(100);
-                        continue;
-                    }
                 }
                 else
                 {
-                    if (!IsConnected() || !mSocket.Connected)
-                    {
+                    if (!IsConnected() && !mSocket.Connected)
                         ToReconnect();
-                        break;
-                    }
                     else
                     {
-                        if (sendList.Count > 0 && Send(sendList[0]))
-                            continue;
-                        else
-                        {
+                        if (sendList.Count == 0 || !Send(sendList[0]))
                             ToReconnect();
-                            break;
-                        }
                     }
                 }
             }
+            LogUtils.Log("结束线程：SendMessage");
         }
 
         bool Send(Msg_C2S c2s)
@@ -233,14 +248,13 @@ namespace UGCF.Network
             bool sendSuccess = false;
             try
             {
-                int sendLength = mSocket.Send(NetWorkUtils.BuildPackage(c2s), SocketFlags.None);
+                int sendLength = mSocket.Send(NetWorkUtils.BuildPackage(c2s, true), SocketFlags.None);
                 sendSuccess = sendLength > 0;
-                if (sendSuccess && threadSendAlive)
+                if (sendSuccess)
                 {
                     if (sendList.Contains(c2s))
                         sendList.Remove(c2s);
-                    if (c2s.protoId != ProtoId.SYSTEM_HEART)
-                        LogUtils.Log("发送消息成功：" + c2s.protoId);
+                    LogUtils.Log("发送消息成功：" + c2s.protoId);
                 }
             }
             catch (SocketException ex)
@@ -273,7 +287,6 @@ namespace UGCF.Network
                     if (allPackages.Count > 0)
                         message = allPackages.Dequeue();
                 }
-
                 if (message != null)
                 {
                     LogUtils.Log("收到消息：" + message.protoId);
@@ -290,13 +303,22 @@ namespace UGCF.Network
         {
             while (threadReciveAlive)
             {
-                if (!IsConnected() || !mSocket.Connected)
-                    break;
-                int bodyLength = 0;
-                //TODO 数据长度自定义
-                lock (allPackages)
-                    allPackages.Enqueue(ProtobufSerilizer.DeSerialize<Msg_S2C>(GetBytesReceive(bodyLength)));
+                manual.WaitOne();
+                byte[] recvBytesHead = GetBytesReceive(2);//自定义协议头长度
+                if (recvBytesHead != null)
+                {
+                    int bodyLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(recvBytesHead, 0));
+                    if (bodyLength == 0)
+                        continue;
+                    lock (allPackages)
+                        allPackages.Enqueue(ProtobufSerilizer.DeSerialize<Msg_S2C>(GetBytesReceive(bodyLength)));
+                }
+                else
+                {
+                    LogUtils.Log("ReceiveMessage：未接收到数据");
+                }
             }
+            LogUtils.Log("结束线程：ReceiveMessage");
         }
 
         /// <summary>
@@ -311,7 +333,8 @@ namespace UGCF.Network
                 byte[] recvBytes = new byte[length];
                 while (length > 0)
                 {
-                    byte[] receiveBytes = new byte[length < packageMaxLength ? length : packageMaxLength];
+                    manual.WaitOne();
+                    byte[] receiveBytes = new byte[length < PackageMaxLength ? length : PackageMaxLength];
                     int iBytesBody = 0;
                     if (length >= receiveBytes.Length)
                         iBytesBody = mSocket.Receive(receiveBytes, receiveBytes.Length, 0);
@@ -322,30 +345,24 @@ namespace UGCF.Network
                 }
                 return recvBytes;
             }
-            //catch (Exception e)
             catch
             {
-                //LogUtils.Log(e.ToString());
                 return null;
             }
         }
         #endregion
 
-        #region ...重连
         /// <summary>
         /// 获取连接状态
         /// </summary>
         /// <returns></returns>
-        bool IsConnected()
+        private bool IsConnected()
         {
             bool ConnectState = true;
             try
             {
-                ProtobufByteBuffer buf = ProtobufByteBuffer.Allocate(4);
-                buf.WriteInt(0);
-
-                int length = mSocket.Send(buf.GetBytes(), 0, SocketFlags.None);
-                ConnectState = length >= 0;
+                mSocket.Send(new byte[1], 0, SocketFlags.None);
+                ConnectState = true;
             }
             catch (SocketException e)
             {
@@ -354,109 +371,128 @@ namespace UGCF.Network
             return ConnectState;
         }
 
+        #region ...重连
+        bool isReconnecting = false;
         void ToReconnect()
         {
-            Loom.QueueOnMainThread(() => { if (this) StartCoroutine(Reconnect()); });
+            LogUtils.Log("正在尝试发起重连");
+            if (isReconnecting)
+                return;
+            isReconnecting = true;
+            PauseThread();
+            Loom.QueueOnMainThread(Reconnect);
         }
 
         /// <summary>
         /// 断线重连
         /// </summary>
-        IEnumerator Reconnect()
+        void Reconnect()
         {
             LogUtils.Log("正在尝试重连");
             if (!this)
-                yield break;
-            Close();
-            reconnectCount++;
-            if (sendList.Count > 0)
+                return;
+            CloseSocket();
+            lock (sendList)
             {
-                reconnectSendList.AddRange(sendList);
-                sendList.Clear();
-            }
-            if (tempSendList.Count > 0)
-            {
-                reconnectSendList.AddRange(tempSendList);
-                tempSendList.Clear();
-            }
-            bool isSuccess = Init(ip, port, true);
-            if (!isSuccess)
-            {
-                if (reconnectCount < 3)
+                if (sendList.Count > 0)
                 {
-                    yield return WaitForUtils.WaitForSecondsRealtime(5);
-                    StartCoroutine(Reconnect());
+                    reconnectSendList.AddRange(sendList);
+                    sendList.Clear();
                 }
-                else
+            }
+            lock (tempSendList)
+            {
+                if (tempSendList.Count > 0)
                 {
-                    OpenTipNetError();
+                    reconnectSendList.AddRange(tempSendList);
+                    tempSendList.Clear();
                 }
+            }
+            if (MiscUtils.IsNetworkConnecting())
+            {
+                Init(ip, port, true);
             }
             else
             {
-                reconnectCount = 0;
+                isReconnecting = false;
             }
         }
         #endregion
 
+        int closeSocketLoopCount = 0;
         /// <summary>
-        /// 关闭socket,终止线程
+        /// 关闭socket,不终止线程
         /// </summary>
-        public void Close()
+        public void CloseSocket()
         {
             try
             {
+                LogUtils.Log("关闭Socket");
+                PauseThread();
                 if (mSocket != null && mSocket.Connected)
+                {
                     mSocket.Shutdown(SocketShutdown.Both);
-                if (threadSend != null && threadSend.IsAlive)
-                {
-                    threadSendAlive = false;
-                    threadSend.Join();
-                    threadSend = null;
-                }
-                if (threadRecive != null && threadRecive.IsAlive)
-                {
-                    threadReciveAlive = false;
-                    threadRecive.Join();
-                    threadRecive = null;
-                }
-                if (mSocket != null && mSocket.Connected)
-                {
+                    mSocket.Disconnect(true);
                     mSocket.Close();
+                    isConnected = -1;
                     mSocket = null;
                 }
-            }
-            catch (SocketException se)
-            {
-                LogUtils.Log(se.ToString());
-                if (se.SocketErrorCode != SocketError.NotConnected)
-                    Close();
             }
             catch (Exception e)
             {
                 LogUtils.Log(e.ToString());
-                Close();
+                if (closeSocketLoopCount < 2)
+                {
+                    closeSocketLoopCount++;
+                    CloseSocket();
+                }
+                else
+                    closeSocketLoopCount = 0;
             }
         }
 
         /// <summary>
-        /// 打开网络错误弹窗 
+        /// 销毁网络相关并释放相关线程
         /// </summary>
-        void OpenTipNetError()
+        public void DestroySocket()
         {
-            TipManager.Instance.OpenTip(TipType.AlertTip, "与服务器断开连接", 0, () =>
-            {
-                //TODO 退出登录
-            });
+            Destroy(gameObject);
+        }
+
+        public void ContinueThread()
+        {
+            LogUtils.Log("线程继续");
+            manual.Set();
+        }
+
+        public void PauseThread()
+        {
+            LogUtils.Log("线程暂停");
+            manual.Reset();
         }
 
         void OnDestroy()
         {
-            Close();
+            CloseSocket();
             sendList.Clear();
             tempSendList.Clear();
             allPackages.Clear();
             instance = null;
+            if (threadSend != null && threadSend.IsAlive)
+            {
+                threadSendAlive = false;
+                threadSend = null;
+            }
+            if (threadRecive != null && threadRecive.IsAlive)
+            {
+                threadReciveAlive = false;
+                threadRecive = null;
+            }
+        }
+
+        public static bool GetSocketClient()
+        {
+            return instance;
         }
     }
 }

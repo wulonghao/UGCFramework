@@ -22,7 +22,7 @@ namespace UGCF.Network
                 LogUtils.Log("无法连接到网络：" + msg.protoId);
                 return;
             }
-            EternalGameObject.Instance.StartCoroutine(SendHttpRequestAc(msg));
+            UGCFMain.Instance.StartCoroutine(SendHttpRequestAc(msg));
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace UGCF.Network
                 LogUtils.Log("无法连接到网络：" + protoId);
                 return;
             }
-            EternalGameObject.Instance.StartCoroutine(SendHttpRequestAc(new Msg_C2S() { protoId = protoId }));
+            UGCFMain.Instance.StartCoroutine(SendHttpRequestAc(new Msg_C2S() { protoId = protoId }));
         }
 
         private static IEnumerator SendHttpRequestAc(Msg_C2S msg)
