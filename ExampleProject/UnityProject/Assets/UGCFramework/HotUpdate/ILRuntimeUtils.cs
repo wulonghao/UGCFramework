@@ -109,7 +109,7 @@ namespace UGCF.HotUpdate
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject, float>();
             appdomain.DelegateManager.RegisterDelegateConvertor<ScrollRectChildCenter.ScrollRectItemChangeEvent>((action) =>
             {
-                return new ScrollRectChildCenter.ScrollRectItemChangeEvent((go, f) => { ((System.Action<GameObject, float>)action)(go, f); });
+                return new ScrollRectChildCenter.ScrollRectItemChangeEvent((go) => { ((System.Action<GameObject>)action)(go); });
             });
 
             appdomain.DelegateManager.RegisterMethodDelegate<System.IAsyncResult>();
