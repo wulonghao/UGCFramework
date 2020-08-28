@@ -12,14 +12,15 @@ namespace UGCF.UGUIExtend
         public delegate void ScrollRectItemChangeEvent(GameObject go);
         public ScrollRectItemChangeEvent OnItemChanged { get; set; }
 
+        #region ...字段
         [SerializeField] private bool vertical;
         [SerializeField] private bool horizontal;
         [SerializeField] private bool defaultFirst = true;
         [SerializeField] private bool isCircle;
         [SerializeField] private bool isAutoLoop;
         [SerializeField] private float loopTimeSpace = 5;
-        [SerializeField] private float dragThresholdTime = 0.3f;//拖拽检测时间阈值，低于阈值取最后一帧操作判断行为，否则以最近元素为目标元素
-        [SerializeField] private int speed = 10;//拖拽检测时间阈值，低于阈值取最后一帧操作判断行为，否则以最近元素为目标元素
+        [SerializeField] [Range(0, 2)] private float dragThresholdTime = 0.3f;//拖拽检测时间阈值，低于阈值取最后一帧操作判断行为，否则以最近元素为目标元素
+        [SerializeField] [Range(0, 100)] private int speed = 10;
         [SerializeField] private RectTransform viewport;
         [SerializeField] private RectTransform content;
         private bool moving;
@@ -27,7 +28,9 @@ namespace UGCF.UGUIExtend
         private float screenToCanvasScale;
         private int currentIndex = -1;
         private Coroutine coroutineLoopPlay;
+        #endregion
 
+        #region ...属性
         public bool Vertical { get => vertical; set => vertical = value; }
         public bool Horizontal { get => horizontal; set => horizontal = value; }
         public bool DefaultFirst { get => defaultFirst; set => defaultFirst = value; }
@@ -38,11 +41,12 @@ namespace UGCF.UGUIExtend
         public int Speed { get => speed; set => speed = value; }
         public RectTransform Viewport { get => viewport; set => viewport = value; }
         public RectTransform Content { get => content; set => content = value; }
+        #endregion
 
         void Start()
         {
-            if (IsAutoLoop)
-                coroutineLoopPlay = UGCFMain.Instance.StartCoroutine(LoopPlay());
+            if (isAutoLoop)
+                coroutineLoopPlay = StartCoroutine(LoopPlay());
             screenToCanvasScale = GetComponentInParent<Canvas>().GetComponent<RectTransform>().localScale.x;
         }
 
@@ -68,23 +72,23 @@ namespace UGCF.UGUIExtend
             moving = false;
             RefreshCircle(eventData.delta);
             if (coroutineLoopPlay != null)
-                UGCFMain.Instance.StopCoroutine(coroutineLoopPlay);
+                StopCoroutine(coroutineLoopPlay);
         }
 
         public virtual void OnDrag(PointerEventData eventData)
         {
             if (Horizontal && Vertical)
             {
-                Content.localPosition += new Vector3(eventData.delta.x / screenToCanvasScale, eventData.delta.y / screenToCanvasScale);
+                content.localPosition += new Vector3(eventData.delta.x / screenToCanvasScale, eventData.delta.y / screenToCanvasScale);
             }
             else if (Horizontal)
             {
-                Content.localPosition += Vector3.right * eventData.delta.x / screenToCanvasScale;
+                content.localPosition += Vector3.right * eventData.delta.x / screenToCanvasScale;
                 CircleChange(eventData.delta.x);
             }
             else if (Vertical)
             {
-                Content.localPosition += Vector3.up * eventData.delta.y / screenToCanvasScale;
+                content.localPosition += Vector3.up * eventData.delta.y / screenToCanvasScale;
                 CircleChange(eventData.delta.y);
             }
             else
@@ -124,11 +128,9 @@ namespace UGCF.UGUIExtend
                 SetCenter(targetTf);
             }
             else
-            {
                 SetCenter(centerTf);
-            }
-            if (coroutineLoopPlay != null)
-                coroutineLoopPlay = UGCFMain.Instance.StartCoroutine(LoopPlay());
+            if (IsAutoLoop)
+                StartCoroutine(LoopPlay());
         }
 
         void RefreshCircle(Vector2 direction)
@@ -226,7 +228,7 @@ namespace UGCF.UGUIExtend
                 if (!tf.gameObject.activeInHierarchy)
                     continue;
                 if (!centerTf ||
-                    Vector2.SqrMagnitude(tf.localPosition + Content.localPosition) < Vector2.SqrMagnitude(centerTf.localPosition + Content.localPosition))
+                    Vector2.SqrMagnitude(tf.position - Viewport.position) < Vector2.SqrMagnitude(centerTf.position - Viewport.position))
                 {
                     centerTf = tf;
                 }
