@@ -25,7 +25,7 @@ namespace UGCF.UGUIExtend
         [SerializeField] private RectTransform content;
         private bool moving;
         private float startDragTime;
-        private float screenToCanvasScale;
+        private Vector2 canvasScale;
         private int currentIndex = -1;
         private Coroutine coroutineLoopPlay;
         #endregion
@@ -47,7 +47,7 @@ namespace UGCF.UGUIExtend
         {
             if (isAutoLoop)
                 coroutineLoopPlay = StartCoroutine(LoopPlay());
-            screenToCanvasScale = GetComponentInParent<Canvas>().GetComponent<RectTransform>().localScale.x;
+            canvasScale = GetComponentInParent<Canvas>().GetComponent<RectTransform>().localScale;
         }
 
         void OnEnable()
@@ -59,7 +59,10 @@ namespace UGCF.UGUIExtend
         {
             yield return WaitForUtils.WaitFrame;
             if (DefaultFirst)
+            {
                 SetCenter(null, false);
+                RefreshCircle(new Vector2(1, -1));
+            }
             else
                 SetCenter(GetCenter(), false);
         }
@@ -77,18 +80,20 @@ namespace UGCF.UGUIExtend
 
         public virtual void OnDrag(PointerEventData eventData)
         {
+            if (canvasScale.x == 0 || canvasScale.y == 0)
+                return;
             if (Horizontal && Vertical)
             {
-                content.localPosition += new Vector3(eventData.delta.x / screenToCanvasScale, eventData.delta.y / screenToCanvasScale);
+                content.localPosition += new Vector3(eventData.delta.x / canvasScale.x, eventData.delta.y / canvasScale.y);
             }
             else if (Horizontal)
             {
-                content.localPosition += Vector3.right * eventData.delta.x / screenToCanvasScale;
+                content.localPosition += Vector3.right * eventData.delta.x / canvasScale.x;
                 CircleChange(eventData.delta.x);
             }
             else if (Vertical)
             {
-                content.localPosition += Vector3.up * eventData.delta.y / screenToCanvasScale;
+                content.localPosition += Vector3.up * eventData.delta.y / canvasScale.y;
                 CircleChange(eventData.delta.y);
             }
             else
@@ -152,19 +157,19 @@ namespace UGCF.UGUIExtend
             RectTransform rtfLast = Content.GetChild(Content.childCount - 1).GetComponent<RectTransform>();
             Vector2 listV2 = rtfLast.rect.size;
             Rect contentParentRect = Viewport.rect;
-            Vector2 contentParentPotsition = Viewport.position;
+            Vector2 contentParentPotsition = (Vector2)Viewport.position + contentParentRect.size * (Viewport.pivot - Vector2.one * 0.5f) * canvasScale;
             if (Horizontal)
             {
                 HorizontalLayoutGroup horizontalLayout = Content.GetComponent<HorizontalLayoutGroup>();
                 if ((scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(listV2.x, contentParentRect.width) * 0.5f)
+                    && Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * canvasScale.x < Mathf.Max(listV2.x, contentParentRect.width) * 0.5f)
                     || rtfLast.position.x <= contentParentPotsition.x)
                 {
                     rtfFirst.SetAsLastSibling();
                     Content.localPosition += Vector3.right * (firstV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
                 }
                 else if ((scaleSpaceToCenter > 0
-                    && Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(firstV2.x, contentParentRect.width) * 0.5f)
+                    && Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * canvasScale.x < Mathf.Max(firstV2.x, contentParentRect.width) * 0.5f)
                     || rtfFirst.position.x >= contentParentPotsition.x)
                 {
                     rtfLast.SetAsFirstSibling();
@@ -175,14 +180,14 @@ namespace UGCF.UGUIExtend
             {
                 VerticalLayoutGroup verticalLayout = Content.GetComponent<VerticalLayoutGroup>();
                 if (scaleSpaceToCenter > 0
-                    && Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(listV2.y, contentParentRect.height) * 0.5f
+                    && Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * canvasScale.y < Mathf.Max(listV2.y, contentParentRect.height) * 0.5f
                     || rtfLast.position.y >= contentParentPotsition.y)
                 {
                     rtfFirst.SetAsLastSibling();
                     Content.localPosition += Vector3.down * (firstV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
                 else if (scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(firstV2.y, contentParentRect.height) * 0.5f
+                    && Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * canvasScale.y < Mathf.Max(firstV2.y, contentParentRect.height) * 0.5f
                     || rtfFirst.position.y <= contentParentPotsition.y)
                 {
                     rtfLast.SetAsFirstSibling();
@@ -251,8 +256,8 @@ namespace UGCF.UGUIExtend
             if (!center)
                 center = Content.GetComponentsInChildren<RectTransform>(false)[1];
 
-            Vector2 startMovingPosition = Content.localPosition;
-            Vector2 targetMovingPosition = Content.localPosition;
+            Vector2 startMovingPosition = Content.anchoredPosition;
+            Vector2 targetMovingPosition = Content.anchoredPosition;
             Vector2 centerPosition = (Vector2)center.localPosition - center.rect.size * (center.pivot - Vector2.one * 0.5f);
 
             if (Horizontal && Vertical)
@@ -265,7 +270,7 @@ namespace UGCF.UGUIExtend
             if (isPlayAnimation)
                 StartCoroutine(Moving(startMovingPosition, targetMovingPosition));
             else
-                Content.localPosition = targetMovingPosition;
+                Content.anchoredPosition = targetMovingPosition;
 
             OnItemChanged?.Invoke(center.gameObject);
             currentIndex = center.GetSiblingIndex();
@@ -279,7 +284,7 @@ namespace UGCF.UGUIExtend
             while (moving)
             {
                 if (this && Content)
-                    Content.localPosition = Vector2.Lerp(startMovingPosition, targetMovingPosition, Mathf.Clamp01(t));
+                    Content.anchoredPosition = Vector2.Lerp(startMovingPosition, targetMovingPosition, Mathf.Clamp01(t));
                 if (t >= 1)
                 {
                     moving = false;

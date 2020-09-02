@@ -90,8 +90,8 @@ namespace UGCF.UGUIExtend
             {
                 CurrentCenter = center.gameObject;
                 RectTransform centerRtf = center.GetComponent<RectTransform>();
-                Vector2 startMovingPosition = scrollRect.content.localPosition;
-                Vector2 targetMovingPosition = scrollRect.content.localPosition;
+                Vector2 startMovingPosition = scrollRect.content.anchoredPosition;
+                Vector2 targetMovingPosition = scrollRect.content.anchoredPosition;
                 Vector2 centerPosition = (Vector2)center.localPosition - centerRtf.rect.size * (centerRtf.pivot - Vector2.one * 0.5f);
 
                 if (scrollRect.horizontal && scrollRect.vertical)
@@ -113,7 +113,7 @@ namespace UGCF.UGUIExtend
             float t = 0;
             while (moving)
             {
-                scrollRect.content.localPosition = Vector2.Lerp(startMovingPosition, targetMovingPosition, Mathf.Clamp01(t));
+                scrollRect.content.anchoredPosition = Vector2.Lerp(startMovingPosition, targetMovingPosition, Mathf.Clamp01(t));
                 if (t >= 1)
                 {
                     OnItemChanged?.Invoke(CurrentCenter);
