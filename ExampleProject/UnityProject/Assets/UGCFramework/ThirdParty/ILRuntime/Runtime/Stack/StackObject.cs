@@ -8,6 +8,8 @@ using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 namespace ILRuntime.Runtime.Stack
 {
+#pragma warning disable CS0660
+#pragma warning disable CS0661
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct StackObject
     {
@@ -221,7 +223,8 @@ namespace ILRuntime.Runtime.Stack
             }
             else if (type.IsEnum)
             {
-                if(type is ILType ilType)
+                ILType ilType = type as ILType;
+                if (ilType != null)
                 {
                     Initialized(esp, ilType.FieldTypes[0]);
                 }

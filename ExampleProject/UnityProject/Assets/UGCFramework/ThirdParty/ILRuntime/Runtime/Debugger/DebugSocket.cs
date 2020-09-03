@@ -11,7 +11,6 @@ namespace ILRuntime.Runtime.Debugger
     {
         private Socket _socket = null;
         private bool _ready = false;
-        bool connectFailed = false;
         private const int MAX_BUFF_SIZE = 256 * 1024;
         private const int HEAD_SIZE = 8;
         private byte[] _headBuffer = new byte[HEAD_SIZE];
@@ -68,7 +67,7 @@ namespace ILRuntime.Runtime.Debugger
                 {
                     ReceivePayload(e.Buffer, e.BytesTransferred);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Close();
                     return;
@@ -142,7 +141,7 @@ namespace ILRuntime.Runtime.Debugger
                     if (OnReciveMessage != null)
                         OnReciveMessage((DebugMessageType)type, msgBuff);
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
                 }
@@ -232,7 +231,10 @@ namespace ILRuntime.Runtime.Debugger
             _socket.Close();
             _socket = null;
             _ready = false;
-            OnClose?.Invoke();
+            if (OnClose != null)
+            {
+                OnClose();
+            }
         }
     }
 }

@@ -67,6 +67,8 @@ namespace ILRuntime.Runtime.Enviorment
             return UnityMainThreadID != 0 && (UnityMainThreadID != System.Threading.Thread.CurrentThread.ManagedThreadId);
         }
 #endif
+        internal bool SuppressStaticConstructor { get; set; }
+
         public unsafe AppDomain()
         {
             AllowUnboundCLRMethod = true;
@@ -408,6 +410,7 @@ namespace ILRuntime.Runtime.Enviorment
                     ILType type = new ILType(t, this);
 
                     mapType[t.FullName] = type;
+                    mapTypeToken[type.GetHashCode()] = type;
                     types.Add(type);
 
                 }
@@ -760,6 +763,7 @@ namespace ILRuntime.Runtime.Enviorment
                         if (valid)
                         {
                             mapTypeToken[hash] = res;
+                            mapTypeToken[res.GetHashCode()] = res;
                             if (!string.IsNullOrEmpty(res.FullName))
                                 mapType[res.FullName] = res;
                         }
@@ -783,10 +787,8 @@ namespace ILRuntime.Runtime.Enviorment
                             }
                             mapTypeToken[hash] = res;
                         }
-                        else
-                        {
-                            mapTypeToken[res.GetHashCode()] = res;
-                        }
+                        mapTypeToken[res.GetHashCode()] = res;
+
                         if (!string.IsNullOrEmpty(res.FullName))
                             mapType[res.FullName] = res;
                         return res;
@@ -1262,13 +1264,9 @@ namespace ILRuntime.Runtime.Enviorment
                 if (it.TypeReference.HasGenericParameters)
                 {
                     mapTypeToken[type.GetHashCode()] = it;
-                    res = ((long)type.GetHashCode() << 32) | (uint)idx;
-                }
-                else
-                {
-                    res = ((long)it.TypeReference.GetHashCode() << 32) | (uint)idx;
                 }
 
+                res = ((long)type.GetHashCode() << 32) | (uint)idx;
                 return res;
             }
             else
