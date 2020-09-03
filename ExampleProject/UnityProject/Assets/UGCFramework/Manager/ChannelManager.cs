@@ -4,38 +4,16 @@ namespace UGCF.Manager
 {
     public class ChannelManager : MonoBehaviour
     {
-        public static ChannelManager Instance;
-        public AndroidBuildChannel androidBuildChannel;
-        public IOSBuildChannel iOSBuildChannel;
+        private static string channel;
 
-        void Start()
+        /// <summary>获取当前渠道</summary>
+        public static string GetChannel()
         {
-            Instance = this;
-        }
-
-#if UNITY_ANDROID
-        public AndroidBuildChannel GetCurrentChannel()
-        {
-            return androidBuildChannel;
-        }
-#elif UNITY_IOS
-        public IOSBuildChannel GetCurrentChannel()
-        {
-            return iOSBuildChannel;
-        }
-#endif
-
-        public enum AndroidBuildChannel
-        {
-            Test,
-            Huawei,
-            Xiaomi
-        }
-
-        public enum IOSBuildChannel
-        {
-            Test,
-            AppStore
+            if (string.IsNullOrEmpty(channel))
+                channel = ThirdPartySdkManager.Instance.GetFileByStreaming(Application.streamingAssetsPath + "/Channel.txt");
+            if (string.IsNullOrEmpty(channel))
+                channel = "Test";
+            return channel.Trim();
         }
     }
 }
