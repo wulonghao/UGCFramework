@@ -67,17 +67,17 @@ namespace UGCF.Manager
         public void WechatShareImage(WechatShareScene scene, Texture2D shareImage)
         {
 #if !UNITY_EDITOR
-        byte[] data = shareImage.EncodeToJPG();
-        byte[] dataThumb = MiscUtils.SizeTextureBilinear(shareImage, Vector2.one * 150).EncodeToJPG(40);
+            byte[] data = shareImage.EncodeToJPG();
+            byte[] dataThumb = UIUtils.SizeTextureBilinear(shareImage, Vector2.one * 150).EncodeToJPG(40);
 #if UNITY_IOS
-        IntPtr array = Marshal.AllocHGlobal(data.Length);
-        Marshal.Copy(data, 0, array, data.Length);
-        IntPtr arrayThumb = Marshal.AllocHGlobal(dataThumb.Length);
-        Marshal.Copy(dataThumb, 0, arrayThumb, dataThumb.Length);
-        ShareImageWx_iOS((int)scene, array, data.Length, arrayThumb, dataThumb.Length);
+            IntPtr array = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, array, data.Length);
+            IntPtr arrayThumb = Marshal.AllocHGlobal(dataThumb.Length);
+            Marshal.Copy(dataThumb, 0, arrayThumb, dataThumb.Length);
+            ShareImageWx_iOS((int)scene, array, data.Length, arrayThumb, dataThumb.Length);
 #elif UNITY_ANDROID
-        AndroidJavaClass utils = new AndroidJavaClass(WeChatShareUtils);
-        utils.CallStatic("ShareImage", (int)scene, data, dataThumb);
+            AndroidJavaClass utils = new AndroidJavaClass(WeChatShareUtils);
+            utils.CallStatic("ShareImage", (int)scene, data, dataThumb);
 #endif
 #endif
         }
@@ -90,7 +90,7 @@ namespace UGCF.Manager
         public void WechatShareText(WechatShareScene scene, string content)
         {
 #if UNITY_IOS
-        ShareTextWx_iOS((int)scene, content);
+            ShareTextWx_iOS((int)scene, content);
 #elif UNITY_ANDROID
             AndroidJavaClass utils = new AndroidJavaClass(WeChatShareUtils);
             utils.CallStatic("ShareText", (int)scene, content);
@@ -103,18 +103,19 @@ namespace UGCF.Manager
         /// <param name="scene">分享的场景</param>
         /// <param name="url">分享的链接地址</param>
         /// <param name="title">分享链接的标题</param>
+        /// <param name="shareThumbIcon">分享链接的缩略图</param>
         /// <param name="content">分享链接的文本描述</param>
-        public void WechatShareUrl(WechatShareScene scene, string url, string title, string content)
+        public void WechatShareUrl(WechatShareScene scene, string url, string title, Texture2D shareThumbIcon, string content)
         {
 #if !UNITY_EDITOR
-        byte[] thumb = MiscUtils.SizeTextureBilinear(shareThumbIcon, Vector2.one * 150).EncodeToJPG(40);
+            byte[] thumb = UIUtils.SizeTextureBilinear(shareThumbIcon, Vector2.one * 150).EncodeToJPG(40);
 #if UNITY_IOS
-        IntPtr arrayThumb = Marshal.AllocHGlobal(thumb.Length);
-        Marshal.Copy(thumb, 0, arrayThumb, thumb.Length);
-        ShareUrlWx_iOS((int)scene, url, title, content, arrayThumb, thumb.Length);
+            IntPtr arrayThumb = Marshal.AllocHGlobal(thumb.Length);
+            Marshal.Copy(thumb, 0, arrayThumb, thumb.Length);
+            ShareUrlWx_iOS((int)scene, url, title, content, arrayThumb, thumb.Length);
 #elif UNITY_ANDROID
-        AndroidJavaClass utils = new AndroidJavaClass(WeChatShareUtils);
-        utils.CallStatic("ShareUrl", (int)scene, url, title, content, thumb);
+            AndroidJavaClass utils = new AndroidJavaClass(WeChatShareUtils);
+            utils.CallStatic("ShareUrl", (int)scene, url, title, content, thumb);
 #endif
 #endif
         }

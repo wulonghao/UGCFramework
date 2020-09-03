@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.Utils;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class UGCFMain : MonoBehaviour
@@ -23,9 +20,13 @@ public class UGCFMain : MonoBehaviour
     public bool UseLocalSource { get => useLocalSource; set => useLocalSource = value; }
     public RectTransform RootCanvas { get => rootCanvas; set => rootCanvas = value; }
 
-    void Start()
+    void Awake()
     {
         Instance = this;
+    }
+
+    void Start()
+    {
         if (!RootCanvas)
             RootCanvas = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
         UIDataInit();
