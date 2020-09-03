@@ -33,8 +33,8 @@ namespace UGCF.Manager
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            tool = new AndroidJavaClass(ConstantUtils.BundleIdentifier + ".Tool");
+            CurrentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            Tool = new AndroidJavaClass(ConstantUtils.BundleIdentifier + ".Tool");
 #endif
             RegisterAppWechat();
             RegisterAppQQ();
@@ -45,12 +45,12 @@ namespace UGCF.Manager
         private const string WXAppSecret = "你的微信AppSecret";
 
 #if UNITY_IOS
-    [DllImport("__Internal")]
-    static extern void RegisterApp_iOS(string appId, string appSecret);
-    [DllImport("__Internal")]
-    static extern bool IsWechatInstalled_iOS();
-    [DllImport("__Internal")]
-    static extern void OpenWechat_iOS(string state);
+        [DllImport("__Internal")]
+        static extern void RegisterApp_iOS(string appId, string appSecret);
+        [DllImport("__Internal")]
+        static extern bool IsWechatInstalled_iOS();
+        [DllImport("__Internal")]
+        static extern void OpenWechat_iOS(string state);
 #elif UNITY_ANDROID
         private static string WechatToolStr = ConstantUtils.BundleIdentifier + ".wechat.WechatTool";
         private static string WechatLoginStr = ConstantUtils.BundleIdentifier + ".wechat.WechatLogin";
@@ -68,7 +68,7 @@ namespace UGCF.Manager
             RegisterApp_iOS(WXAppID, WXAppSecret);
 #elif UNITY_ANDROID
             AndroidJavaClass wechatTool = new AndroidJavaClass(WechatToolStr);
-            wechatTool.CallStatic<bool>("RegisterToWechat", currentActivity, WXAppID, WXAppSecret);
+            wechatTool.CallStatic<bool>("RegisterToWechat", CurrentActivity, WXAppID, WXAppSecret);
 #endif
             }
             return IsRegisterToWechat;
@@ -200,7 +200,7 @@ namespace UGCF.Manager
         isRegister = IsQQInstalled_iOS();
 #elif UNITY_ANDROID
         AndroidJavaClass qqTool = new AndroidJavaClass(QQToolStr);
-        isRegister = qqTool.CallStatic<bool>("IsQQInstalled", currentActivity);
+        isRegister = qqTool.CallStatic<bool>("IsQQInstalled", CurrentActivity);
 #endif
 #endif
             return isRegister;
@@ -217,7 +217,7 @@ namespace UGCF.Manager
             InitQQ(QQAppID);
 #elif UNITY_ANDROID
             AndroidJavaClass qqTool = new AndroidJavaClass(QQToolStr);
-            qqTool.CallStatic<bool>("RegisterToQQ", currentActivity, QQAppID);
+            qqTool.CallStatic<bool>("RegisterToQQ", CurrentActivity, QQAppID);
 #endif
                 IsRegisterToQQ = true;
             }
@@ -263,7 +263,7 @@ namespace UGCF.Manager
         {
 #if !UNITY_EDITOR
         AndroidJavaObject utils = new AndroidJavaObject(ConstantUtils.BundleIdentifier + ".alipay.AliPay");
-        utils.Call("SendPay", payCode, currentActivity);
+        utils.Call("SendPay", payCode, CurrentActivity);
 #endif
         }
 
@@ -400,7 +400,7 @@ namespace UGCF.Manager
         public string GetAndroid_OAID()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        return tool.CallStatic<string>("GetOAID");
+        return Tool.CallStatic<string>("GetOAID");
 #else
             return string.Empty;
 #endif
@@ -419,7 +419,7 @@ namespace UGCF.Manager
 #elif UNITY_IOS
         CopyTextToClipboard_iOS(input);  
 #elif UNITY_ANDROID
-        tool.CallStatic("CopyTextToClipboard", input);
+        Tool.CallStatic("CopyTextToClipboard", input);
 #endif
         }
 
@@ -434,7 +434,7 @@ namespace UGCF.Manager
             return File.Exists(path);
 #elif UNITY_ANDROID
         string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
-        return tool.CallStatic<bool>("FileExist", androidPath);
+        return Tool.CallStatic<bool>("FileExist", androidPath);
 #else
         return File.Exists(path);
 #endif
@@ -444,13 +444,14 @@ namespace UGCF.Manager
         {
             try
             {
-#if UNITY_EDITOR
-                return File.ReadAllText(path);
-#elif UNITY_ANDROID
-            string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
-            return tool.CallStatic<string>("GetTextFile", androidPath);
+#if UNITY_ANDROID && !UNITY_EDITOR
+                string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
+                return Tool.CallStatic<string>("GetTextFile", androidPath);
 #else
-            return File.ReadAllText(path);
+                if (File.Exists(path))
+                    return File.ReadAllText(path);
+                else
+                    return null;
 #endif
             }
             catch

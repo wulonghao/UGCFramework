@@ -27,8 +27,8 @@ namespace UGCF.Manager
                 return instance;
             }
         }
-        public static bool isRunning = true;
-        public static int finishCount = 0;
+        public static bool IsRunning = true;
+        public static int FinishCount = 0;
         List<DownloadItem> downloadList = new List<DownloadItem>();//待下载队列
         int downloadingCount = 0;
         List<Thread> threadList = new List<Thread>();
@@ -47,9 +47,9 @@ namespace UGCF.Manager
 
         public void DownloadFilesUseThread(List<BundleInfo> infos, Action<float> loopCallback = null, Action callback = null)
         {
-            finishCount = 0;
+            FinishCount = 0;
             downloadingCount = 0;
-            isRunning = true;
+            IsRunning = true;
             for (int i = 0; i < infos.Count; i++)
             {
                 DownloadItem item = new DownloadItem(infos[i]);
@@ -65,7 +65,7 @@ namespace UGCF.Manager
 
         public void DownloadFileUseThread(BundleInfo info, Action<float> processCallback = null, Action callback = null)
         {
-            isRunning = true;
+            IsRunning = true;
             DownloadItem item = new DownloadItem(info);
             ThreadPool.QueueUserWorkItem(item.Init);
             StartCoroutine(DownloadFileAc(item, processCallback, callback));
@@ -247,9 +247,9 @@ namespace UGCF.Manager
 
         IEnumerator DownloadProgress(Action<float> loopCallback, Action callback)
         {
-            while (finishCount < downloadList.Count)
+            while (FinishCount < downloadList.Count)
             {
-                loopCallback?.Invoke((float)finishCount / downloadList.Count);
+                loopCallback?.Invoke((float)FinishCount / downloadList.Count);
                 yield return WaitForUtils.WaitFrame;
             }
             loopCallback(1);
@@ -274,7 +274,7 @@ namespace UGCF.Manager
 
         void CloseAllThread()
         {
-            isRunning = false;
+            IsRunning = false;
             for (int i = 0; i < threadList.Count; i++)
             {
                 Thread thread = threadList[i];
@@ -319,7 +319,7 @@ namespace UGCF.Manager
 
             public override int GetHashCode()
             {
-                return Url.GetHashCode();
+                return (Url + Path).GetHashCode();
             }
         }
     }

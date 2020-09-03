@@ -34,7 +34,7 @@ namespace UGCF.Manager
         Stream stream = null;
         void Download()
         {
-            if (!DownloadManager.isRunning) return;
+            if (!DownloadManager.IsRunning) return;
             GC.Collect();
             try
             {
@@ -70,7 +70,7 @@ namespace UGCF.Manager
                 if (stream.CanRead)
                 {
                     lengthOnce = stream.Read(buffer, 0, fileLength);
-                    while (lengthOnce > 0 && DownloadManager.isRunning)
+                    while (lengthOnce > 0 && DownloadManager.IsRunning)
                     {
                         currentLength += lengthOnce;
                         fileStream.Write(buffer, 0, lengthOnce);
@@ -85,7 +85,7 @@ namespace UGCF.Manager
                 }
                 else
                 {
-                    DownloadManager.finishCount++;
+                    DownloadManager.FinishCount++;
                     //临时文件转为最终的下载文件
                     File.Move(tempSaveFilePath, info.Path);
                 }
