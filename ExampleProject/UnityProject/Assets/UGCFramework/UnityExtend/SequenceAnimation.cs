@@ -173,9 +173,9 @@ namespace UGCF.UnityExtend
 
         public void Stop()
         {
+            IsPlaying = false;
             mCurFrame = 0;
             SetSprite(mCurFrame);
-            IsPlaying = false;
         }
 
         public void Rewind()
