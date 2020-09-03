@@ -1,17 +1,19 @@
 ﻿using ILRuntime.CLR.Method;
 using ILRuntime.CLR.TypeSystem;
 using ILRuntime.Mono.Cecil.Pdb;
-using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
 using LitJson;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using UGCF.Manager;
 using UGCF.UGUIExtend;
 using UGCF.UnityExtend;
 using UGCF.Utils;
 using UnityEngine;
+using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
 
 namespace UGCF.HotUpdate
 {
@@ -62,81 +64,29 @@ namespace UGCF.HotUpdate
 
         static void RegisterDelegate()
         {
-            appdomain.DelegateManager.RegisterMethodDelegate<protocol.Msg_S2C>();
-
-            appdomain.DelegateManager.RegisterMethodDelegate<Texture2D>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction<Texture2D>>((act) =>
-            {
-                return new UnityEngine.Events.UnityAction<Texture2D>((arg0) =>
-                {
-                    ((System.Action<Texture2D>)act)(arg0);
-                });
-            });
-
-            appdomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Networking.UnityWebRequest>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction>((act) =>
-            {
-                return new UnityEngine.Events.UnityAction(() =>
-                {
-                    ((System.Action)act)();
-                });
-            });
-
             appdomain.DelegateManager.RegisterMethodDelegate<bool>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction<bool>>((act) =>
-            {
-                return new UnityEngine.Events.UnityAction<bool>((arg0) =>
-                {
-                    ((System.Action<bool>)act)(arg0);
-                });
-            });
-
             appdomain.DelegateManager.RegisterMethodDelegate<object>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction<object>>((act) =>
-            {
-                return new UnityEngine.Events.UnityAction<object>((arg0) =>
-                {
-                    ((System.Action<object>)act)(arg0);
-                });
-            });
-
+            appdomain.DelegateManager.RegisterMethodDelegate<string>();
+            appdomain.DelegateManager.RegisterMethodDelegate<Texture2D>();
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject>();
+
             appdomain.DelegateManager.RegisterDelegateConvertor<UGUIEventListener.VoidDelegate>((action) =>
             {
-                return new UGUIEventListener.VoidDelegate((go) => { ((System.Action<GameObject>)action)(go); });
+                return new UGUIEventListener.VoidDelegate((go) => ((Action<GameObject>)action)(go));
+            });
+            appdomain.DelegateManager.RegisterDelegateConvertor<UGUIEventListenerContainDrag.VoidDelegate>((action) =>
+            {
+                return new UGUIEventListenerContainDrag.VoidDelegate((go) => ((Action<GameObject>)action)(go));
             });
 
-            appdomain.DelegateManager.RegisterMethodDelegate<GameObject, float>();
             appdomain.DelegateManager.RegisterDelegateConvertor<ScrollRectChildCenter.ScrollRectItemChangeEvent>((action) =>
             {
-                return new ScrollRectChildCenter.ScrollRectItemChangeEvent((go) => { ((System.Action<GameObject>)action)(go); });
+                return new ScrollRectChildCenter.ScrollRectItemChangeEvent((go) => ((Action<GameObject>)action)(go));
             });
 
-            appdomain.DelegateManager.RegisterMethodDelegate<System.IAsyncResult>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<System.AsyncCallback>((act) =>
+            appdomain.DelegateManager.RegisterDelegateConvertor<PanelCenterScrollRect.ScrollRectItemChangeEvent>((action) =>
             {
-                return new System.AsyncCallback((ar) =>
-                {
-                    ((System.Action<System.IAsyncResult>)act)(ar);
-                });
-            });
-
-            appdomain.DelegateManager.RegisterMethodDelegate<string>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction<string>>((act) =>
-            {
-                return new UnityEngine.Events.UnityAction<string>((arg0) =>
-                {
-                    ((System.Action<string>)act)(arg0);
-                });
-            });
-
-            appdomain.DelegateManager.RegisterMethodDelegate<System.Threading.ThreadStart>();
-            appdomain.DelegateManager.RegisterDelegateConvertor<System.Threading.ThreadStart>((act) =>
-            {
-                return new System.Threading.ThreadStart(() =>
-                {
-                    ((System.Action)act)();
-                });
+                return new PanelCenterScrollRect.ScrollRectItemChangeEvent((go) => ((Action<GameObject>)action)(go));
             });
         }
 
@@ -192,7 +142,7 @@ namespace UGCF.HotUpdate
             //成员方法的第一个参数为this
             GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
             if (instance == null)
-                throw new System.NullReferenceException();
+                throw new NullReferenceException();
             __intp.Free(ptr);
 
             var genericArgument = __method.GenericArguments;
@@ -239,7 +189,7 @@ namespace UGCF.HotUpdate
             //成员方法的第一个参数为this
             GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
             if (instance == null)
-                throw new System.NullReferenceException();
+                throw new NullReferenceException();
             __intp.Free(ptr);
 
             var genericArgument = __method.GenericArguments;

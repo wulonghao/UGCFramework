@@ -9,7 +9,7 @@ namespace UGCF.UGUIExtend
     [AddComponentMenu("UI/PanelCenterScrollRect")]
     public class PanelCenterScrollRect : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {
-        public delegate void ScrollRectItemChangeEvent(GameObject go);
+        public delegate void ScrollRectItemChangeEvent(GameObject center);
         public ScrollRectItemChangeEvent OnItemChanged { get; set; }
 
         #region ...字段
