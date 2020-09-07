@@ -89,7 +89,7 @@ namespace UGCF.UGCFEditor
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            main.IsDebugLog = EditorGUILayout.Toggle("是否开启日志", main.IsDebugLog, GUILayout.Width(160));
+            main.OpenDebugLog = EditorGUILayout.Toggle("是否开启日志", main.OpenDebugLog, GUILayout.Width(160));
             EditorGUILayout.LabelField("(测试包建议勾选，线上包必须取消勾选)");
             GUILayout.EndHorizontal();
 

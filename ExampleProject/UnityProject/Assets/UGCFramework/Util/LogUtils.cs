@@ -19,7 +19,7 @@ namespace UGCF.Utils
         /// <param name="isAppend">是否对日志进行保留拼接</param>
         public static void Log(object log, bool isAppend = true)
         {
-            if (UGCFMain.Instance.IsDebugLog)
+            if (UGCFMain.Instance.OpenDebugLog)
                 Debug.Log(log);
 
             if (isAppend)
@@ -29,10 +29,10 @@ namespace UGCF.Utils
         public static void LogError(object log, bool containStackTrace = true)
         {
             string messageStr = log.ToString();
-            if (UGCFMain.Instance.IsDebugLog)
+            if (UGCFMain.Instance.OpenDebugLog)
                 Log(log);
             if (containStackTrace)
-                LogToFile(messageStr, new System.Diagnostics.StackTrace().ToString(), LogType.Error);
+                LogToFile(messageStr, new System.Diagnostics.StackFrame().ToString(), LogType.Error);
             else
                 LogToFile(messageStr, null, LogType.Error);
         }

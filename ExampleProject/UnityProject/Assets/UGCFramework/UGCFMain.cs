@@ -13,10 +13,10 @@ public class UGCFMain : MonoBehaviour
     public static int pixelHeight;
 
     [SerializeField] private RectTransform rootCanvas;
-    [SerializeField] private bool isDebugLog = true;
+    [SerializeField] private bool openDebugLog = true;
     [SerializeField] private bool useLocalSource = true;
 
-    public bool IsDebugLog { get => isDebugLog; set => isDebugLog = value; }
+    public bool OpenDebugLog { get => openDebugLog; set => openDebugLog = value; }
     public bool UseLocalSource { get => useLocalSource; set => useLocalSource = value; }
     public RectTransform RootCanvas { get => rootCanvas; set => rootCanvas = value; }
 
