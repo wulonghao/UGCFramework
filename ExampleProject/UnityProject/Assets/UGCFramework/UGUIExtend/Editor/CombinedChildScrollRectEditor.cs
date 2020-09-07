@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.UGUIExtend;
+﻿using UGCF.UGUIExtend;
 using UnityEditor;
 using UnityEditor.UI;
-using UnityEngine;
 
 namespace UGCF.UGCFEditor
 {
@@ -12,16 +9,20 @@ namespace UGCF.UGCFEditor
     public class CombinedChildScrollRectEditor : ScrollRectEditor
     {
         SerializedProperty parentScroll;
+        SerializedProperty panelScrollRect;
+
         protected override void OnEnable()
         {
             base.OnEnable();
             parentScroll = serializedObject.FindProperty("parentScroll");
+            panelScrollRect = serializedObject.FindProperty("panelScrollRect");
         }
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             EditorGUILayout.PropertyField(parentScroll);
+            EditorGUILayout.PropertyField(panelScrollRect);
             serializedObject.ApplyModifiedProperties();
         }
     }
