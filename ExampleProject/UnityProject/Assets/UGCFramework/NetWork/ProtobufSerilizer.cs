@@ -61,7 +61,7 @@ namespace UGCF.Network
             catch (Exception ex)
             {
                 LogUtils.Log("反序列化失败: " + ex.ToString());
-                return default(T);
+                return default;
             }
         }
     }

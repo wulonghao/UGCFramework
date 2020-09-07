@@ -13,6 +13,7 @@ namespace UGCF.Manager
         [SerializeField] Text describeTxt;
         [SerializeField] GameObject background, btnSure, btnCancel, btnClose;
         [SerializeField] TipType tipType;
+        /// <summary> 默认显示时长 </summary>
         [SerializeField] float waitTime;
         UnityAction sureAction, cancelAction;
         Coroutine delayClose;

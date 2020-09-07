@@ -34,7 +34,7 @@ namespace UGCF.Manager
         /// </summary>
         /// <param name="tipType">tip类型（枚举）</param>
         /// <param name="describe">描述文本内容或描述文本的多语言ID</param>
-        /// <param name="waitTime">窗口停留时间，结束后关闭tip窗口,SimpleTip默认该值为3</param>
+        /// <param name="waitTime">窗口停留时间，结束后自动关闭tip窗口，为0时不自动关闭</param>
         /// <param name="sureAction">点击确定执行的函数</param>
         /// <param name="cancelAction">点击取消执行的函数（可以为null），仅ChooseTip有效</param>
         public void OpenTip(TipType tipType, string describe, float waitTime = 0, UnityAction sureAction = null, UnityAction cancelAction = null)

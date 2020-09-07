@@ -7,7 +7,7 @@ public class FPS : MonoBehaviour
     private static float mFps = 0;
     private static float mCount = 0;
 
-    //#if UNITY_EDITOR
+#if UNITY_EDITOR
     private void OnGUI()
     {
         mLastTime -= Time.deltaTime;
@@ -25,5 +25,5 @@ public class FPS : MonoBehaviour
         gs.normal.textColor = Color.red;
         GUI.Label(new Rect(Screen.width * 0.5f, 0, 200, 50), "FPS:" + mFps.ToString("f2"), gs);
     }
-    //#endif
+#endif
 }
