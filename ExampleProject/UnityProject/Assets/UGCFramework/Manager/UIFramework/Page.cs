@@ -38,10 +38,6 @@ namespace UGCF.Manager
             AudioManager.Instance.StopMusic();
             TipManager.Instance.CloseAllTip();
             DestroyImmediate(gameObject);
-        }
-
-        public virtual void OnDestroy()
-        {
             if (spriteAB)
                 spriteAB.Unload(true);
             Resources.UnloadUnusedAssets();

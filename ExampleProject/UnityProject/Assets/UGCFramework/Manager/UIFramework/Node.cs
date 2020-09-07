@@ -112,16 +112,14 @@ namespace UGCF.Manager
         void CloseNode()
         {
             if (isDestroyAfterClose)
+            {
                 DestroyImmediate(gameObject);
+                if (spriteAB)
+                    spriteAB.Unload(true);
+                Resources.UnloadUnusedAssets();
+            }
             else
                 gameObject.SetActive(false);
-        }
-
-        public virtual void OnDestroy()
-        {
-            if (spriteAB)
-                spriteAB.Unload(true);
-            Resources.UnloadUnusedAssets();
         }
 
         #region ...工具函数
