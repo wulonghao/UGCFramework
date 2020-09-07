@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.Manager;
+﻿using UGCF.Manager;
 using UGCF.UnityExtend;
 using UnityEngine;
-using UGCF.Utils;
 
 public class Test1Node : Node
 {
@@ -12,9 +9,8 @@ public class Test1Node : Node
     public override void Init()
     {
         base.Init();
-        if (CheckHotFixMethod(out string methodName))
+        if (TryInvokeHotFix(out object ob, null))
         {
-            InvokeHotFix(methodName, null);
             return;
         }
         UGUIEventListener.Get(btnTest2Node).OnClick = delegate { NodeManager.OpenNode<Test2Node>(); };
@@ -22,19 +18,15 @@ public class Test1Node : Node
 
     public void TempHotUpdate1(int test)
     {
-        if (CheckHotFixMethod(out string methodName))
+        if (TryInvokeHotFix(out object ob, test))
         {
-            InvokeHotFix(methodName, test);
             return;
         }
     }
 
     public static void TempHotUpdate2(int test)
     {
-        if (CheckHotFixStaticMethod(out string typeFullName, out string methodName))
-        {
-            InvokeStaticHotFix(typeFullName, methodName, test);
+        if (TryInvokeStaticHotFix(out object ob, test))
             return;
-        }
     }
 }

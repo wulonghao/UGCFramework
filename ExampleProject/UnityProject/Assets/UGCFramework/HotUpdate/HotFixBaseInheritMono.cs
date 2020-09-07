@@ -1,7 +1,5 @@
 ﻿using ILRuntime.CLR.Method;
 using ILRuntime.CLR.TypeSystem;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Diagnostics;
@@ -11,11 +9,11 @@ namespace UGCF.HotUpdate
 {
     public class HotFixBaseInheritMono : MonoBehaviour
     {
+        private const string HotTypeNameFormat = "HotFix.{0}HotFix";
         private object instanceHotFix;
         private ILType type;
         private string hotFixTypeName;
         private Dictionary<string, IMethod> iMethods = new Dictionary<string, IMethod>();
-        private const string HotTypeNameFormat = "HotFix.{0}HotFix";
 
         /// <summary>
         /// 初始化热更类，加载相关资源
@@ -27,98 +25,64 @@ namespace UGCF.HotUpdate
             {
                 type = ILRuntimeUtils.appdomain.LoadedTypes[hotFixTypeName] as ILType;
                 instanceHotFix = ILRuntimeUtils.appdomain.Instantiate(hotFixTypeName);
-                type.ReflectionType.GetField("instance").SetValue(instanceHotFix, this);
+                FieldInfo fieldInfo = type.ReflectionType.GetField("instance");
+                if (fieldInfo != null)
+                    fieldInfo.SetValue(instanceHotFix, this);
             }
         }
 
-        /// <summary>
-        /// 检测静态函数的热更是否存在
-        /// </summary>
-        /// <returns></returns>
-        protected static bool CheckHotFixStaticMethod(out string typeFullName, out string methodName)
+        protected bool TryInvokeHotFix(out object returnObject, params object[] p)
         {
-            MethodBase method = new StackFrame(1).GetMethod();
-            methodName = method.Name;
-            typeFullName = string.Format(HotTypeNameFormat, method.DeclaringType.Name);
-
-            if (ILRuntimeUtils.appdomain == null || !ILRuntimeUtils.appdomain.LoadedTypes.ContainsKey(typeFullName))
+            returnObject = null;
+            if (ILRuntimeUtils.appdomain == null)
                 return false;
-            if (ILRuntimeUtils.appdomain.LoadedTypes[typeFullName] is ILType type)
-            {
-                IMethod im = type.GetMethod(methodName);
-                return im != null;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 检测非静态函数的热更是否存在
-        /// </summary>
-        /// <returns></returns>
-        protected bool CheckHotFixMethod(out string methodName)
-        {
-            IMethod im = null;
             if (instanceHotFix == null)
                 InitHotFix();
             if (instanceHotFix != null)
             {
                 MethodBase method = new StackFrame(1).GetMethod();
-                methodName = method.Name;
+                string methodName = method.Name;
                 int paramCount = method.GetParameters().Length;
-                string key = method.Name + "_" + paramCount.ToString();
+                string key = methodName + "_" + paramCount.ToString();
+                IMethod im;
                 if (iMethods.ContainsKey(key))
                     im = iMethods[key];
                 else
                 {
-                    im = type.GetMethod(method.Name, paramCount);
+                    im = type.GetMethod(methodName, paramCount);
                     iMethods.Add(key, im);
                 }
-            }
-            else
-                methodName = null;
-            return im != null;
-        }
-
-        /// <summary>
-        /// 执行静态函数的热更
-        /// </summary>
-        /// <param name="p">所有参数</param>
-        /// <returns></returns>
-        protected static object InvokeStaticHotFix(string typeFullName, string methodName, params object[] p)
-        {
-            if (ILRuntimeUtils.appdomain == null || !ILRuntimeUtils.appdomain.LoadedTypes.ContainsKey(typeFullName))
-                return false;
-            if (ILRuntimeUtils.appdomain.LoadedTypes[typeFullName] is ILType type)
-            {
-                IMethod im = type.GetMethod(methodName);
                 if (im != null)
-                    return ILRuntimeUtils.appdomain.Invoke(im, null, p);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 执行非静态函数的热更
-        /// </summary>
-        /// <param name="p">所有参数</param>
-        /// <returns></returns>
-        protected object InvokeHotFix(string methodName, params object[] p)
-        {
-            if (instanceHotFix != null)
-            {
-                string key;
-                if (p != null)
-                    key = methodName + "_" + p.Length.ToString();
-                else
-                    key = methodName + "_0";
-                if (iMethods.ContainsKey(key))
                 {
-                    IMethod im = iMethods[key];
-                    if (im != null)
-                        return ILRuntimeUtils.appdomain.Invoke(im, instanceHotFix, p);
+                    returnObject = ILRuntimeUtils.appdomain.Invoke(im, instanceHotFix, p);
+                    return true;
                 }
             }
-            return null;
+            return false;
+        }
+
+        protected static bool TryInvokeStaticHotFix(out object returnObject, params object[] p)
+        {
+            returnObject = null;
+            if (ILRuntimeUtils.appdomain == null)
+                return false;
+            MethodBase method = new StackFrame(1).GetMethod();
+            if (!method.IsStatic)
+                return false;
+            string typeFullName = string.Format(HotTypeNameFormat, method.DeclaringType.Name);
+            if (!ILRuntimeUtils.appdomain.LoadedTypes.ContainsKey(typeFullName))
+                return false;
+
+            if (ILRuntimeUtils.appdomain.LoadedTypes[typeFullName] is ILType type)
+            {
+                IMethod im = type.GetMethod(method.Name, method.GetParameters().Length);
+                if (im != null)
+                {
+                    returnObject = ILRuntimeUtils.appdomain.Invoke(im, null, p);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

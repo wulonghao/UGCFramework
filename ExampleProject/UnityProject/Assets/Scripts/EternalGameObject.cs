@@ -4,7 +4,6 @@ using UGCF.HotUpdate;
 using UGCF.Manager;
 using UGCF.Utils;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class EternalGameObject : HotFixBaseInheritMono
 {
@@ -30,11 +29,8 @@ public class EternalGameObject : HotFixBaseInheritMono
     /// <summary> 加载必要资源 </summary>
     public static void LoadNecessaryBundle()
     {
-        if (CheckHotFixStaticMethod(out string typeFullName, out string methodName))
-        {
-            InvokeStaticHotFix(typeFullName, methodName, null);
+        if (TryInvokeStaticHotFix(out object ob, null))
             return;
-        }
         commonBasicspriteAb = LoadBundle(commonBasicspriteAb, "Basicsprite", 1);
         commonButtonAb = LoadBundle(commonButtonAb, "Button", 1);
 
@@ -52,10 +48,9 @@ public class EternalGameObject : HotFixBaseInheritMono
     /// <param name="type">bundle类型 1-sprite, 2-Font, 3-Material, 4-RenderTexture</param>
     static AssetBundle LoadBundle(AssetBundle assetBundle, string bundleName, int type)
     {
-        if (CheckHotFixStaticMethod(out string typeFullName, out string methodName))
-        {
-            return (AssetBundle)InvokeStaticHotFix(typeFullName, methodName, assetBundle, bundleName, type);
-        }
+        if (TryInvokeStaticHotFix(out object ob, assetBundle, bundleName, type))
+            return (AssetBundle)ob;
+
         if (assetBundle)
             assetBundle.Unload(false);
         switch (type)
