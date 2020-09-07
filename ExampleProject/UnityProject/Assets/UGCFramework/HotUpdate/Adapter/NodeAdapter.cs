@@ -8,13 +8,11 @@ namespace UGCF.HotUpdate
 {
     public class NodeAdapter : CrossBindingAdaptor
     {
-        static CrossBindingMethodInfo mUIAdapt_0 = new CrossBindingMethodInfo("UIAdapt");
         static CrossBindingMethodInfo mInit_1 = new CrossBindingMethodInfo("Init");
         static CrossBindingMethodInfo mOpen_2 = new CrossBindingMethodInfo("Open");
         static CrossBindingMethodInfo mEnterAnimationEndAction_3 = new CrossBindingMethodInfo("EnterAnimationEndAction");
         static CrossBindingMethodInfo mExitAnimationEndAction_4 = new CrossBindingMethodInfo("ExitAnimationEndAction");
-        static CrossBindingMethodInfo mRequestData_5 = new CrossBindingMethodInfo("RequestData");
-        static CrossBindingMethodInfo<bool> mClose_6 = new CrossBindingMethodInfo<bool>("Close");
+        static CrossBindingMethodInfo<bool> mClose_5 = new CrossBindingMethodInfo<bool>("Close");
         public override Type BaseCLRType
         {
             get
@@ -86,20 +84,12 @@ namespace UGCF.HotUpdate
                     mExitAnimationEndAction_4.Invoke(instance);
             }
 
-            public override void RequestData()
+            public override void Close(bool isInitiativeClose)
             {
-                if (mRequestData_5.CheckShouldInvokeBase(instance))
-                    base.RequestData();
+                if (mClose_5.CheckShouldInvokeBase(instance))
+                    base.Close(isInitiativeClose);
                 else
-                    mRequestData_5.Invoke(instance);
-            }
-
-            public override void Close(bool isActiveClose)
-            {
-                if (mClose_6.CheckShouldInvokeBase(instance))
-                    base.Close(isActiveClose);
-                else
-                    mClose_6.Invoke(instance, isActiveClose);
+                    mClose_5.Invoke(instance, isInitiativeClose);
             }
 
             public override string ToString()

@@ -9,30 +9,35 @@ namespace UGCF.Manager
         public static Node CurrentNode;//当前新打开的Node，包括FloatNode
         const string DefaultNodeDirectoryPath = "UIResources/Node";
 
-        /// <summary> 打开一个不记录也不影响任何流程的Node，该Node将自动播放入场动画 </summary>
+        /// <summary> 打开一个不记录也不影响任何流程的Node，打开时播放入场动画 </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="directoryPath">文件夹路径</param>
+        /// <returns></returns>
         public static T OpenFloatNode<T>(string directoryPath = DefaultNodeDirectoryPath) where T : Node
         {
             return OpenNode<T>(true, false, directoryPath);
         }
 
-        /// <summary> 打开一个不记录也不影响任何流程的Node，该Node将自动播放入场动画 </summary>
+        /// <summary> 打开一个不记录也不影响任何流程的Node，打开时播放入场动画 </summary>
+        /// <param name="nodePath">相对Node文件夹的路径名</param>
+        /// <param name="directoryPath">文件夹路径</param>
+        /// <returns></returns>
         public static Node OpenFloatNode(string nodePath, string directoryPath = DefaultNodeDirectoryPath)
         {
-            return OpenNode(nodePath, directoryPath, true, false);
+            return OpenNode(nodePath, true, false, directoryPath);
         }
 
         /// <summary>
         /// 打开指定类型Node
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="isAutoPlayEnter">自动播放入场动画</param>
-        /// <param name="isCloseLastNode">打开后关闭上一个Node，同时将上一个Node的记录从历史中删除</param>
-        /// <param name="isAddToRecord">添加到历史记录中</param>
+        /// <param name="isAutoPlayEnter">是否播放入场动画</param>
+        /// <param name="isCloseLastNode">打开后关闭上一个Node，然后执行最后一个Node的Close</param>
         /// <param name="directoryPath">文件夹路径</param>
         /// <returns></returns>
-        public static T OpenNode<T>(bool isAutoPlayEnter = true, bool isCloseLastNode = false, string directoryPath = DefaultNodeDirectoryPath) where T : Node
+        public static T OpenNode<T>(bool isAutoPlayEnter = true, bool isCloseLastNode = true, string directoryPath = DefaultNodeDirectoryPath) where T : Node
         {
-            return (T)OpenNode(typeof(T).ToString(), directoryPath, isAutoPlayEnter, isCloseLastNode);
+            return (T)OpenNode(typeof(T).ToString(), isAutoPlayEnter, isCloseLastNode, directoryPath);
         }
 
         /// <summary>
@@ -40,33 +45,33 @@ namespace UGCF.Manager
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="nodePath">相对Node文件夹的路径名</param>
-        /// <param name="isCloseLastNode">打开后关闭上一个Node，同时将上一个Node的记录从历史中删除</param>
-        /// <param name="isAddToRecord">添加到历史记录中</param>
+        /// <param name="isAutoPlayEnter">是否播放入场动画</param>
+        /// <param name="isCloseLastNode">打开后关闭上一个Node，然后执行最后一个Node的Close</param>
         /// <param name="directoryPath">文件夹路径</param>
         /// <returns></returns>
-        public static Node OpenNode(string nodePath, string directoryPath = DefaultNodeDirectoryPath, bool isAutoPlayEnter = true, bool isCloseLastNode = false)
+        public static Node OpenNode(string nodePath, bool isAutoPlayEnter = true, bool isCloseLastNode = true, string directoryPath = DefaultNodeDirectoryPath)
         {
             return OpenNodeAc(nodePath, directoryPath, isAutoPlayEnter, isCloseLastNode);
         }
 
         static Node OpenNodeAc(string nodePath, string directoryPath, bool isAutoPlayEnter, bool isCloseLastNode)
         {
-            Node node = CreateNode(nodePath, directoryPath);
-            if (node)
+            Node newNode = CreateNode(nodePath, directoryPath);
+            if (newNode)
             {
-                if (node.AnimationMian && node.AnimationMian.IsSwitchAnimPlaying)
-                    return node;
-                node.transform.SetAsLastSibling();
-                node.Open();
+                if (newNode.AnimationMian && newNode.AnimationMian.IsSwitchAnimPlaying)
+                    return newNode;
+                newNode.transform.SetAsLastSibling();
+                newNode.Open();
                 //Node的背景音乐的加载
                 //AudioManager.Instance.PlayMusic(Path.GetFileNameWithoutExtension(nodePath), directoryPath + "/" + nodePath);
 
                 if (isAutoPlayEnter)
-                    node.PlayAnimation(true, () => CloseLastNodeAndRefreshData(isCloseLastNode, node, CurrentNode));
+                    newNode.PlayEnterAnimation(() => RefreshCurrentNode(isCloseLastNode, newNode, CurrentNode));
                 else
-                    CloseLastNodeAndRefreshData(isCloseLastNode, node, CurrentNode);
+                    RefreshCurrentNode(isCloseLastNode, newNode, CurrentNode);
             }
-            return node;
+            return newNode;
         }
 
         static Node CreateNode(string nodePath, string directoryPath)
@@ -110,11 +115,11 @@ namespace UGCF.Manager
             return node;
         }
 
-        static void CloseLastNodeAndRefreshData(bool isCloseLastNode, Node currentNode, Node lastNode)
+        static void RefreshCurrentNode(bool isCloseLastNode, Node newNode, Node currentNode)
         {
-            if (isCloseLastNode && lastNode)
-                lastNode.Close(false);
-            NodeManager.CurrentNode = currentNode;
+            if (isCloseLastNode && currentNode)
+                currentNode.Close(false);
+            CurrentNode = newNode;
         }
 
         /// <summary>
@@ -175,16 +180,16 @@ namespace UGCF.Manager
                 return null;
         }
 
-        public static void CloseNode<T>(bool isActiveClose = true) where T : Node
+        public static void CloseNode<T>(bool isInitiativeClose = true) where T : Node
         {
             T t = GetNode<T>();
-            if (t && t.gameObject) t.Close(isActiveClose);
+            if (t && t.gameObject) t.Close(isInitiativeClose);
         }
 
-        public static void CloseNode(string nodeName, bool isActiveClose = true)
+        public static void CloseNode(string nodeName, bool isInitiativeClose = true)
         {
             Node node = GetNode(nodeName);
-            if (node && node.gameObject) node.Close(isActiveClose);
+            if (node && node.gameObject) node.Close(isInitiativeClose);
         }
 
         /// <summary> 切换page时不销毁当前node </summary>

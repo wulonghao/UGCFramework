@@ -81,22 +81,8 @@ namespace UGCF.Manager
         void DestroyCurrentPage(string newPageName)
         {
             if (CurrentPage != null)
-                DestroyPage(CurrentPage);
+                CurrentPage.Close();
             RefreshHistory(newPageName);
-        }
-
-        /// <summary>
-        /// 销毁指定Page
-        /// </summary>
-        /// <param name="page"></param>
-        void DestroyPage(Page page)
-        {
-            page.Close();
-            if (CurrentPage.GetSpriteAB() != null)
-                CurrentPage.GetSpriteAB().Unload(true);
-            AudioManager.Instance.ClearAllTempAudio();
-            DestroyImmediate(page.gameObject);
-            Resources.UnloadUnusedAssets();
         }
 
         /// <summary>

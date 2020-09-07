@@ -8,7 +8,6 @@ namespace UGCF.HotUpdate
 {
     public class PageAdapter : CrossBindingAdaptor
     {
-        static CrossBindingMethodInfo mRefreshAdaptUI_0 = new CrossBindingMethodInfo("RefreshAdaptUI");
         static CrossBindingMethodInfo mInit_1 = new CrossBindingMethodInfo("Init");
         static CrossBindingMethodInfo mOpen_2 = new CrossBindingMethodInfo("Open");
         static CrossBindingMethodInfo mClose_3 = new CrossBindingMethodInfo("Close");

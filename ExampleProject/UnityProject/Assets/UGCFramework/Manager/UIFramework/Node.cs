@@ -20,9 +20,11 @@ namespace UGCF.Manager
         [SerializeField] private GameObject maskLayer;
         /// <summary> 点击蒙层是否关闭Node </summary>
         [SerializeField] private bool isClickMaskClose = false;
+        /// <summary> 关闭后是否销毁Node </summary>
+        [SerializeField] private bool isDestroyAfterClose = false;
         /// <summary> 是否响应设备键盘（用于返回等） </summary>
         [SerializeField] private bool isRespondDeviceKeyboard = false;
-        protected AssetBundle spriteAB;
+        private AssetBundle spriteAB;
         #endregion
 
         #region ...属性
@@ -31,6 +33,7 @@ namespace UGCF.Manager
         public GameObject BtnClose { get => btnClose; set => btnClose = value; }
         public GameObject MaskLayer { get => maskLayer; set => maskLayer = value; }
         public bool IsClickMaskClose { get => isClickMaskClose; set => isClickMaskClose = value; }
+        public bool IsDestroyAfterClose { get => isDestroyAfterClose; set => isDestroyAfterClose = value; }
         public bool IsRespondDeviceKeyboard { get => isRespondDeviceKeyboard; set => isRespondDeviceKeyboard = value; }
         public string NodePath { get; set; }
         public string DirectoryPath { get; set; }
@@ -39,11 +42,10 @@ namespace UGCF.Manager
         public virtual void Init()
         {
             LogUtils.Log(name + "：Init");
-            if (IsClickMaskClose && MaskLayer)
-                UGUIEventListener.Get(MaskLayer).OnClick += delegate { Close(); };
-            if (BtnClose)
-                UGUIEventListener.Get(BtnClose).OnClick += delegate { Close(); };
-            gameObject.SetActive(false);
+            if (isClickMaskClose && maskLayer)
+                UGUIEventListener.Get(maskLayer).OnClick += delegate { Close(); };
+            if (btnClose)
+                UGUIEventListener.Get(btnClose).OnClick += delegate { Close(); };
         }
 
         public virtual void Open()
@@ -55,10 +57,7 @@ namespace UGCF.Manager
         /// <summary>
         /// UI入场动画播放完毕后执行，无动画则立刻执行
         /// </summary>
-        public virtual void EnterAnimationEndAction()
-        {
-            RequestData();
-        }
+        public virtual void EnterAnimationEndAction() { }
 
         /// <summary>
         /// UI离场动画播放完毕后执行，无动画则立刻执行
@@ -66,71 +65,59 @@ namespace UGCF.Manager
         public virtual void ExitAnimationEndAction() { }
 
         /// <summary>
-        /// 请求数据专用
+        /// 播放Node入场动画
         /// </summary>
-        public virtual void RequestData() { }
+        /// <param name="isCloseAfterFinish">是否在动画播放完毕后执行Close</param>
+        public bool PlayEnterAnimation(UnityAction callback = null)
+        {
+            callback += EnterAnimationEndAction;
+            if (!AnimationMian)
+            {
+                callback?.Invoke();
+                return true;
+            }
+            return AnimationMian.PlayEnterAnimation(callback);
+        }
 
         /// <summary>
-        /// 播放入场或离场动画
+        /// 播放Node离场动画
         /// </summary>
-        /// <param name="isEnter">true为入场动画，false为离场动画</param>
-        /// <param name="isCloseAfterFinish">是否在动画播放完毕后执行Close，仅isEnter = false时有效</param>
-        public bool PlayAnimation(bool isEnter, UnityAction callback = null)
+        /// <param name="isCloseAfterFinish">是否在动画播放完毕后执行Close</param>
+        public bool PlayExitAnimation(UnityAction callback = null)
         {
-            if (isEnter)
+            callback += ExitAnimationEndAction;
+            if (!AnimationMian)
             {
-                callback += EnterAnimationEndAction;
-                if (!AnimationMian)
-                {
-                    callback?.Invoke();
-                    return true;
-                }
-                return AnimationMian.PlayEnterAnimation(callback);
+                callback?.Invoke();
+                return true;
             }
-            else
-            {
-                callback += ExitAnimationEndAction;
-                if (!AnimationMian)
-                {
-                    callback?.Invoke();
-                    return true;
-                }
-                return AnimationMian.PlayExitAnimation(callback);
-            }
+            return AnimationMian.PlayExitAnimation(callback);
         }
 
         /// <summary>
         /// 关闭Node
         /// </summary>
-        /// <param name="isActiveClose">是否为主动关闭</param>
-        public virtual void Close(bool isActiveClose = true)
+        /// <param name="isInitiativeClose">是否为主动关闭</param>
+        public virtual void Close(bool isInitiativeClose = true)
         {
             LogUtils.Log(name + "：Close");
-            if (!this)
-                return;
-            bool closeSuccess = false;
-            if (isActiveClose && AnimationMian && AnimationMian.ExitAnimationType != NodeSwitchAnimationType.None)
-            {
-                closeSuccess = PlayAnimation(false, () => CloseNode(isActiveClose));
-            }
+            if (isInitiativeClose && animationMian && animationMian.ExitAnimationType != NodeSwitchAnimationType.None)
+                PlayExitAnimation(() => CloseNode());
             else
-            {
-                CloseNode(isActiveClose);
-                closeSuccess = true;
-            }
+                CloseNode();
 
-            if (closeSuccess)
-            {
-                NodeManager.CurrentNode = NodeManager.GetLastNode(false, false);
-            }
+            NodeManager.CurrentNode = NodeManager.GetLastNode(false, false);
         }
 
-        void CloseNode(bool isActiveClose)
+        void CloseNode()
         {
-            DestroyImmediate(gameObject);
+            if (isDestroyAfterClose)
+                DestroyImmediate(gameObject);
+            else
+                gameObject.SetActive(false);
         }
 
-        void OnDestroy()
+        public virtual void OnDestroy()
         {
             if (spriteAB)
                 spriteAB.Unload(true);

@@ -17,13 +17,12 @@ namespace UGCF.Manager
         {
             spriteAB = ab;
             ResourceDirectory = resourceDirectory;
-            gameObject.name = gameObject.name.Replace("(Clone)", "");
+            gameObject.name = GetType().Name;
         }
 
         public virtual void Init()
         {
             LogUtils.Log(name + "：Init");
-            gameObject.SetActive(false);
         }
 
         public virtual void Open()
@@ -36,8 +35,16 @@ namespace UGCF.Manager
         public virtual void Close()
         {
             LogUtils.Log(name + "：Close");
-            gameObject.SetActive(false);
             AudioManager.Instance.StopMusic();
+            TipManager.Instance.CloseAllTip();
+            DestroyImmediate(gameObject);
+        }
+
+        public virtual void OnDestroy()
+        {
+            if (spriteAB)
+                spriteAB.Unload(true);
+            Resources.UnloadUnusedAssets();
         }
 
         public AssetBundle GetSpriteAB()
