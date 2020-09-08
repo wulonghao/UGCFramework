@@ -176,9 +176,9 @@ namespace UGCF.UGCFEditor
         static string GetChannelPath(BuildTarget target)
         {
             if (isRelease)
-                return Application.dataPath.Replace("Assets", "Release/") + target.ToString() + "/" + ChannelManager.GetChannel() + "/";
+                return Application.dataPath.Replace("Assets", "Release/") + target.ToString() + "/";
             else
-                return Application.streamingAssetsPath + "/AssetBundle/" + target.ToString() + "/" + ChannelManager.GetChannel() + "/";
+                return Application.streamingAssetsPath + "/AssetBundle/" + target.ToString() + "/";
         }
 
         static string GetPlatformDirectoryPath(BuildTarget target)
