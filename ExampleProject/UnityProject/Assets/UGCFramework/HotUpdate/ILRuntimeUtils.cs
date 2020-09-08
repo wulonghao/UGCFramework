@@ -32,12 +32,12 @@ namespace UGCF.HotUpdate
             if (hotfixAB)
             {
                 appdomain = new AppDomain();
-                TextAsset taHotFix = hotfixAB.LoadAsset<TextAsset>("hotfix");
+                TextAsset taHotFix = hotfixAB.LoadAsset<TextAsset>("ugcfhotfix");
                 if (!taHotFix) return;
                 MemoryStream ms = new MemoryStream(taHotFix.bytes);
                 if (ms != null)
                 {
-                    TextAsset taHotFixPdb = hotfixAB.LoadAsset<TextAsset>("hotfixpdb");
+                    TextAsset taHotFixPdb = hotfixAB.LoadAsset<TextAsset>("ugcfhotfixpdb");
                     if (!taHotFixPdb) return;
                     MemoryStream msp = new MemoryStream(taHotFixPdb.bytes);
                     if (msp != null)

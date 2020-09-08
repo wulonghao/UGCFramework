@@ -9,7 +9,7 @@ namespace UGCF.HotUpdate
 {
     public class HotFixBaseInheritMono : MonoBehaviour
     {
-        private const string HotTypeNameFormat = "HotFix.{0}HotFix";
+        private const string HotTypeNameFormat = "UGCFHotFix.{0}HotFix";
         private object instanceHotFix;
         private ILType type;
         private string hotFixTypeName;
