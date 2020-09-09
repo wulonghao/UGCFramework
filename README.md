@@ -1,5 +1,5 @@
 # UGCFramework（Unity Game Client Framework）
-unity-ILRuntime客户端框架1.0(UGUI+C#+protocol+ILRuntime)
+unity-ILRuntime客户端框架(UGUI+C#+protocol+ILRuntime)
 
 这是一个基于C＃语言的unity客户端框架，小部分工具基于UGUI，大部分工具不限制UI类型</p>
 代码热更新方面使用的是ILRuntime热更技术</p>
@@ -19,11 +19,15 @@ unity-ILRuntime客户端框架1.0(UGUI+C#+protocol+ILRuntime)
   11、UGUI扩展组件(Tab、RadioButton、计时器、动画、各种特殊图片组件等)</p>
   12、ILRuntime热更机制</p>
 
-## v1.1.3更新日志 - （进行中）
+## v1.1.3更新日志 - 2020.9.9
   1、优化ScrollRect相关工具组件</p>
   2、优化渠道管理工具</p>
   3、优化部分ILRuntime相关适配器</p>
   4、修复部分跨平台编译问题</p>
+  5、优化UI系统，简化UI结构，修改部分接口的调用方式，修复部分已知问题
+  6、优化热更系统，简化热更注册执行方式
+  7、优化CommonAnimation组件，修复在某些情况下Foward的改变会导致动画异常的问题
+  7、修复示例脚本中的部分已知bug
 
 ## v1.1.2更新日志 - 2020.8.28
   1、调整所有脚本行尾设置</p>
