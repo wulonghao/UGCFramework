@@ -22,7 +22,7 @@ namespace UGCF.Network
                 if (instance == null)
                 {
                     instance = new GameObject().AddComponent<SocketClient>();
-                    instance.name = instance.GetType().ToString();
+                    instance.name = instance.GetType().Name;
                     DontDestroyOnLoad(instance);
                 }
                 return instance;

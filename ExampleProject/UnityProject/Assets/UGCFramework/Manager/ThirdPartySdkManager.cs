@@ -17,7 +17,7 @@ namespace UGCF.Manager
                 if (instance == null)
                 {
                     instance = new GameObject().AddComponent<ThirdPartySdkManager>();
-                    instance.name = instance.GetType().ToString();
+                    instance.name = instance.GetType().Name;
                     DontDestroyOnLoad(instance);
                     instance.Init();
                 }

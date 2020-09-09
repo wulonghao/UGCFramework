@@ -23,12 +23,13 @@ public class UGCFMain : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        if (!RootCanvas)
+            RootCanvas = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
+        DontDestroyOnLoad(this);
     }
 
     void Start()
     {
-        if (!RootCanvas)
-            RootCanvas = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
         UIDataInit();
     }
 

@@ -19,6 +19,7 @@ namespace UGCF.Manager
 
                     instance = UIUtils.CreateGameObject<TipManager>(FindObjectOfType<Canvas>().transform, typeof(TipManager).ToString());
                     RectTransform rt = instance.gameObject.AddComponent<RectTransform>();
+                    instance.name = instance.GetType().Name;
                     rt.anchorMin = Vector2.zero;
                     rt.anchorMax = Vector2.one;
                     rt.offsetMax = Vector2.zero;
