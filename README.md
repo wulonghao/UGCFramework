@@ -20,7 +20,7 @@ unity-ILRuntime客户端框架(UGUI+C#+protocol+ILRuntime)
   12、UGUI扩展组件(Tab、RadioButton、ScrollRect扩展、计时器、文本处理、各种特殊图片组件等)</p>
   13、ILRuntime热更系统</p>
 
-## v2.0.2更新日志 - 2020.9.9
+## v2.1.0更新日志 - 2020.9.9
   1、优化ScrollRect相关工具组件</p>
   2、优化渠道管理工具</p>
   3、优化部分ILRuntime相关适配器</p>
