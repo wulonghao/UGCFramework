@@ -45,8 +45,6 @@ namespace UGCF.Manager
             {
                 CloseTargetTip(GetCurrentShowTip());
                 ti.Init(describe, waitTime, sureAction, cancelAction);
-                CommonAnimation ca = ti.GetComponent<CommonAnimation>();
-                if (ca) ca.IsFoward = true;
                 ti.gameObject.SetActive(true);
             }
         }

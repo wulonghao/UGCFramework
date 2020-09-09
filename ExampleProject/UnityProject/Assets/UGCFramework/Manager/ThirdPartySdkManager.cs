@@ -417,9 +417,9 @@ namespace UGCF.Manager
             t.OnFocus();
             t.Copy();
 #elif UNITY_IOS
-        CopyTextToClipboard_iOS(input);  
+            CopyTextToClipboard_iOS(input);  
 #elif UNITY_ANDROID
-        Tool.CallStatic("CopyTextToClipboard", input);
+            Tool.CallStatic("CopyTextToClipboard", input);
 #endif
         }
 
@@ -433,10 +433,10 @@ namespace UGCF.Manager
 #if UNITY_EDITOR
             return File.Exists(path);
 #elif UNITY_ANDROID
-        string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
-        return Tool.CallStatic<bool>("FileExist", androidPath);
+            string androidPath = path.Replace("jar:file://" + Application.dataPath + "!/assets/", "");
+            return Tool.CallStatic<bool>("FileExist", androidPath);
 #else
-        return File.Exists(path);
+            return File.Exists(path);
 #endif
         }
 
