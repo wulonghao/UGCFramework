@@ -15,7 +15,17 @@ namespace UGCF.UnityExtend
         public bool PingPong { get => pingPong; set => pingPong = value; }
 
         [SerializeField] bool foward;
-        public bool Foward { get => foward; set => foward = value; }
+        public bool Foward
+        {
+            get => foward;
+            set
+            {
+                foward = value;
+                CurrentFoward = foward;
+            }
+        }
+
+        public bool CurrentFoward { get; set; }
 
         [SerializeField] float playTime = 1;
         public float PlayTime { get => playTime; set => playTime = value; }
@@ -60,7 +70,7 @@ namespace UGCF.UnityExtend
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = PointList.Count - 1;
 
             if (CaSpace == CASpace.TransformSelf)
@@ -123,7 +133,7 @@ namespace UGCF.UnityExtend
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = AngleList.Count - 1;
             CurrentGameObject.transform.localEulerAngles = AngleList[initIndex];
         }
@@ -165,7 +175,7 @@ namespace UGCF.UnityExtend
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = ScaleList.Count - 1;
             CurrentGameObject.transform.localScale = ScaleList[initIndex];
         }
@@ -207,7 +217,7 @@ namespace UGCF.UnityExtend
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = SizeList.Count - 1;
             if (Rtf) Rtf.sizeDelta = SizeList[initIndex];
         }
@@ -248,12 +258,11 @@ namespace UGCF.UnityExtend
         CanvasGroup cg;
         bool hadCanvas;
 
-
         public override void Init(GameObject _currentGameObject)
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = AlphaList.Count - 1;
             cg = CurrentGameObject.GetComponent<CanvasGroup>();
             hadCanvas = cg;
@@ -312,7 +321,7 @@ namespace UGCF.UnityExtend
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = ColorList.Count - 1;
             graphic = CurrentGameObject.GetComponent<Graphic>();
             if (graphic)
@@ -359,7 +368,7 @@ namespace UGCF.UnityExtend
         {
             base.Init(_currentGameObject);
             int initIndex = 0;
-            if (!Foward)
+            if (!CurrentFoward)
                 initIndex = FillAmountList.Count - 1;
             image = CurrentGameObject.GetComponent<Image>();
             if (image)
