@@ -34,7 +34,7 @@ public class EternalGameObject : HotFixBaseInheritMono
         commonBasicspriteAb = LoadBundle(commonBasicspriteAb, "Basicsprite", 1);
         commonButtonAb = LoadBundle(commonButtonAb, "Button", 1);
 
-        fontDefault = LoadBundle(fontDefault, "jdzytj", 2);
+        fontDefault = LoadBundle(fontDefault, "Default", 2);
 
         imageColorChangeAb = LoadBundle(imageColorChangeAb, "imagecolorchange", 3);
         imageColorChangeVAb = LoadBundle(imageColorChangeVAb, "imagecolorchangev", 3);
