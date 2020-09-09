@@ -23,7 +23,7 @@ public class LoadingPnl : MonoBehaviour
             if (go)
             {
                 instance = go.GetComponent<LoadingPnl>();
-                go.transform.SetParent(PageManager.Instance.transform);
+                go.transform.SetParent(UGCFMain.Instance.RootCanvas);
                 go.transform.localScale = Vector3.one;
 
                 RectTransform rt = go.GetComponent<RectTransform>();
