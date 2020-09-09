@@ -134,7 +134,7 @@ namespace UGCF.Manager
             nodeName = Path.GetFileNameWithoutExtension(nodeName);
             if (!string.IsNullOrEmpty(nodeName))
             {
-                Node[] nodes = PageManager.Instance.GetComponentsInChildren<Node>(true);
+                Node[] nodes = UGCFMain.Instance.RootCanvas.GetComponentsInChildren<Node>(true);
                 foreach (Node n in nodes)
                     if (nodeName.Equals(n.name))
                         return n;
@@ -154,7 +154,7 @@ namespace UGCF.Manager
 
         public static Node GetLastNode(bool includeInactive = true, bool isContainSelf = true)
         {
-            Node[] nodes = PageManager.Instance.GetComponentsInChildren<Node>(includeInactive);
+            Node[] nodes = UGCFMain.Instance.RootCanvas.GetComponentsInChildren<Node>(includeInactive);
             if (nodes.Length > 0)
             {
                 if (isContainSelf || nodes[nodes.Length - 1] != CurrentNode)
@@ -168,7 +168,7 @@ namespace UGCF.Manager
 
         public static Node GetLastButOneNode(bool includeInactive = true, bool isContainSelf = true)
         {
-            Node[] nodes = PageManager.Instance.GetComponentsInChildren<Node>(includeInactive);
+            Node[] nodes = UGCFMain.Instance.RootCanvas.GetComponentsInChildren<Node>(includeInactive);
             if (nodes.Length > 1)
             {
                 if (isContainSelf || nodes[nodes.Length - 2] != CurrentNode)
@@ -195,7 +195,7 @@ namespace UGCF.Manager
         /// <summary> 切换page时不销毁当前node </summary>
         public static void DontDestroyAtChangePage(Node node)
         {
-            node.transform.SetParent(PageManager.Instance.transform);
+            node.transform.SetParent(UGCFMain.Instance.RootCanvas);
             node.transform.SetAsLastSibling();
         }
     }

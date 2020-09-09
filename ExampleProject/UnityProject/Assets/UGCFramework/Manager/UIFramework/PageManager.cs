@@ -14,8 +14,8 @@ namespace UGCF.Manager
             {
                 if (instance == null)
                 {
-                    instance = FindObjectOfType<Canvas>().gameObject.AddComponent<PageManager>();
-                    instance.name = instance.GetType().ToString();
+                    instance = new GameObject().AddComponent<PageManager>();
+                    instance.name = instance.GetType().Name;
                     DontDestroyOnLoad(instance);
                 }
                 return instance;
@@ -114,7 +114,7 @@ namespace UGCF.Manager
                         return null;
                     }
                 }
-                UIUtils.AttachAndReset(go, transform);
+                UIUtils.AttachAndReset(go, UGCFMain.Instance.RootCanvas);
                 page = go.GetComponent<Page>();
                 if (page)
                 {
