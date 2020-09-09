@@ -149,7 +149,7 @@ namespace UGCF.Manager
             try
             {
                 if (string.IsNullOrEmpty(directoryPath))
-                    directoryPath = PageManager.Instance.CurrentPage.GetType().Name;
+                    directoryPath = PageManager.CurrentPage.GetType().Name;
                 AudioSource ase;
                 if (soundClipDict.ContainsKey(soundName))
                     ase = soundASDict[soundName];

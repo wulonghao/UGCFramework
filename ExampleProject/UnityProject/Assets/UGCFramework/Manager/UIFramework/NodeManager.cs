@@ -97,7 +97,7 @@ namespace UGCF.Manager
                         return null;
                     }
                 }
-                UIUtils.AttachAndReset(go, PageManager.Instance.CurrentPage.transform);
+                UIUtils.AttachAndReset(go, PageManager.CurrentPage.transform);
                 node = go.GetComponent<Node>();
                 if (node)
                 {

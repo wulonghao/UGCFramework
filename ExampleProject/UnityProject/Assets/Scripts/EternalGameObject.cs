@@ -23,7 +23,7 @@ public class EternalGameObject : HotFixBaseInheritMono
         ILRuntimeUtils.LoadHotFixWithInit();
         LogUtils.Log(Application.persistentDataPath);
         LoadNecessaryBundle();
-        PageManager.Instance.OpenPage<StartPage>();
+        PageManager.OpenPage<StartPage>();
     }
 
     /// <summary> 加载必要资源 </summary>

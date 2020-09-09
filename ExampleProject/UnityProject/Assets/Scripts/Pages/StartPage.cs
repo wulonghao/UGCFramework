@@ -17,9 +17,9 @@ public class StartPage : Page
         UGUIEventListener.Get(btnTest1Node).OnClick = delegate { NodeManager.OpenNode<Test1Node>(); };
         UGUIEventListener.Get(btnTest2Node).OnClick = delegate { NodeManager.OpenNode<Test2Node>(); };
         UGUIEventListener.Get(btnTest3Node).OnClick = delegate { NodeManager.OpenNode<Test3Node>(); };
-        UGUIEventListener.Get(btnTest1Page).OnClick = delegate { PageManager.Instance.OpenPage<Test1Page>(); };
-        UGUIEventListener.Get(btnTest2Page).OnClick = delegate { PageManager.Instance.OpenPage<Test2Page>(); };
-        UGUIEventListener.Get(btnTest3Page).OnClick = delegate { PageManager.Instance.OpenPage<Test3Page>(); };
+        UGUIEventListener.Get(btnTest1Page).OnClick = delegate { PageManager.OpenPage<Test1Page>(); };
+        UGUIEventListener.Get(btnTest2Page).OnClick = delegate { PageManager.OpenPage<Test2Page>(); };
+        UGUIEventListener.Get(btnTest3Page).OnClick = delegate { PageManager.OpenPage<Test3Page>(); };
         UGUIEventListener.Get(btnAlert).OnClick = delegate
         {
             TipManager.Instance.OpenTip(TipType.AlertTip, "这是警告弹窗", 0, () => { Debug.Log("点击确定"); });

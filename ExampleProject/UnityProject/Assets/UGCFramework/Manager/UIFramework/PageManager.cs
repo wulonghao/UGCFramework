@@ -5,23 +5,9 @@ using UGCF.Utils;
 
 namespace UGCF.Manager
 {
-    public partial class PageManager : MonoBehaviour
+    public partial class PageManager
     {
-        private static PageManager instance;
-        public static PageManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new GameObject().AddComponent<PageManager>();
-                    instance.name = instance.GetType().Name;
-                    DontDestroyOnLoad(instance);
-                }
-                return instance;
-            }
-        }
-        public Page CurrentPage { get; set; }
+        public static Page CurrentPage;
         // Page历史，用于返回时检索
         private static List<string> pageHistory = new List<string>();
         private const string DefaultPageDirectoryPath = "UIResources/Page";
@@ -30,23 +16,23 @@ namespace UGCF.Manager
         /// 根据Page子类类型打开特定的Page
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public T OpenPage<T>() where T : Page
+        public static T OpenPage<T>() where T : Page
         {
             return (T)OpenPageAc(GetPageType<T>());
         }
 
-        public Page OpenPage(string pageName)
+        public static Page OpenPage(string pageName)
         {
             return OpenPageAc(pageName);
         }
 
-        public T GetPage<T>() where T : Page
+        public static T GetPage<T>() where T : Page
         {
-            return GetComponentInChildren<T>();
+            return UGCFMain.Instance.RootCanvas.GetComponentInChildren<T>();
         }
 
         // 返回上一个Page
-        public void OpenLastPage()
+        public static void OpenLastPage()
         {
             if (pageHistory.Count > 1)
             {
@@ -61,7 +47,7 @@ namespace UGCF.Manager
         /// </summary>
         /// <param name="pagePath"></param>
         /// <param name="finishCallback"></param>
-        Page OpenPageAc(string pagePath)
+        private static Page OpenPageAc(string pagePath)
         {
             Page page = CreatePage(pagePath);
             if (page)
@@ -78,7 +64,7 @@ namespace UGCF.Manager
         /// 销毁当前的Page并刷新历史
         /// </summary>
         /// <param name="newPageName"></param>
-        void DestroyCurrentPage(string newPageName)
+        private static void DestroyCurrentPage(string newPageName)
         {
             if (CurrentPage != null)
                 CurrentPage.Close();
@@ -90,7 +76,7 @@ namespace UGCF.Manager
         /// </summary>
         /// <param name="pagePath"></param>
         /// <returns></returns>
-        Page CreatePage(string pagePath)
+        private static Page CreatePage(string pagePath)
         {
             if (string.IsNullOrEmpty(pagePath))
                 return null;
@@ -98,7 +84,7 @@ namespace UGCF.Manager
             if (CurrentPage != null && pageName == CurrentPage.name)
                 return CurrentPage;
 
-            Page page = GetComponentInChildren<Page>(true);
+            Page page = UGCFMain.Instance.RootCanvas.GetComponentInChildren<Page>(true);
             if (page == null || page.name != pagePath)
             {
                 string path = DefaultPageDirectoryPath + "/" + pagePath;
@@ -136,7 +122,7 @@ namespace UGCF.Manager
         /// 刷新Page历史
         /// </summary>
         /// <param name="type"></param>
-        void RefreshHistory(string type)
+        private static void RefreshHistory(string type)
         {
             int index = pageHistory.IndexOf(type);
             if (index >= 0 && index < pageHistory.Count - 1)
@@ -145,7 +131,7 @@ namespace UGCF.Manager
                 pageHistory.Add(type);
         }
 
-        string GetPageType<T>() where T : Page
+        private static string GetPageType<T>() where T : Page
         {
             return typeof(T).ToString();
         }
