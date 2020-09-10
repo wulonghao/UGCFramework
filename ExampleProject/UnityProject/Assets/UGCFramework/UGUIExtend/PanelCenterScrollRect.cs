@@ -156,21 +156,21 @@ namespace UGCF.UGUIExtend
             Vector2 firstV2 = rtfFirst.rect.size;
             RectTransform rtfLast = Content.GetChild(Content.childCount - 1).GetComponent<RectTransform>();
             Vector2 listV2 = rtfLast.rect.size;
-            Rect contentParentRect = Viewport.rect;
-            Vector2 contentParentPotsition = (Vector2)Viewport.position + contentParentRect.size * (Viewport.pivot - Vector2.one * 0.5f) * canvasScale;
+            Rect viewportRect = Viewport.rect;
+            Vector2 viewportPotsition = GetViewportWorldPosition();
             if (Horizontal)
             {
                 HorizontalLayoutGroup horizontalLayout = Content.GetComponent<HorizontalLayoutGroup>();
-                if ((scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * canvasScale.x < Mathf.Max(listV2.x, contentParentRect.width) * 0.5f)
-                    || rtfLast.position.x <= contentParentPotsition.x)
+                if (scaleSpaceToCenter < 0
+                    && Mathf.Abs(rtfLast.position.x - viewportPotsition.x) * canvasScale.x < Mathf.Max(listV2.x, viewportRect.width) * 0.5f
+                    || rtfLast.position.x < viewportPotsition.x)
                 {
                     rtfFirst.SetAsLastSibling();
                     Content.localPosition += Vector3.right * (firstV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
                 }
-                else if ((scaleSpaceToCenter > 0
-                    && Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * canvasScale.x < Mathf.Max(firstV2.x, contentParentRect.width) * 0.5f)
-                    || rtfFirst.position.x >= contentParentPotsition.x)
+                else if (scaleSpaceToCenter > 0
+                    && Mathf.Abs(rtfFirst.position.x - viewportPotsition.x) * canvasScale.x < Mathf.Max(firstV2.x, viewportRect.width) * 0.5f
+                    || rtfFirst.position.x >= viewportPotsition.x)
                 {
                     rtfLast.SetAsFirstSibling();
                     Content.localPosition += Vector3.left * (listV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
@@ -180,20 +180,25 @@ namespace UGCF.UGUIExtend
             {
                 VerticalLayoutGroup verticalLayout = Content.GetComponent<VerticalLayoutGroup>();
                 if (scaleSpaceToCenter > 0
-                    && Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * canvasScale.y < Mathf.Max(listV2.y, contentParentRect.height) * 0.5f
-                    || rtfLast.position.y >= contentParentPotsition.y)
+                    && Mathf.Abs(rtfLast.position.y - viewportPotsition.y) * canvasScale.y < Mathf.Max(listV2.y, viewportRect.height) * 0.5f
+                    || rtfLast.position.y > viewportPotsition.y)
                 {
                     rtfFirst.SetAsLastSibling();
                     Content.localPosition += Vector3.down * (firstV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
                 else if (scaleSpaceToCenter < 0
-                    && Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * canvasScale.y < Mathf.Max(firstV2.y, contentParentRect.height) * 0.5f
-                    || rtfFirst.position.y <= contentParentPotsition.y)
+                    && Mathf.Abs(rtfFirst.position.y - viewportPotsition.y) * canvasScale.y < Mathf.Max(firstV2.y, viewportRect.height) * 0.5f
+                    || rtfFirst.position.y <= viewportPotsition.y)
                 {
                     rtfLast.SetAsFirstSibling();
                     Content.localPosition += Vector3.up * (listV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
             }
+        }
+
+        Vector2 GetViewportWorldPosition()
+        {
+            return (Vector2)Viewport.position - Viewport.rect.size * (Viewport.pivot - Vector2.one * 0.5f) * canvasScale;
         }
 
         Transform GetLastEnableItem(Transform current)
@@ -227,13 +232,14 @@ namespace UGCF.UGUIExtend
         RectTransform GetCenter()
         {
             Transform centerTf = null;
+            Vector3 viewportPotsition = GetViewportWorldPosition();
             for (int i = 0; i < Content.childCount; i++)
             {
                 Transform tf = Content.GetChild(i);
                 if (!tf.gameObject.activeInHierarchy)
                     continue;
                 if (!centerTf ||
-                    Vector2.SqrMagnitude(tf.position - Viewport.position) < Vector2.SqrMagnitude(centerTf.position - Viewport.position))
+                    Vector2.SqrMagnitude(tf.position - viewportPotsition) < Vector2.SqrMagnitude(centerTf.position - viewportPotsition))
                 {
                     centerTf = tf;
                 }

@@ -10,29 +10,29 @@ namespace UGCF.UGUIExtend
     public class ScrollRectCircle : MonoBehaviour, IBeginDragHandler, IEndDragHandler
     {
         private ScrollRect scrollRect;
-        private float screenToCanvasScale;
+        private float canvasScale;
         private bool enableCircle;
 
         void Start()
         {
             scrollRect = GetComponent<ScrollRect>();
-            screenToCanvasScale = GetComponentInParent<Canvas>().GetComponent<RectTransform>().localScale.x;
+            canvasScale = GetComponentInParent<Canvas>().GetComponent<RectTransform>().localScale.x;
             scrollRect.onValueChanged.AddListener(OnScrollValueChanged);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            enableCircle = true;
+            enableCircle = false;
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            enableCircle = false;
+            enableCircle = true;
         }
 
         void OnScrollValueChanged(Vector2 v2)
         {
-            if (enableCircle)
+            if (!enableCircle)
                 return;
             if (scrollRect.content.childCount < 3)
                 return;
@@ -40,19 +40,19 @@ namespace UGCF.UGUIExtend
             Vector2 firstV2 = rtfFirst.rect.size;
             RectTransform rtfLast = scrollRect.content.GetChild(scrollRect.content.childCount - 1).GetComponent<RectTransform>();
             Vector2 listV2 = rtfLast.rect.size;
-            Rect contentParentRect = scrollRect.viewport.rect;
-            Vector2 contentParentPotsition = scrollRect.viewport.position;
+            Rect viewportRect = scrollRect.viewport.rect;
+            Vector2 viewportPosition = (Vector2)scrollRect.viewport.position - viewportRect.size * (scrollRect.viewport.pivot - Vector2.one * 0.5f) * canvasScale;
             if (scrollRect.horizontal)
             {
                 HorizontalLayoutGroup horizontalLayout = scrollRect.content.GetComponent<HorizontalLayoutGroup>();
-                if (Mathf.Abs(rtfLast.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(listV2.x, contentParentRect.width) * 0.5f
-                    || rtfLast.position.x <= contentParentPotsition.x)
+                if (Mathf.Abs(rtfLast.position.x - viewportPosition.x) * canvasScale < Mathf.Max(listV2.x, viewportRect.width) * 0.5f
+                    || rtfLast.position.x <= viewportPosition.x)
                 {
                     rtfFirst.SetAsLastSibling();
                     scrollRect.content.localPosition += Vector3.right * (firstV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
                 }
-                else if (Mathf.Abs(rtfFirst.position.x - contentParentPotsition.x) * screenToCanvasScale < Mathf.Max(firstV2.x, contentParentRect.width) * 0.5f
-                    || rtfFirst.position.x >= contentParentPotsition.x)
+                else if (Mathf.Abs(rtfFirst.position.x - viewportPosition.x) * canvasScale < Mathf.Max(firstV2.x, viewportRect.width) * 0.5f
+                    || rtfFirst.position.x >= viewportPosition.x)
                 {
                     rtfLast.SetAsFirstSibling();
                     scrollRect.content.localPosition += Vector3.left * (listV2.x + (horizontalLayout ? horizontalLayout.spacing : 0));
@@ -61,14 +61,14 @@ namespace UGCF.UGUIExtend
             else if (scrollRect.vertical)
             {
                 VerticalLayoutGroup verticalLayout = scrollRect.content.GetComponent<VerticalLayoutGroup>();
-                if (Mathf.Abs(rtfLast.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(listV2.y, contentParentRect.height) * 0.5f
-                    || rtfLast.position.y >= contentParentPotsition.y)
+                if (Mathf.Abs(rtfLast.position.y - viewportPosition.y) * canvasScale < Mathf.Max(listV2.y, viewportRect.height) * 0.5f
+                    || rtfLast.position.y >= viewportPosition.y)
                 {
                     rtfFirst.SetAsLastSibling();
                     scrollRect.content.localPosition += Vector3.down * (firstV2.y + (verticalLayout ? verticalLayout.spacing : 0));
                 }
-                else if (Mathf.Abs(rtfFirst.position.y - contentParentPotsition.y) * screenToCanvasScale < Mathf.Max(firstV2.y, contentParentRect.height) * 0.5f
-                    || rtfFirst.position.y <= contentParentPotsition.y)
+                else if (Mathf.Abs(rtfFirst.position.y - viewportPosition.y) * canvasScale < Mathf.Max(firstV2.y, viewportRect.height) * 0.5f
+                    || rtfFirst.position.y <= viewportPosition.y)
                 {
                     rtfLast.SetAsFirstSibling();
                     scrollRect.content.localPosition += Vector3.up * (listV2.y + (verticalLayout ? verticalLayout.spacing : 0));
