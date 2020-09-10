@@ -21,9 +21,9 @@ unity-ILRuntime客户端框架(UGUI+C#+protocol+ILRuntime)
   13、ILRuntime热更系统</p>
   
 ## v2.1.1更新日志 - 2020.9.10
-  1、优化PanelCenterScrollRect和ScrollRectCircle，修复某些情况下循环异常的问题
-  2、优化Plugins相关文件夹结构
-  3、将第三方SDK文件从package剥离
+  1、优化PanelCenterScrollRect和ScrollRectCircle，修复某些情况下循环异常的问题</p>
+  2、优化Plugins相关文件夹结构</p>
+  3、将第三方SDK文件从package剥离</p>
  
 ## v2.1.0更新日志 - 2020.9.9
   1、优化ScrollRect相关工具组件</p>
