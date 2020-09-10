@@ -1,5 +1,6 @@
 fileFormatVersion: 2
-guid: 18eb9806d0bcf0d4aad63db075943f43
+guid: 0188f44066a402a4bab8ecdd4066adaf
+folderAsset: yes
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -93,7 +94,7 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: false
         CompileFlags: 
-        FrameworkDependencies: Security;WebKit;
+        FrameworkDependencies: 
   userData: 
   assetBundleName: 
   assetBundleVariant: 

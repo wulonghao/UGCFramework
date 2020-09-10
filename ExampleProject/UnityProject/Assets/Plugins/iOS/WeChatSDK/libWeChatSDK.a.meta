@@ -1,6 +1,5 @@
 fileFormatVersion: 2
-guid: 0188f44066a402a4bab8ecdd4066adaf
-folderAsset: yes
+guid: 18eb9806d0bcf0d4aad63db075943f43
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -94,7 +93,7 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: false
         CompileFlags: 
-        FrameworkDependencies: CoreTelephony;Security;
+        FrameworkDependencies: WebKit;
   userData: 
   assetBundleName: 
   assetBundleVariant: 

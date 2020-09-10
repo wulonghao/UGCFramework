@@ -93,7 +93,7 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: false
         CompileFlags: 
-        FrameworkDependencies: 
+        FrameworkDependencies: CoreTelephony;Security;
   userData: 
   assetBundleName: 
   assetBundleVariant: 
