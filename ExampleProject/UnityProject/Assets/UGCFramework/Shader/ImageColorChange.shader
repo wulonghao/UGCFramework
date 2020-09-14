@@ -51,15 +51,15 @@
 			struct appdata_t
 			{
 				float4 vertex : POSITION;
-				float2 texcoord : TEXCOORD0;
-				fixed4 color : COLOR;
+				float4 texcoord : TEXCOORD0;
+				float4 color : COLOR;
 			};
 	
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-				half2 texcoord : TEXCOORD0;
-				fixed4 color : COLOR;
+				float4 texcoord : TEXCOORD0;
+				float4 color : COLOR;
 			};
 	
 			v2f o;
@@ -143,14 +143,15 @@
 				
 			float3 colorHSV;  
 			float3 colorHSV2;
-			fixed4 frag (v2f i) : COLOR
+			float4 frag (v2f i) : COLOR
 			{
-				fixed4 col = tex2D(_MainTex, i.texcoord);  
+				float4 col = tex2D(_MainTex, i.texcoord);
 				
 				if(i.color.x == 0 && i.color.y == 0 && i.color.z == 0)
 				{
 					float grey = dot(col.rgb, float3(0.299, 0.587, 0.114));  
 					col.rgb = float3(grey, grey, grey);
+					col.a *= i.color.a;
 				}
 				else
 				{
@@ -158,7 +159,7 @@
 					colorHSV2.xyz = RGBConvertToHSV(i.color);
 					if((col.r == col.g && col.r == col.b))
 					{
-						col = col;
+						col.a *= i.color.a;
 					}
 					else if(colorHSV2.y == 0)
 					{
@@ -167,11 +168,10 @@
 					else
 					{
 						colorHSV.x = colorHSV2.x;
-						colorHSV.y *= colorHSV2.y;
 						col.rgb = HSVConvertToRGB(colorHSV.xyz);
+						col.a *= i.color.a;
 					}
 				}
-				col.a *= i.color.a;
 				return col;
 			}
 			ENDCG
