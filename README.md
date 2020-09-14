@@ -19,7 +19,10 @@ unity-ILRuntime客户端框架(UGUI+C#+protocol+ILRuntime)
   11、实用性工具（图片处理、图片置灰、修改图片色相、文件下载、定位、文件和字符串加密等等）</p>
   12、UGUI扩展组件(Tab、RadioButton、ScrollRect扩展、计时器、文本处理、各种特殊图片组件等)</p>
   13、ILRuntime热更系统</p>
-  
+
+## v2.1.2更新日志 - 2020.9.14
+  1、优化ImageColorChange和ImageColorChangeV，使色相的修改更加平滑，并增加透明度变化下的表现</p>
+
 ## v2.1.1更新日志 - 2020.9.10
   1、优化PanelCenterScrollRect和ScrollRectCircle，修复某些情况下循环异常的问题</p>
   2、优化Plugins相关文件夹结构</p>
