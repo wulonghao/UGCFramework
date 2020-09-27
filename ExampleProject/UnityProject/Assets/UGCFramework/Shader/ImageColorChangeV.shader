@@ -1,16 +1,5 @@
 ﻿Shader "MyShader/ImageColorChangeV"
 {
-	Properties
-	{
-		_MainTex ("Base (RGB), Alpha (A)", 2D) = "black" {}
-		_StencilComp("Stencil Comparison", Float) = 8
-		_Stencil("Stencil ID", Float) = 0
-		_StencilOp("Stencil Operation", Float) = 0
-		_StencilWriteMask("Stencil Write Mask", Float) = 255
-		_StencilReadMask("Stencil Read Mask", Float) = 255
-		_ColorMask("Color Mask", Float) = 15
-	}
-
 	SubShader
 	{
 		LOD 200
@@ -21,16 +10,6 @@
 			"IgnoreProjector" = "True"
 			"RenderType" = "Transparent"
 		}
-
-		Stencil
-		{
-			Ref[_Stencil]
-			Comp[_StencilComp]
-			Pass[_StencilOp]
-			ReadMask[_StencilReadMask]
-			WriteMask[_StencilWriteMask]
-		}
-		ColorMask[_ColorMask]
 
 		Pass
 		{
@@ -89,82 +68,21 @@
 				return rgbProduct;
 			}
 
-			float3 RGBConvertToHSV(float3 rgb)
+			float3 RGBConvertToHSV(float3 RGB)
 			{
-				float R = rgb.x, G = rgb.y, B = rgb.z;
-				float3 hsv;
-				float max1 = max(R, max(G, B));
-				float min1 = min(R, min(G, B));
-				if (max1 == min1)
-				{
-					hsv.x = 0;
-					hsv.y = 0;
-					hsv.z = max1;
-				}
-				else
-				{
-					if (R == max1)
-					{
-						hsv.x = (G - B) / (max1 - min1);
-					}
-					if (G == max1)
-					{
-						hsv.x = 2 + (B - R) / (max1 - min1);
-					}
-					if (B == max1)
-					{
-						hsv.x = 4 + (R - G) / (max1 - min1);
-					}
-					hsv.x = hsv.x * 60.0;
-					if (hsv.x < 0)
-						hsv.x = hsv.x + 360;
-					hsv.z = max1;
-					hsv.y = (max1 - min1) / max1;
-				}
-				return hsv;
+				float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+				float4 P = lerp(float4(RGB.bg, K.wz), float4(RGB.gb, K.xy), step(RGB.b, RGB.g));
+				float4 Q = lerp(float4(P.xyw, RGB.r), float4(RGB.r, P.yzx), step(P.x, RGB.r));
+				float D = Q.x - min(Q.w, Q.y);
+				float E = 1e-6;
+				return float3(abs(Q.z + (Q.w - Q.y) / (6.0 * D + E)), D / (Q.x + E), Q.x);
 			}
 
-			float3 HSVConvertToRGB(float3 hsv)
+			float3 HSVConvertToRGB(float3 HSV)
 			{
-				float R, G, B;
-				if (hsv.y == 0)
-				{
-					R = G = B = hsv.z;
-				}
-				else
-				{
-					hsv.x = hsv.x * 0.0166667;// 1/60
-					int i = (int)hsv.x;
-					float f = hsv.x - (float)i;
-					float a = hsv.z * (1 - hsv.y);
-					float b = hsv.z * (1 - hsv.y * f);
-					float c = hsv.z * (1 - hsv.y * (1 - f));
-					if (i == 0)
-					{
-						R = hsv.z; G = c; B = a;
-					}
-					else if (i == 1)
-					{
-						R = b; G = hsv.z; B = a;
-					}
-					else if (i == 2)
-					{
-						R = a; G = hsv.z; B = c;
-					}
-					else if (i == 3)
-					{
-						R = a; G = b; B = hsv.z;
-					}
-					else if (i == 4)
-					{
-						R = c; G = a; B = hsv.z;
-					}
-					else
-					{
-						R = hsv.z; G = a; B = b;
-					}
-				}
-				return float3(R, G, B);
+				float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+				float3 P = abs(frac(HSV.xxx + K.xyz) * 6.0 - K.www);
+				return HSV.z * lerp(K.xxx, saturate(P - K.xxx), HSV.y);
 			}
 
 			float3 colorHSV;
@@ -173,7 +91,7 @@
 			{
 				float4 col = tex2D(_MainTex, i.uv[0]);
 
-				if (i.color.x == 0 && i.color.y == 0 && i.color.z == 0)
+				if (!any(i.color.rgb))
 				{
 					float grey = dot(col.rgb, float3(0.299, 0.587, 0.114));
 					col.rgb = float3(grey, grey, grey);
