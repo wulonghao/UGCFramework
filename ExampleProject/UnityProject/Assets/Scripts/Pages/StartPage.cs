@@ -14,21 +14,21 @@ public class StartPage : Page
     {
         base.Init();
         NecessaryInit();
-        UGUIEventListener.Get(btnTest1Node).OnClick = delegate { NodeManager.OpenNode<Test1Node>(); };
-        UGUIEventListener.Get(btnTest2Node).OnClick = delegate { NodeManager.OpenNode<Test2Node>(); };
-        UGUIEventListener.Get(btnTest3Node).OnClick = delegate { NodeManager.OpenNode<Test3Node>(); };
-        UGUIEventListener.Get(btnTest1Page).OnClick = delegate { PageManager.OpenPage<Test1Page>(); };
-        UGUIEventListener.Get(btnTest2Page).OnClick = delegate { PageManager.OpenPage<Test2Page>(); };
-        UGUIEventListener.Get(btnTest3Page).OnClick = delegate { PageManager.OpenPage<Test3Page>(); };
-        UGUIEventListener.Get(btnAlert).OnClick = delegate
+        UGUIEventListener.Get(btnTest1Node).onClick = delegate { NodeManager.OpenNode<Test1Node>(); };
+        UGUIEventListener.Get(btnTest2Node).onClick = delegate { NodeManager.OpenNode<Test2Node>(); };
+        UGUIEventListener.Get(btnTest3Node).onClick = delegate { NodeManager.OpenNode<Test3Node>(); };
+        UGUIEventListener.Get(btnTest1Page).onClick = delegate { PageManager.OpenPage<Test1Page>(); };
+        UGUIEventListener.Get(btnTest2Page).onClick = delegate { PageManager.OpenPage<Test2Page>(); };
+        UGUIEventListener.Get(btnTest3Page).onClick = delegate { PageManager.OpenPage<Test3Page>(); };
+        UGUIEventListener.Get(btnAlert).onClick = delegate
         {
             TipManager.Instance.OpenTip(TipType.AlertTip, "这是警告弹窗", 0, () => { Debug.Log("点击确定"); });
         };
-        UGUIEventListener.Get(btnChoose).OnClick = delegate
+        UGUIEventListener.Get(btnChoose).onClick = delegate
         {
             TipManager.Instance.OpenTip(TipType.ChooseTip, "这是选择弹窗", 0, () => { Debug.Log("点击确定"); }, () => { Debug.Log("点击取消"); });
         };
-        UGUIEventListener.Get(btnSimple).OnClick = delegate
+        UGUIEventListener.Get(btnSimple).onClick = delegate
         {
             TipManager.Instance.OpenTip(TipType.SimpleTip, "这是提示弹窗，默认3秒后消失");
         };

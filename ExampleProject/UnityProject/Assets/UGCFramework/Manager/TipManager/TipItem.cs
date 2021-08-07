@@ -26,13 +26,13 @@ namespace UGCF.Manager
             tf.localScale = Vector3.one;
 
             if (tipType == TipType.SimpleTip && background)
-                UGUIEventListener.Get(background).OnClick = delegate { Close(true); };
+                UGUIEventListener.Get(background).onClick = delegate { Close(true); };
             if (btnClose)
-                UGUIEventListener.Get(btnClose).OnClick = delegate { Close(true); };
+                UGUIEventListener.Get(btnClose).onClick = delegate { Close(true); };
             if (btnSure)
-                UGUIEventListener.Get(btnSure).OnClick = delegate { gameObject.SetActive(false); sureAction?.Invoke(); };
+                UGUIEventListener.Get(btnSure).onClick = delegate { gameObject.SetActive(false); sureAction?.Invoke(); };
             if (btnCancel)
-                UGUIEventListener.Get(btnCancel).OnClick = delegate { gameObject.SetActive(false); cancelAction?.Invoke(); };
+                UGUIEventListener.Get(btnCancel).onClick = delegate { gameObject.SetActive(false); cancelAction?.Invoke(); };
         }
 
         public void Init(string _describe, float _waitTime = 0, UnityAction _sureAction = null, UnityAction _cancelAction = null)

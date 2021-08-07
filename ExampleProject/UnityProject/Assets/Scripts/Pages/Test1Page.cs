@@ -11,6 +11,6 @@ public class Test1Page : Page
     public override void Init()
     {
         base.Init();
-        UGUIEventListener.Get(btnClose).OnClick = delegate { PageManager.OpenLastPage(); };
+        UGUIEventListener.Get(btnClose).onClick = delegate { PageManager.OpenLastPage(); };
     }
 }

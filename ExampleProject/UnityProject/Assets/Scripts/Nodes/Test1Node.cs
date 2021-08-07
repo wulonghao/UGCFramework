@@ -12,7 +12,7 @@ public class Test1Node : Node
         base.Init();
         if (TryInvokeHotFix(out object ob, null))
             return;
-        UGUIEventListener.Get(btnTest2Node).OnClick = delegate { NodeManager.OpenNode<Test2Node>(); };
+        UGUIEventListener.Get(btnTest2Node).onClick = delegate { NodeManager.OpenNode<Test2Node>(); };
     }
 
     public override void Open()

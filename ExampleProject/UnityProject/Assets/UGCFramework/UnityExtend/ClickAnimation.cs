@@ -17,7 +17,7 @@ namespace UGCF.UnityExtend
 
         void Start()
         {
-            UGUIEventListener.Get(gameObject).OnDown += delegate
+            UGUIEventListener.Get(gameObject).onDown += delegate
             {
                 if (IsZoom)
                 {
@@ -31,7 +31,7 @@ namespace UGCF.UnityExtend
                         transform.localScale = DefaultVt * ZoomScale;
                 }
             };
-            UGUIEventListener.Get(gameObject).OnUp += delegate
+            UGUIEventListener.Get(gameObject).onUp += delegate
             {
                 if (IsZoom)
                 {

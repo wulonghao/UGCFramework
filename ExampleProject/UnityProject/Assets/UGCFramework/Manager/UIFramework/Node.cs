@@ -43,9 +43,9 @@ namespace UGCF.Manager
         {
             LogUtils.Log(name + "：Init");
             if (isClickMaskClose && maskLayer)
-                UGUIEventListener.Get(maskLayer).OnClick += delegate { Close(); };
+                UGUIEventListener.Get(maskLayer).onClick += delegate { Close(); };
             if (btnClose)
-                UGUIEventListener.Get(btnClose).OnClick += delegate { Close(); };
+                UGUIEventListener.Get(btnClose).onClick += delegate { Close(); };
         }
 
         public virtual void Open()
