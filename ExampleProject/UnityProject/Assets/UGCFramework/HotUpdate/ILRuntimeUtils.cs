@@ -7,12 +7,12 @@ using LitJson;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using UGCF.Manager;
 using UGCF.UGUIExtend;
-using UGCF.UnityExtend;
 using UGCF.Utils;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
 
 namespace UGCF.HotUpdate
@@ -64,30 +64,26 @@ namespace UGCF.HotUpdate
 
         static void RegisterDelegate()
         {
-            appdomain.DelegateManager.RegisterMethodDelegate<bool>();
             appdomain.DelegateManager.RegisterMethodDelegate<object>();
             appdomain.DelegateManager.RegisterMethodDelegate<string>();
+            appdomain.DelegateManager.RegisterMethodDelegate<char>();
+            appdomain.DelegateManager.RegisterMethodDelegate<bool>();
+            appdomain.DelegateManager.RegisterMethodDelegate<int>();
+            appdomain.DelegateManager.RegisterMethodDelegate<long>();
+            appdomain.DelegateManager.RegisterMethodDelegate<float>();
+            appdomain.DelegateManager.RegisterMethodDelegate<double>();
+            appdomain.DelegateManager.RegisterMethodDelegate<Sprite>();
             appdomain.DelegateManager.RegisterMethodDelegate<Texture2D>();
+            appdomain.DelegateManager.RegisterMethodDelegate<Transform>();
+            appdomain.DelegateManager.RegisterMethodDelegate<RectTransform>();
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject>();
+            appdomain.DelegateManager.RegisterMethodDelegate<GameObject, PointerEventData>();
+            appdomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Networking.UnityWebRequest>();
 
-            appdomain.DelegateManager.RegisterDelegateConvertor<UGUIEventListener.VoidDelegate>((action) =>
-            {
-                return new UGUIEventListener.VoidDelegate((go) => ((Action<GameObject>)action)(go));
-            });
-            appdomain.DelegateManager.RegisterDelegateConvertor<UGUIEventListenerContainDrag.VoidDelegate>((action) =>
-            {
-                return new UGUIEventListenerContainDrag.VoidDelegate((go) => ((Action<GameObject>)action)(go));
-            });
-
-            appdomain.DelegateManager.RegisterDelegateConvertor<ScrollRectChildCenter.ScrollRectItemChangeEvent>((action) =>
-            {
-                return new ScrollRectChildCenter.ScrollRectItemChangeEvent((go) => ((Action<GameObject>)action)(go));
-            });
-
-            appdomain.DelegateManager.RegisterDelegateConvertor<PanelCenterScrollRect.ScrollRectItemChangeEvent>((action) =>
-            {
-                return new PanelCenterScrollRect.ScrollRectItemChangeEvent((go) => ((Action<GameObject>)action)(go));
-            });
+            appdomain.DelegateManager.RegisterDelegateConvertor<UGUIEventListener.UGUIDelegate>((action) => new UGUIEventListener.UGUIDelegate((Action<GameObject>)action));
+            appdomain.DelegateManager.RegisterDelegateConvertor<UGUIEventListener.UGUIDelegateData>((action) => new UGUIEventListener.UGUIDelegateData((Action<GameObject, PointerEventData>)action));
+            appdomain.DelegateManager.RegisterDelegateConvertor<ScrollRectChildCenter.ScrollRectItemChangeEvent>((action) => new ScrollRectChildCenter.ScrollRectItemChangeEvent((Action<GameObject>)action));
+            appdomain.DelegateManager.RegisterDelegateConvertor<PanelCenterScrollRect.ScrollRectItemChangeEvent>((action) => new PanelCenterScrollRect.ScrollRectItemChangeEvent((Action<GameObject>)action));
         }
 
         /// <summary> unity主工程获取物体上挂载的热更DLL中的Component </summary>
