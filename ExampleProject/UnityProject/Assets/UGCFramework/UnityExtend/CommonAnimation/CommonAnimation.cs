@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System;
-using UGCF.Utils;
 
 namespace UGCF.UnityExtend
 {
@@ -24,7 +23,6 @@ namespace UGCF.UnityExtend
         [SerializeField] bool isFoward;
         [SerializeField] bool isBackInit;
         [SerializeField] bool isAutoPlay;
-        [SerializeField] bool isPlayOnDisable;
         [SerializeField] DisappearType disType;
 
         [SerializeField] List<CommonAnimationPoint> pointAnimationList = new List<CommonAnimationPoint>();
@@ -36,7 +34,6 @@ namespace UGCF.UnityExtend
         [SerializeField] List<CommonAnimationFillAmount> fillAmountAnimationList = new List<CommonAnimationFillAmount>();
 
         private bool isPause;
-        private MonoBehaviour playBaseMb;
         private int currentPlayingCount = 0;
         private Dictionary<string, Coroutine> coroutines = new Dictionary<string, Coroutine>();
         #endregion
@@ -55,7 +52,6 @@ namespace UGCF.UnityExtend
         public bool IsFoward { get => isFoward; set => isFoward = value; }
         public bool IsBackInit { get => isBackInit; set => isBackInit = value; }
         public bool IsAutoPlay { get => isAutoPlay; set => isAutoPlay = value; }
-        public bool IsPlayOnDisable { get => isPlayOnDisable; set => isPlayOnDisable = value; }
         public bool IsDisappear { get => isDisappear; set => isDisappear = value; }
         public DisappearType DisType { get => disType; set => disType = value; }
 
@@ -221,8 +217,7 @@ namespace UGCF.UnityExtend
 
         public void Stop()
         {
-            if (playBaseMb)
-                playBaseMb.StopAllCoroutines();
+            StopAllCoroutines();
         }
 
         public void Clear()
@@ -234,7 +229,7 @@ namespace UGCF.UnityExtend
             sizeAnimationList.Clear();
             colorAnimationList.Clear();
             fillAmountAnimationList.Clear();
-            isLoop = isPingPong = isAutoPlay = isBackInit = isDisappear = isPlayOnDisable = isPause = false;
+            isLoop = isPingPong = isAutoPlay = isBackInit = isDisappear = isPause = false;
             isFoward = true;
             LastEndAction = null;
             disType = DisappearType.Destroy;
@@ -249,15 +244,14 @@ namespace UGCF.UnityExtend
 
             allAnimations.ForEach((t) => t.CurrentFoward = t.Foward);
 
-            playBaseMb = IsPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
             string coroutineKey = typeof(T).Name;
             if (coroutines.ContainsKey(coroutineKey))
-                playBaseMb.StopCoroutine(coroutines[coroutineKey]);
+                StopCoroutine(coroutines[coroutineKey]);
 
             int startIndex = 0;
             if (!IsFoward)
                 startIndex = allAnimations.Count - 1;
-            coroutines[coroutineKey] = playBaseMb.StartCoroutine(Play(allAnimations, IsFoward, startIndex));
+            coroutines[coroutineKey] = StartCoroutine(Play(allAnimations, IsFoward, startIndex));
             return this;
         }
 
@@ -270,27 +264,27 @@ namespace UGCF.UnityExtend
 
             commonAnimation.CurrentFoward = commonAnimation.Foward;
 
-            playBaseMb = IsPlayOnDisable ? (MonoBehaviour)UGCFMain.Instance : this;
             string coroutineKey = typeof(T).Name;
             if (coroutines.ContainsKey(coroutineKey))
-                playBaseMb.StopCoroutine(coroutines[coroutineKey]);
+                StopCoroutine(coroutines[coroutineKey]);
 
-            coroutines[coroutineKey] = playBaseMb.StartCoroutine(Play(new List<T>() { commonAnimation }, IsFoward));
+            coroutines[coroutineKey] = StartCoroutine(Play(new List<T>() { commonAnimation }, IsFoward));
             return this;
         }
 
         IEnumerator Play<T>(List<T> animations, bool isTotalFoward, int currentIndex = 0) where T : CommonAnimationBase
         {
-            yield return WaitForUtils.WaitFrame;
+            WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
+            yield return waitForEndOfFrame;
             currentPlayingCount++;
             isPause = false;
             T currentAnimation = animations[currentIndex];
             if (currentAnimation == null)
             {
-                LogUtils.LogError("动画播放失败：" + currentIndex);
+                Debug.LogError("动画播放失败：" + currentIndex);
                 yield break;
             }
-            WaitForSecondsRealtime delayWait = WaitForUtils.WaitForSecondsRealtime(currentAnimation.DelayTime);
+            WaitForSecondsRealtime delayWait = new WaitForSecondsRealtime(currentAnimation.DelayTime);
             if (currentAnimation.DelayTime != 0)
                 yield return delayWait;
             if (!this)
@@ -299,15 +293,17 @@ namespace UGCF.UnityExtend
             float speed = currentAnimation.GetSpeed();//speed为每秒lerp的进度
             int count = currentAnimation.GetAnimationListCount();
             int startIndex = currentAnimation.GetCurrentStartIndex();
-            float currentSpeed = 0;
+            float currentSpeed;
             float progress = currentAnimation.CurrentFoward ? 0 : 1;
+            float lastFrameTime;
             while (currentAnimation.CurrentFoward ? progress < 1 : progress > 0)
             {
                 #region ...循环执行动画
-                yield return WaitForUtils.WaitFrame;
+                lastFrameTime = Time.time;
+                yield return waitForEndOfFrame;
                 if (isPause)
                     continue;
-                currentSpeed = speed * Time.deltaTime;
+                currentSpeed = speed * (Time.time - lastFrameTime);
                 progress += currentAnimation.CurrentFoward ? currentSpeed : -currentSpeed;
                 progress = Mathf.Clamp01(progress);
                 currentAnimation.PlayAnimation(startIndex, progress);
@@ -331,9 +327,9 @@ namespace UGCF.UnityExtend
                                 if (IsPingPong)
                                     isTotalFoward = !isTotalFoward;
                                 if (isTotalFoward)
-                                    playBaseMb.StartCoroutine(Play(animations, isTotalFoward));
+                                    StartCoroutine(Play(animations, isTotalFoward));
                                 else
-                                    playBaseMb.StartCoroutine(Play(animations, isTotalFoward, animations.Count - 1));
+                                    StartCoroutine(Play(animations, isTotalFoward, animations.Count - 1));
                             }
                             else
                             {
@@ -361,7 +357,7 @@ namespace UGCF.UnityExtend
                         else
                         {
                             if (currentIndex < animations.Count)
-                                playBaseMb.StartCoroutine(Play(animations, isTotalFoward, currentIndex));
+                                StartCoroutine(Play(animations, isTotalFoward, currentIndex));
                         }
                         break;
                     }
@@ -372,7 +368,7 @@ namespace UGCF.UnityExtend
 
         void OnEnable()
         {
-            if (IsPlayOnDisable && currentPlayingCount > 0)
+            if (currentPlayingCount > 0)
                 return;
             if (IsAutoPlay)
                 PlayAll();
@@ -397,8 +393,8 @@ namespace UGCF.UnityExtend
 
         void OnDisable()
         {
-            if (!IsPlayOnDisable && playBaseMb)
-                playBaseMb.StopAllCoroutines();
+            currentPlayingCount = 0;
+            StopAllCoroutines();
         }
 
         /// <summary>

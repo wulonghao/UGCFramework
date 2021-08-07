@@ -17,6 +17,7 @@ namespace UGCF.UGCFEditor
         SerializedProperty m_GroupProperty;
         SerializedProperty m_IsOnProperty;
         SerializedProperty m_targetPage;
+        SerializedProperty m_label;
         SerializedProperty m_isChangeActive;
 
         protected override void OnEnable()
@@ -28,6 +29,7 @@ namespace UGCF.UGCFEditor
             m_GroupProperty = serializedObject.FindProperty("m_Group");
             m_IsOnProperty = serializedObject.FindProperty("m_IsOn");
             m_targetPage = serializedObject.FindProperty("targetPage");
+            m_label = serializedObject.FindProperty("label");
             m_isChangeActive = serializedObject.FindProperty("isChangeActive");
             m_OnValueChangedProperty = serializedObject.FindProperty("onValueChanged");
         }
@@ -42,6 +44,7 @@ namespace UGCF.UGCFEditor
             EditorGUILayout.PropertyField(m_TransitionProperty);
             EditorGUILayout.PropertyField(m_GraphicProperty);
             EditorGUILayout.PropertyField(m_targetPage);
+            EditorGUILayout.PropertyField(m_label);
             EditorGUILayout.PropertyField(m_GroupProperty);
             EditorGUILayout.PropertyField(m_isChangeActive);
 

@@ -90,7 +90,6 @@ namespace UGCF.UnityExtend
             if (!switchAnimation)
                 switchAnimation = gameObject.AddComponent<CommonAnimation>();
             switchAnimation.Clear();
-            switchAnimation.IsPlayOnDisable = true;
             switch (type)
             {
                 case NodeSwitchAnimationType.MoveFromLeft:

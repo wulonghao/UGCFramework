@@ -22,7 +22,8 @@ namespace UGCF.UGUIExtend
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            SetValue(!m_IsTrue);
+            if (interactable)
+                SetValue(!m_IsTrue);
         }
 
         protected override void Start()
@@ -30,11 +31,20 @@ namespace UGCF.UGUIExtend
             RefreshActive();
         }
 
-        void SetValue(bool isTrue)
+        public void SetValueWithoutNotify(bool isTrue)
         {
             m_IsTrue = isTrue;
             RefreshActive();
-            OnValueChanged?.Invoke(isTrue);
+        }
+
+        void SetValue(bool isTrue)
+        {
+            if (m_IsTrue != isTrue)
+            {
+                m_IsTrue = isTrue;
+                RefreshActive();
+                OnValueChanged?.Invoke(isTrue);
+            }
         }
 
         void RefreshActive()

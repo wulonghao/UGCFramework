@@ -6,6 +6,7 @@ using UnityEngine.Events;
 
 namespace UGCF.UnityExtend
 {
+    [Serializable]
     public abstract class CommonAnimationBase
     {
         [SerializeField] bool autoPlay;
