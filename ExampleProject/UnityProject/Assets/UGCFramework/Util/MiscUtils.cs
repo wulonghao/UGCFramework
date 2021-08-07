@@ -15,52 +15,6 @@ namespace UGCF.Utils
 {
     public static class MiscUtils
     {
-        #region ...时间戳转换
-        /// <summary>
-        /// 返回时间戳（单位：毫秒）代表的时间。
-        /// </summary>
-        /// <param name="timestamp">时间戳（单位：毫秒）。</param>
-        /// <returns>时间戳（单位：毫秒）代表的时间。</returns>
-        public static DateTime TimestampInMillisecondsToDateTime(long timestamp)
-        {
-            var dateTime19700101 = new DateTime(1970, 1, 1);
-            return dateTime19700101.AddMilliseconds(timestamp) + TimeZoneInfo.Local.GetUtcOffset(dateTime19700101);
-        }
-
-        /// <summary>
-        /// 返回时间戳（单位：秒）代表的时间。
-        /// </summary>
-        /// <param name="timestamp">时间戳（单位：秒）。</param>
-        /// <returns>时间戳（单位：秒）代表的时间。</returns>
-        public static DateTime TimestampInSecondsToDateTime(long timestamp)
-        {
-            var dateTime19700101 = new DateTime(1970, 1, 1);
-            return dateTime19700101.AddSeconds(timestamp) + TimeZoneInfo.Local.GetUtcOffset(dateTime19700101);
-        }
-
-        /// <summary>
-        /// 返回时间代表的时间戳（单位：毫秒）。
-        /// </summary>
-        /// <param name="dateTime">时间。</param>
-        /// <returns>时间代表的时间戳（单位：毫秒）。</returns>
-        public static long DateTimeToTimestampInMilliseconds(DateTime dateTime)
-        {
-            var dateTime19700101 = new DateTime(1970, 1, 1);
-            return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalMilliseconds);
-        }
-
-        /// <summary>
-        /// 返回时间代表的时间戳（单位：秒）。
-        /// </summary>
-        /// <param name="dateTime">时间。</param>
-        /// <returns>时间代表的时间戳（单位：秒）。</returns>
-        public static long DateTimeToTimestampInSeconds(DateTime dateTime)
-        {
-            var dateTime19700101 = new DateTime(1970, 1, 1);
-            return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalSeconds);
-        }
-        #endregion
-
         #region ...字符串相关处理
         /// <summary> 数字转换中文 工具 </summary>
         public static string NumToString(int num)
@@ -161,6 +115,180 @@ namespace UGCF.Utils
             int byteCount = Encoding.UTF8.GetByteCount(str);
             return (byteCount - str.Length) / 2 + str.Length;
         }
+
+        /// <summary> 字符串转Vector2 </summary>
+        public static Vector2 GetVector2ByString(string vector2Str, char splitSymbol = ',')
+        {
+            if (string.IsNullOrEmpty(vector2Str))
+                return default;
+            vector2Str = vector2Str.Replace("(", "").Replace(")", "");
+            string[] vStr = vector2Str.Trim().Split(splitSymbol);
+            Vector2 vector2 = new Vector2();
+            vector2.x = string.IsNullOrEmpty(vStr[0]) ? 0 : float.Parse(vStr[0]);
+            vector2.y = string.IsNullOrEmpty(vStr[1]) ? 0 : float.Parse(vStr[1]);
+            return vector2;
+        }
+
+        /// <summary> 字符串转Vector3 </summary>
+        public static Vector3 GetVector3ByString(string vector3Str, char splitSymbol = ',')
+        {
+            if (string.IsNullOrEmpty(vector3Str))
+                return default;
+            vector3Str = vector3Str.Replace("(", "").Replace(")", "");
+            string[] vStr = vector3Str.Split(splitSymbol);
+            Vector3 vector3 = new Vector3();
+            vector3.x = string.IsNullOrEmpty(vStr[0]) ? 0 : float.Parse(vStr[0]);
+            vector3.y = string.IsNullOrEmpty(vStr[1]) ? 0 : float.Parse(vStr[1]);
+            vector3.z = string.IsNullOrEmpty(vStr[2]) ? 0 : float.Parse(vStr[2]);
+            return vector3;
+        }
+
+        /// <summary> 字符串转Vector4 </summary>
+        public static Vector4 GetVector4ByString(string vector4Str, char splitSymbol = ',')
+        {
+            if (string.IsNullOrEmpty(vector4Str))
+                return default;
+            vector4Str = vector4Str.Replace("(", "").Replace(")", "");
+            string[] vStr = vector4Str.Split(splitSymbol);
+            Vector4 vector4 = new Vector4();
+            vector4.x = string.IsNullOrEmpty(vStr[0]) ? 0 : float.Parse(vStr[0]);
+            vector4.y = string.IsNullOrEmpty(vStr[1]) ? 0 : float.Parse(vStr[1]);
+            vector4.z = string.IsNullOrEmpty(vStr[2]) ? 0 : float.Parse(vStr[2]);
+            vector4.w = string.IsNullOrEmpty(vStr[3]) ? 0 : float.Parse(vStr[3]);
+            return vector4;
+        }
+
+        /// <summary> 字符串转Color </summary>
+        public static Color GetColorByString(string colorStr, bool floatStyle = true, char splitSymbol = ',')
+        {
+            if (string.IsNullOrEmpty(colorStr))
+                return default;
+            Color color = new Color();
+            string[] vStr = colorStr.Split(splitSymbol);
+            if (vStr != null && vStr.Length == 4)
+            {
+                if (floatStyle)
+                {
+                    if (string.IsNullOrEmpty(vStr[0]))
+                        color.r = 0;
+                    else
+                        color.r = float.Parse(vStr[0]);
+
+                    if (string.IsNullOrEmpty(vStr[1]))
+                        color.g = 0;
+                    else
+                        color.g = float.Parse(vStr[1]);
+
+                    if (string.IsNullOrEmpty(vStr[2]))
+                        color.b = 0;
+                    else
+                        color.b = float.Parse(vStr[2]);
+
+                    if (string.IsNullOrEmpty(vStr[3]))
+                        color.a = 0;
+                    else
+                        color.a = float.Parse(vStr[3]);
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(vStr[0]))
+                        color.r = 0;
+                    else
+                        color.r = float.Parse(vStr[0]) / 255;
+
+                    if (string.IsNullOrEmpty(vStr[1]))
+                        color.g = 0;
+                    else
+                        color.g = float.Parse(vStr[1]) / 255;
+
+                    if (string.IsNullOrEmpty(vStr[2]))
+                        color.b = 0;
+                    else
+                        color.b = float.Parse(vStr[2]) / 255;
+
+                    if (string.IsNullOrEmpty(vStr[3]))
+                        color.a = 0;
+                    else
+                        color.a = float.Parse(vStr[3]);
+                }
+            }
+            return color;
+        }
+
+        public static string PathCombine(string path1, string path2)
+        {
+            {
+                if (string.IsNullOrEmpty(path2))
+                    path2 = "";
+                else if (path2.StartsWith("/") || path2.StartsWith("\\"))
+                    path2 = path2.Remove(0, 1);
+            }
+            return PathSlashChange(Path.Combine(path1, path2));
+        }
+
+        public static string PathCombine(string path1, string path2, string path3)
+        {
+            {
+                if (string.IsNullOrEmpty(path2))
+                    path2 = "";
+                else if (path2.StartsWith("/") || path2.StartsWith("\\"))
+                    path2 = path2.Remove(0, 1);
+            }
+            {
+                if (string.IsNullOrEmpty(path3))
+                    path3 = "";
+                else if (path3.StartsWith("/") || path3.StartsWith("\\"))
+                    path3 = path3.Remove(0, 1);
+            }
+            return PathSlashChange(Path.Combine(path1, path2, path3));
+        }
+
+        public static string PathCombine(string path1, string path2, string path3, string path4)
+        {
+            {
+                if (string.IsNullOrEmpty(path2))
+                    path2 = "";
+                else if (path2.StartsWith("/") || path2.StartsWith("\\"))
+                    path2 = path2.Remove(0, 1);
+            }
+            {
+                if (string.IsNullOrEmpty(path3))
+                    path3 = "";
+                else if (path3.StartsWith("/") || path3.StartsWith("\\"))
+                    path3 = path3.Remove(0, 1);
+            }
+            {
+                if (string.IsNullOrEmpty(path4))
+                    path4 = "";
+                else if (path4.StartsWith("/") || path4.StartsWith("\\"))
+                    path4 = path4.Remove(0, 1);
+            }
+            return PathSlashChange(Path.Combine(path1, path2, path3, path4));
+        }
+
+        public static string PathCombine(params string[] paths)
+        {
+            if (paths.Length < 2)
+                return Path.Combine(paths);
+
+            for (int i = 1; i < paths.Length; i++)
+            {
+                string path = paths[i];
+                if (string.IsNullOrEmpty(path))
+                    path = "";
+                else if (path.StartsWith("/") || path.StartsWith("\\"))
+                    path.Remove(0, 1);
+                paths[i] = path;
+            }
+            return PathSlashChange(Path.Combine(paths));
+        }
+
+        public static string PathSlashChange(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+            return path.Replace("\\", "/");
+        }
         #endregion
 
         #region ...加密解密相关
@@ -185,7 +313,7 @@ namespace UGCF.Utils
             }
             catch (Exception e)
             {
-                LogUtils.LogError(e.ToString(), false);
+                LogUtils.LogError(e.ToString());
                 return null;
             }
         }
@@ -197,8 +325,7 @@ namespace UGCF.Utils
             SHA1 sha1 = new SHA1CryptoServiceProvider();
             byte[] inputBytes = Encoding.Default.GetBytes(input);
             byte[] outputBytes = sha1.ComputeHash(inputBytes);
-            string output = BitConverter.ToString(outputBytes).Replace("-", "");
-            return output.ToLower();
+            return BitConverter.ToString(outputBytes).Replace("-", "");
         }
 
         /// <summary>对指定字符串进行Md5加密</summary>
@@ -208,8 +335,7 @@ namespace UGCF.Utils
             MD5 md5 = new MD5CryptoServiceProvider();
             byte[] inputBytes = Encoding.Default.GetBytes(input);
             byte[] outputBytes = md5.ComputeHash(inputBytes);
-            string output = BitConverter.ToString(outputBytes).Replace("-", "");
-            return output.ToLower();
+            return BitConverter.ToString(outputBytes).Replace("-", "");
         }
 
         /// <summary>对指定字符串进行Base64加密</summary>
@@ -274,33 +400,206 @@ namespace UGCF.Utils
         }
         #endregion
 
+        #region ...时间戳转换
+        /// <summary>
+        /// 返回时间戳（单位：毫秒）代表的时间。
+        /// </summary>
+        /// <param name="timestamp">时间戳（单位：毫秒）。</param>
+        /// <returns>时间戳（单位：毫秒）代表的时间。</returns>
+        public static DateTime TimestampInMillisecondsToDateTime(long timestamp)
+        {
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return dateTime19700101.AddMilliseconds(timestamp) + TimeZoneInfo.Local.GetUtcOffset(dateTime19700101);
+        }
+
+        /// <summary>
+        /// 返回时间戳（单位：秒）代表的时间。
+        /// </summary>
+        /// <param name="timestamp">时间戳（单位：秒）。</param>
+        /// <returns>时间戳（单位：秒）代表的时间。</returns>
+        public static DateTime TimestampInSecondsToDateTime(long timestamp)
+        {
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return dateTime19700101.AddSeconds(timestamp) + TimeZoneInfo.Local.GetUtcOffset(dateTime19700101);
+        }
+
+        /// <summary>
+        /// 返回时间代表的时间戳（单位：毫秒）。
+        /// </summary>
+        /// <param name="dateTime">时间。</param>
+        /// <returns>时间代表的时间戳（单位：毫秒）。</returns>
+        public static long DateTimeToTimestampInMilliseconds(DateTime dateTime = default)
+        {
+            if (dateTime == default)
+                dateTime = DateTime.Now;
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// 返回时间代表的时间戳（单位：秒）。
+        /// </summary>
+        /// <param name="dateTime">时间。</param>
+        /// <returns>时间代表的时间戳（单位：秒）。</returns>
+        public static long DateTimeToTimestampInSeconds(DateTime dateTime = default)
+        {
+            if (dateTime == default)
+                dateTime = DateTime.Now;
+            var dateTime19700101 = new DateTime(1970, 1, 1);
+            return Convert.ToInt64((dateTime - dateTime19700101 - TimeZoneInfo.Local.GetUtcOffset(dateTime19700101)).TotalSeconds);
+        }
+        #endregion
+
+        #region ...时间转换字符串
+        /// <summary>
+        /// 时间转换为指定格式字符串
+        /// </summary>
+        /// <param name="time">单位为毫秒的时长</param>
+        /// <param name="format">时间文本格式 HHMMSS-00:00:00, MMSS-00:00, SS-00, S-0 </param>
+        /// <returns></returns>
+        public static string MillionsecondToString(double time, string format = "MMSS")
+        {
+            return SecondToString(time / 1000, format);
+        }
+
+        /// <summary>
+        /// 时间转换为指定格式字符串
+        /// </summary>
+        /// <param name="time">单位为秒的时长</param>
+        /// <param name="format">时间文本格式 HHMMSS-00:00:00, MMSS-00:00, SS-00, S-0 </param>
+        /// <returns></returns>
+        public static string SecondToString(double time, string format = "MMSS")
+        {
+            StringBuilder sb = new StringBuilder();
+            int timeInt = (int)time;
+            int seconds, minutes, hours;
+            switch (format)
+            {
+                case "HHMMSS":
+                    seconds = timeInt % 60;
+                    hours = timeInt >= 3600 ? timeInt / 3600 : 0;
+                    minutes = (timeInt - hours * 3600 - seconds) / 60;
+                    sb.Append(GetTimeText(hours) + ":" + GetTimeText(minutes) + ":" + GetTimeText(seconds));
+                    break;
+                case "MMSS":
+                    seconds = timeInt % 60;
+                    minutes = (timeInt - seconds) / 60;
+                    sb.Append(GetTimeText(minutes) + ":" + GetTimeText(seconds));
+                    break;
+                case "SS":
+                    sb.Append(GetTimeText(timeInt));
+                    break;
+                case "S":
+                    sb.Append(GetTimeText(timeInt, false));
+                    break;
+            }
+            return sb.ToString();
+        }
+
+        static string GetTimeText(float time, bool isFill = true)
+        {
+            if (time < 10 && isFill)
+                return "0" + time.ToString("F0");
+            else
+                return time.ToString("F0");
+        }
+        #endregion
+
+        #region ...延迟执行函数
+        /// <summary> 延迟一段时间执行目标函数，基于真实时间 </summary>
+        public static Coroutine InvokeForRealTime(this MonoBehaviour mono, UnityAction ua, float delayTime)
+        {
+            return mono.StartCoroutine(InvokeForRealTimeAc(delayTime, ua));
+        }
+
+        private static IEnumerator InvokeForRealTimeAc(float delayTime, UnityAction ua)
+        {
+            if (delayTime > 0)
+                yield return WaitForUtils.WaitForSecondsRealtime(delayTime);
+            else
+                yield return WaitForUtils.WaitFrame;
+            ua?.Invoke();
+        }
+
+        /// <summary> 延迟一段时间执行目标函数，基于非真实时间 </summary>
+        public static Coroutine InvokeForUnrealTime(this MonoBehaviour mono, UnityAction ua, float delayTime)
+        {
+            return mono.StartCoroutine(InvokeForUnrealTimeAc(delayTime, ua));
+        }
+
+        private static IEnumerator InvokeForUnrealTimeAc(float delayTime, UnityAction ua)
+        {
+            if (delayTime > 0)
+                yield return WaitForUtils.WaitForSecond(delayTime);
+            else
+                yield return WaitForUtils.WaitFrame;
+            ua?.Invoke();
+        }
+
+        /// <summary> 延迟一帧执行目标函数 </summary>
+        public static Coroutine InvokeForNextFrame(this MonoBehaviour mono, UnityAction ua)
+        {
+            return mono.StartCoroutine(InvokeForNextFrameAc(ua));
+        }
+
+        private static IEnumerator InvokeForNextFrameAc(UnityAction ua)
+        {
+            yield return WaitForUtils.WaitFrame;
+            ua?.Invoke();
+        }
+        #endregion
+
         #region ...文件创建、复制、处理等
         /// <summary> 复制文件夹到指定目录</summary>
-        public static void CopyDirectory(string sourceDirectoryPath, string targetDirectoryPath, bool isDeleteExist, bool isReplace = false, string searchPattern = "*.*")
+        public static void CopyDirectory(string sourceDirectoryPath, string targetDirectoryPath, bool overwrite = true, bool isReplace = true, string searchPattern = "*.*")
         {
             if (isReplace && Directory.Exists(targetDirectoryPath))
                 Directory.Delete(targetDirectoryPath, true);
-            string[] files = Directory.GetFiles(sourceDirectoryPath, searchPattern, SearchOption.AllDirectories);
-            string file, newPath, newDir;
-            for (int i = 0; i < files.Length; i++)
+            try
             {
-                file = files[i];
-                file = file.Replace("\\", "/");
-                if (!file.EndsWith(".meta") && !file.EndsWith(".DS_Store"))
+                string[] files = Directory.GetFiles(sourceDirectoryPath, searchPattern, SearchOption.AllDirectories);
+                string file, newPath, newDir;
+                for (int i = 0; i < files.Length; i++)
                 {
-                    newPath = file.Replace(sourceDirectoryPath, targetDirectoryPath);
-                    newDir = Path.GetDirectoryName(newPath);
-                    if (!Directory.Exists(newDir))
-                        Directory.CreateDirectory(newDir);
-                    if (File.Exists(newPath))
+                    file = files[i];
+                    file = file.Replace("\\", "/");
+                    if (!file.EndsWith(".meta") && !file.EndsWith(".DS_Store"))
                     {
-                        if (isDeleteExist)
-                            File.Delete(newPath);
-                        else
-                            continue;
+                        newPath = file.Replace(sourceDirectoryPath, targetDirectoryPath);
+                        newDir = Path.GetDirectoryName(newPath);
+                        if (!Directory.Exists(newDir))
+                            Directory.CreateDirectory(newDir);
+                        File.Copy(file, newPath, overwrite);
                     }
-                    File.Copy(file, newPath);
                 }
+            }
+            catch (Exception e)
+            {
+                LogUtils.LogError("拷贝文件夹失败：" + e.ToString());
+            }
+        }
+
+        public static bool CopyFile(string sourcePath, string targetPath, bool overwrite = true)
+        {
+            if (string.IsNullOrEmpty(sourcePath) || string.IsNullOrEmpty(targetPath))
+            {
+                return false;
+            }
+            if (!File.Exists(sourcePath))
+            {
+                return false;
+            }
+            try
+            {
+                string directoryPath = Path.GetDirectoryName(targetPath);
+                if (!Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
+                File.Copy(sourcePath, targetPath, overwrite);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -317,7 +616,7 @@ namespace UGCF.Utils
             }
             catch (Exception e)
             {
-                LogUtils.LogError("创建文件失败：" + e.ToString(), false);
+                LogUtils.LogError("创建文件失败：" + e.ToString());
                 return false;
             }
         }
@@ -335,7 +634,7 @@ namespace UGCF.Utils
             }
             catch (Exception e)
             {
-                LogUtils.LogError("创建文件失败：" + e.ToString(), false);
+                LogUtils.LogError("创建文件失败：" + e.ToString());
                 return false;
             }
         }
@@ -449,34 +748,6 @@ namespace UGCF.Utils
 #else
             return null;
 #endif
-        }
-        #endregion
-
-        #region ...延迟执行函数
-        /// <summary> 延迟一段时间执行目标函数，基于真实时间 </summary>
-        public static Coroutine InvokeForRealTime(this MonoBehaviour mono, UnityAction ua, float delayTime)
-        {
-            return mono.StartCoroutine(InvokeForRealTimeAc(delayTime, ua));
-        }
-
-        private static IEnumerator InvokeForRealTimeAc(float delayTime, UnityAction ua)
-        {
-            if (delayTime > 0)
-                yield return WaitForUtils.WaitForSecondsRealtime(delayTime);
-            ua?.Invoke();
-        }
-
-        /// <summary> 延迟一段时间执行目标函数，基于非真实时间 </summary>
-        public static Coroutine InvokeForUnrealTime(this MonoBehaviour mono, UnityAction ua, float delayTime)
-        {
-            return mono.StartCoroutine(InvokeForUnrealTimeAc(delayTime, ua));
-        }
-
-        private static IEnumerator InvokeForUnrealTimeAc(float delayTime, UnityAction ua)
-        {
-            if (delayTime > 0)
-                yield return WaitForUtils.WaitForSecond(delayTime);
-            ua?.Invoke();
         }
         #endregion
 
