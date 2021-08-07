@@ -5,59 +5,55 @@ using System.Reflection;
 using UGCF.HotUpdate;
 using UnityEditor;
 using UnityEngine;
+using UnityObject = UnityEngine.Object;
 
 [CustomEditor(typeof(HotUpdateMono))]
 [CanEditMultipleObjects]
 public class HotUpdateMonoEditor : Editor
 {
-    SerializedProperty hotUpdateClassFullName;
-    static List<Type> allSystemTypes = new List<Type>();
-
-    void GetProperty()
-    {
-        hotUpdateClassFullName = serializedObject.FindProperty("hotUpdateClassFullName");
-    }
-
     public override void OnInspectorGUI()
     {
-        serializedObject.Update();
-        GetProperty();
         HotUpdateMono hotUpdate = (HotUpdateMono)target;
-        if (allSystemTypes.Count == 0)
-            ReloadAllType();
-        if (allSystemTypes.Count == 0)
-            return;
-
-        Type type = allSystemTypes.Find((st) => { return st.FullName == hotUpdateClassFullName.stringValue; });
-        if (type == null)
-            type = allSystemTypes[0];
-        int value = EditorGUILayout.Popup("HotUpdateClass", allSystemTypes.IndexOf(type), allSystemTypes.ConvertAll((s) => { return s.FullName; }).ToArray());
-        value = Mathf.Max(value, 0);
-        if (!type.Equals(allSystemTypes[value]))
+        MonoScript targetScript = (MonoScript)EditorGUILayout.ObjectField("HotUpdateClass",
+            AssetDatabase.LoadAssetAtPath<UnityObject>(AssetDatabase.GUIDToAssetPath(hotUpdate.hotUpdateClassEditorGUID)),
+            typeof(MonoScript),
+            false);
+        if (targetScript != null)
         {
-            hotUpdate.hotUpdateFields.Clear();
-            type = allSystemTypes[value];
+            string targetTypeFullName = targetScript.GetClass().FullName;
+            Type type = Assembly.Load("Assembly-CSharp").GetType(targetTypeFullName);
+            if (typeof(HotUpdateMonoBehaviour).IsAssignableFrom(type))
+            {
+                hotUpdate.hotUpdateClassEditorGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(targetScript));
+                hotUpdate.hotUpdateClassFullName = targetTypeFullName;
+                RefreshFields(type);
+            }
         }
-        hotUpdateClassFullName.stringValue = type.FullName;
-        hotUpdate.hotUpdateClassFullName = type.FullName;
-
-        GetHotUpdateClass(type);
-        serializedObject.ApplyModifiedProperties();
-
+        else
+        {
+            hotUpdate.hotUpdateClassEditorGUID = null;
+            hotUpdate.hotUpdateClassFullName = null;
+            hotUpdate.hotUpdateFields.Clear();
+        }
         if (GUI.changed)
             EditorUtility.SetDirty(target);
     }
 
-    void GetHotUpdateClass(Type type)
+    void RefreshFields(Type type)
     {
         HotUpdateMono hotUpdate = (HotUpdateMono)target;
-
         List<FieldInfo> fieldInfos = type.GetFieldsContainParent(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        for (int i = hotUpdate.hotUpdateFields.Count - 1; i >= 0; i--)
+        {
+            if (fieldInfos.Find((fi) => fi.Name == hotUpdate.hotUpdateFields[i].fieldName) == null)
+                hotUpdate.hotUpdateFields.RemoveAt(i);
+        }
         for (int i = 0; i < fieldInfos.Count; i++)
         {
             FieldInfo fieldInfo = fieldInfos[i];
             if (typeof(ValueType).IsAssignableFrom(fieldInfo.FieldType)
-                || typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType)
+                || typeof(string).IsAssignableFrom(fieldInfo.FieldType)
+                || typeof(UnityObject).IsAssignableFrom(fieldInfo.FieldType)
                 || fieldInfo.FieldType.IsInheritTargetType(HotUpdateMono.HotUpdateMBTypeFullName))
             {
                 bool hasSerializeField = false;
@@ -81,18 +77,6 @@ public class HotUpdateMonoEditor : Editor
                 }
             }
         }
-    }
-
-    public static List<Type> ReloadAllType()
-    {
-        Type[] unityTypes = Assembly.Load("Assembly-CSharp").GetTypes();
-        for (int i = 0; i < unityTypes.Length; i++)
-        {
-            Type type = unityTypes[i];
-            if (type.IsInheritTargetType(HotUpdateMono.HotUpdateMBTypeFullName))
-                allSystemTypes.Add(type);
-        }
-        return allSystemTypes;
     }
 
     void CreateEditorGUILayout(FieldInfo fieldInfo, HotUpdateField hotUpdateField)
@@ -150,10 +134,11 @@ public class HotUpdateMonoEditor : Editor
                             }
                         }
                     }
+                    hotUpdateField.valueUnityObj = null;
                 }
             }
         }
-        else if (typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
+        else if (typeof(UnityObject).IsAssignableFrom(fieldInfo.FieldType))
             hotUpdateField.valueUnityObj = EditorGUILayout.ObjectField(fieldInfo.Name, hotUpdateField.valueUnityObj, fieldInfo.FieldType, true);
     }
 

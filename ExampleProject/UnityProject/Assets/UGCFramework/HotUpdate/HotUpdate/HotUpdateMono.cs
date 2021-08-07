@@ -9,6 +9,9 @@ namespace UGCF.HotUpdate
     {
         public const string HotUpdateMBTypeFullName = "UGCF.HotUpdate.HotUpdateMonoBehaviour";
         public string hotUpdateClassFullName;
+#if UNITY_EDITOR
+        public string hotUpdateClassEditorGUID;
+#endif
         public List<HotUpdateField> hotUpdateFields = new List<HotUpdateField>();
         private object hotUpdateInstance;
         public object HotUpdateInstance
