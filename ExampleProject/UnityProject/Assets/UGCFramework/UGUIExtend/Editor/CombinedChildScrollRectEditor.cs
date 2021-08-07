@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEditor.UI;
 
-namespace UGCF.UGCFEditor
+namespace UGCF.Editor
 {
     [CustomEditor(typeof(CombinedChildScrollRect), true)]
     [CanEditMultipleObjects]

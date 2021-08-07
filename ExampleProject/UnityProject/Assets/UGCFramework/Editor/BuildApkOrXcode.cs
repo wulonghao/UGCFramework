@@ -4,7 +4,7 @@ using UGCF.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace UGCF.UGCFEditor
+namespace UGCF.Editor
 {
     public class BuildApkOrXcode : EditorWindow
     {

@@ -3,11 +3,11 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UGCF.UGCFEditor
+namespace UGCF.Editor
 {
     [CustomEditor(typeof(CommonAnimation))]
     [CanEditMultipleObjects]
-    public class CommonAnimationEditor : Editor
+    public class CommonAnimationEditor : UnityEditor.Editor
     {
         SerializedObject obj;
         SerializedProperty point, scale, alpha, color, size, angle, fillAmount;

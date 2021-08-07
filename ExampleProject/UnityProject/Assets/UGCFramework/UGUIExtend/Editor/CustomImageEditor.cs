@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UGCF.UGUIExtend;
+﻿using UGCF.UGUIExtend;
 using UnityEditor;
 using UnityEditor.UI;
 using UnityEngine;
 
-namespace UGCF.UGCFEditor
+namespace UGCF.Editor
 {
     [CustomEditor(typeof(CustomImage))]
     [CanEditMultipleObjects]

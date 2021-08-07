@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace UGCF.UGCFEditor
+namespace UGCF.Editor
 {
     public class MakeTheFont : ScriptableWizard
     {

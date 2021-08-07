@@ -7,9 +7,9 @@ using LitJson;
 using UGCF.Manager;
 using UGCF.Utils;
 
-namespace UGCF.UGCFEditor
+namespace UGCF.Editor
 {
-    public class EditorCreateBundle : Editor
+    public class EditorCreateBundle : UnityEditor.Editor
     {
         public static string m_BundleDirectory = Application.dataPath + "/Editor Default Resources/AssetBundle/";
         public static bool isRelease;
