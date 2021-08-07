@@ -42,3 +42,4 @@ ExampleProject/UnityProject/Assets/StreamingAssets/AssetBundle/
 ExampleProject/UGCFHotFix/UGCFHotFix/bin/
 ExampleProject/UGCFHotFix/UGCFHotFix/obj/
 .vs/
+*.vsconfig
