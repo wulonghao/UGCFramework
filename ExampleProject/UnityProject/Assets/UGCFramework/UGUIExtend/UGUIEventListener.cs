@@ -45,7 +45,7 @@ public class UGUIEventListener : MonoBehaviour,
             InvokeEvent(onDoubleClick);
             InvokeEvent(onDoubleClickData, eventData);
         }
-        if (gameObject.activeInHierarchy)
+        if (gameObject && gameObject.activeInHierarchy)
         {
             if (clearClickCountCoroutine != null)
                 StopCoroutine(clearClickCountCoroutine);
@@ -63,7 +63,7 @@ public class UGUIEventListener : MonoBehaviour,
     {
         InvokeEvent(onDown);
         InvokeEvent(onDownData, eventData);
-        if (onLongPress != null && gameObject.activeInHierarchy)
+        if (onLongPress != null && gameObject && gameObject.activeInHierarchy)
         {
             if (longPressCoroutine != null)
                 StopCoroutine(longPressCoroutine);
@@ -75,7 +75,7 @@ public class UGUIEventListener : MonoBehaviour,
     {
         InvokeEvent(onUp);
         InvokeEvent(onUpData, eventData);
-        if (longPressCoroutine != null && gameObject.activeInHierarchy)
+        if (longPressCoroutine != null && gameObject && gameObject.activeInHierarchy)
             StopCoroutine(longPressCoroutine);
     }
 
@@ -100,7 +100,7 @@ public class UGUIEventListener : MonoBehaviour,
     {
         InvokeEvent(onEnter);
         InvokeEvent(onEnterData, eventData);
-        if (onStayData != null && gameObject.activeInHierarchy)
+        if (onStayData != null && gameObject && gameObject.activeInHierarchy)
         {
             if (stayCoroutine != null)
                 StopCoroutine(stayCoroutine);
