@@ -317,6 +317,7 @@ namespace UGCF.UnityExtend
         [SerializeField] List<Color> colorList = new List<Color>();
         public List<Color> ColorList { get => colorList; set => colorList = value; }
         Graphic graphic;
+        SpriteRenderer sprite;
 
         public override void Init(GameObject _currentGameObject)
         {
@@ -327,6 +328,11 @@ namespace UGCF.UnityExtend
             graphic = CurrentGameObject.GetComponent<Graphic>();
             if (graphic)
                 graphic.color = ColorList[initIndex];
+            else
+            {
+                sprite = CurrentGameObject.GetComponent<SpriteRenderer>();
+                if (sprite) sprite.color = ColorList[initIndex];
+            }
         }
 
         public override int GetAnimationListCount()
@@ -338,6 +344,8 @@ namespace UGCF.UnityExtend
         {
             if (graphic)
                 graphic.color = Color.Lerp(ColorList[startIndex], ColorList[startIndex + 1], progress);
+            else if (sprite)
+                sprite.color = Color.Lerp(ColorList[startIndex], ColorList[startIndex + 1], progress);
         }
 
         public override float GetSpeed()

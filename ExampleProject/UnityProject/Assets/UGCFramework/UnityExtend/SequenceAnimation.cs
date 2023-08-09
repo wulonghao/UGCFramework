@@ -7,10 +7,11 @@ using UnityEngine.UI;
 
 namespace UGCF.UnityExtend
 {
-    [RequireComponent(typeof(Image))]
+    //[RequireComponent(typeof(Image))]
     public class SequenceAnimation : MonoBehaviour
     {
         private Image ImageSource;
+        private SpriteRenderer SRSource;
         private int mCurFrame = 0;
         private float mDelta = 0;
         private Dictionary<int, UnityAction> diu = new Dictionary<int, UnityAction>();
@@ -43,6 +44,7 @@ namespace UGCF.UnityExtend
         void Awake()
         {
             ImageSource = GetComponent<Image>();
+            SRSource = GetComponent<SpriteRenderer>();
         }
 
         void OnEnable()
@@ -62,15 +64,19 @@ namespace UGCF.UnityExtend
 
         private void SetSprite(int idx)
         {
-            if (ImageSource != null)
+            if (ImageSource != null || SRSource != null)
             {
                 if (SpriteFrames != null && idx < SpriteFrames.Count)
                 {
-                    ImageSource.sprite = SpriteFrames[idx];
+                    if (ImageSource)
+                        ImageSource.sprite = SpriteFrames[idx];
+                    if (SRSource)
+                        SRSource.sprite = SpriteFrames[idx];
                 }
                 if (IsSetNativeSize)
                 {
-                    ImageSource.SetNativeSize();
+                    if (ImageSource)
+                        ImageSource.SetNativeSize();
                 }
             }
         }
