@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
-using LitJson;
+using Newtonsoft.Json.Linq;
 using System;
 using UGCF.Utils;
 
@@ -38,7 +38,7 @@ namespace UGCF.Manager
 #if UNITY_EDITOR
             TextAsset textAsset = (TextAsset)EditorGUIUtility.Load("AssetBundle/" + diretoryPath + "/Config/" + jsonName.ToLower() + ".json");
 #else
-        TextAsset textAsset = GetBundleFile<TextAsset>(diretoryPath + "/Config/" + jsonName);
+            TextAsset textAsset = GetBundleFile<TextAsset>(diretoryPath + "/Config/" + jsonName);
 #endif
             if (textAsset != null)
                 return textAsset.text;
@@ -52,12 +52,12 @@ namespace UGCF.Manager
         /// <param name="jsonName"></param>
         /// <param name="directoryName"></param>
         /// <returns></returns>
-        public JsonData GetCommonJsonData(string jsonName, string diretoryPath = ConstantUtils.CommonResourcesFolderName)
+        public JToken GetCommonJsonData(string jsonName, string diretoryPath = ConstantUtils.CommonResourcesFolderName)
         {
             string json = GetCommonJson(jsonName, diretoryPath);
             if (string.IsNullOrEmpty(json))
                 return null;
-            return JsonMapper.ToObject(json);
+            return JObject.Parse(json);
         }
 
         public AudioClip GetAudioClip(string soundName, string soundType, string directoryPath = ConstantUtils.CommonResourcesFolderName)

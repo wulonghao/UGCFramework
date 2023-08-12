@@ -1,5 +1,4 @@
-﻿using LitJson;
-using UGCF.HotUpdate;
+﻿using Newtonsoft.Json.Linq;
 using UGCF.UnityExtend;
 using UGCF.Utils;
 using UnityEngine;
@@ -7,7 +6,7 @@ using UnityEngine.Events;
 
 namespace UGCF.Manager
 {
-    public partial class Node : HotFixBaseInheritMono
+    public partial class Node : MonoBehaviour
     {
         #region ...字段
         /// <summary> 受适配影响的页面主体 </summary>
@@ -138,7 +137,7 @@ namespace UGCF.Manager
             return BundleManager.Instance.GetSprite(spriteName, spriteAB);
         }
 
-        public JsonData GetJsonData(string jsonName)
+        public JToken GetJsonData(string jsonName)
         {
             return BundleManager.Instance.GetCommonJsonData(jsonName, DirectoryPath + "/" + NodePath);
         }

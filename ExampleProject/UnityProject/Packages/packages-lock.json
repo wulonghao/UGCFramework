@@ -83,6 +83,13 @@
       "dependencies": {},
       "url": "https://packages.unity.cn"
     },
+    "com.unity.nuget.newtonsoft-json": {
+      "version": "3.2.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.cn"
+    },
     "com.unity.render-pipelines.core": {
       "version": "10.10.1",
       "depth": 1,

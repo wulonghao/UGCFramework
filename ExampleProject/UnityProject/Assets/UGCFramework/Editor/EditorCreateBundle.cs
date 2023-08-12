@@ -3,15 +3,15 @@ using UnityEditor;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using LitJson;
+using Newtonsoft.Json.Linq;
 using UGCF.Manager;
 using UGCF.Utils;
+using Newtonsoft.Json;
 
 namespace UGCF.Editor
 {
     public class EditorCreateBundle : UnityEditor.Editor
     {
-        public static string m_BundleDirectory = Application.dataPath + "/Editor Default Resources/AssetBundle/";
         public static bool isRelease;
 
         [MenuItem("自定义工具/Bundle/Debug/IOS打Bundle")]
@@ -19,7 +19,7 @@ namespace UGCF.Editor
         {
             isRelease = false;
 #if UNITY_IOS
-        BuildBundleTest(BuildTarget.iOS);
+            BuildBundleTest(BuildTarget.iOS);
 #endif
         }
 
@@ -36,8 +36,8 @@ namespace UGCF.Editor
         static void BuildDebugWindowsBundle()
         {
             isRelease = false;
-#if UNITY_WINDOWS
-        BuildBundleTest(BuildTarget.StandaloneWindows64);
+#if UNITY_STANDALONE_WIN
+            BuildBundleTest(BuildTarget.StandaloneWindows64);
 #endif
         }
 
@@ -46,7 +46,7 @@ namespace UGCF.Editor
         {
             isRelease = true;
 #if UNITY_IOS
-        BuildBundleTest(BuildTarget.iOS);
+            BuildBundleTest(BuildTarget.iOS);
 #endif
         }
 
@@ -63,15 +63,15 @@ namespace UGCF.Editor
         static void BuildReleaseWindowsBundle()
         {
             isRelease = true;
-#if UNITY_WINDOWS
-        BuildBundleTest(BuildTarget.StandaloneWindows64);
+#if UNITY_STANDALONE_WIN
+            BuildBundleTest(BuildTarget.StandaloneWindows64);
 #endif
         }
 
         static void BuildBundleTest(BuildTarget target)
         {
             Caching.ClearCache();
-            string[] filePaths = Directory.GetDirectories(m_BundleDirectory, "*.*", SearchOption.TopDirectoryOnly);
+            string[] filePaths = Directory.GetDirectories(ConstantUtils.BundleDirectory, "*.*", SearchOption.TopDirectoryOnly);
             string path = GetChannelPath(target);
             //DeleteBundleFiles(target, isRelease);
             if (!Directory.Exists(path))
@@ -115,10 +115,10 @@ namespace UGCF.Editor
                         if (directoryName.ToLower().IndexOf("sprite") >= 0 || directoryName.IndexOf("HotFix") >= 0)
                         {
                             AssetImporter ai = AssetImporter.GetAtPath(directoryName.Replace(Application.dataPath, "Assets"));
-                            ai.assetBundleName = directoryName.Replace(m_BundleDirectory, "");
+                            ai.assetBundleName = directoryName.Replace(ConstantUtils.BundleDirectory, "");
                         }
                         else
-                            temp.assetBundleName = directoryName.Replace(m_BundleDirectory, "") + "/" + childPathName;
+                            temp.assetBundleName = directoryName.Replace(ConstantUtils.BundleDirectory, "") + "/" + childPathName;
                     }
                 }
             }
@@ -127,11 +127,10 @@ namespace UGCF.Editor
         static void CreateBundleVersionNumber(string bundlePath, BuildTarget target)
         {
             File.Delete(GetChannelPath(target) + ConstantUtils.BundleInfoConfigName);
-            JsonData serverJson = new JsonData();
             string[] contents = Directory.GetFiles(bundlePath, "*.*", SearchOption.AllDirectories);
             string extension;
-            string fileName = "";
-            string fileMD5 = "";
+            string fileName;
+            string fileMD5;
             long allLength = 0;
             int fileLen;
             m_BundleMD5Map.Clear();
@@ -154,10 +153,11 @@ namespace UGCF.Editor
                 }
             }
 
-            JsonData files = new JsonData();
+            JObject serverJson = new JObject();
+            JArray files = new JArray();
             foreach (KeyValuePair<string, string> kv in m_BundleMD5Map)
             {
-                JsonData jd = new JsonData();
+                JObject jd = new JObject();
                 jd["file"] = kv.Key;
                 string[] nAndL = kv.Value.Split('+');
                 jd["md5"] = nAndL[0];
@@ -168,7 +168,7 @@ namespace UGCF.Editor
             serverJson["length"] = allLength;
             serverJson["files"] = files;
 
-            File.WriteAllText(GetChannelPath(target) + ConstantUtils.BundleInfoConfigName, serverJson.ToJson());
+            File.WriteAllText(GetChannelPath(target) + ConstantUtils.BundleInfoConfigName, JsonConvert.SerializeObject(serverJson));
 
             m_BundleMD5Map.Clear();
         }

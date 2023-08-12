@@ -1,4 +1,4 @@
-﻿using LitJson;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using UGCF.Manager;
@@ -6,7 +6,7 @@ using UGCF.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class LocationUtils : MonoBehaviour
+public class LocationUtils 
 {
     #region ...IP定位
     /// <summary>
@@ -23,16 +23,16 @@ public class LocationUtils : MonoBehaviour
             try
             {
                 //LogUtils.Log(Regex.Unescape(www.text));
-                JsonData jd = JsonMapper.ToObject(System.Text.RegularExpressions.Regex.Unescape(uwr.downloadHandler.text));
-                JsonData pointJd = jd["content"]["point"];
-                JsonData addressComponentJd = jd["content"]["address_detail"];
+                JToken jContent = JObject.Parse(System.Text.RegularExpressions.Regex.Unescape(uwr.downloadHandler.text))["content"];
+                JToken pointJd = jContent["point"];
+                JToken addressComponentJd = jContent["address_detail"];
                 ua(new string[] {
-                    pointJd.TryGetString("x"),
-                    pointJd.TryGetString("y"),
-                    addressComponentJd.TryGetString("province"),
-                    addressComponentJd.TryGetString("city"),
-                    addressComponentJd.TryGetString("city_code")
-                });
+                        pointJd.Value<string>("x"),
+                        pointJd.Value<string>("y"),
+                        addressComponentJd.Value<string>("province"),
+                        addressComponentJd.Value<string>("city"),
+                        addressComponentJd.Value<string>("city_code")
+                    });
             }
             catch (Exception e)
             {
@@ -136,8 +136,8 @@ public class LocationUtils : MonoBehaviour
             {
                 try
                 {
-                    JsonData jd = JsonMapper.ToObject(System.Text.RegularExpressions.Regex.Unescape(request.downloadHandler.text));
-                    ua(jd["result"].TryGetString("addressComponent"));
+                    JToken jd = JObject.Parse(System.Text.RegularExpressions.Regex.Unescape(request.downloadHandler.text));
+                    ua(jd["result"].Value<string>("addressComponent"));
                 }
                 catch
                 {

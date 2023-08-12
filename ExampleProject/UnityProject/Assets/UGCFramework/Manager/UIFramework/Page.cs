@@ -1,11 +1,10 @@
-﻿using LitJson;
-using UGCF.HotUpdate;
+﻿using Newtonsoft.Json.Linq;
 using UGCF.Utils;
 using UnityEngine;
 
 namespace UGCF.Manager
 {
-    public partial class Page : HotFixBaseInheritMono
+    public partial class Page : MonoBehaviour
     {
         /// <summary> 受适配影响的页面主体 </summary>
         [SerializeField] private RectTransform main;
@@ -53,7 +52,7 @@ namespace UGCF.Manager
             return BundleManager.Instance.GetSprite(spriteName, spriteAB);
         }
 
-        public JsonData GetJsonData(string jsonName)
+        public JToken GetJsonData(string jsonName)
         {
             return BundleManager.Instance.GetCommonJsonData(jsonName, ResourceDirectory);
         }

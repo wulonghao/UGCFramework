@@ -18,13 +18,20 @@ public class UGCFMain : MonoBehaviour
 
     public bool OpenDebugLog { get => openDebugLog; set => openDebugLog = value; }
     public bool UseLocalSource { get => useLocalSource; set => useLocalSource = value; }
-    public RectTransform RootCanvas { get => rootCanvas; set => rootCanvas = value; }
+    public RectTransform RootCanvas
+    {
+        get
+        {
+            if (!rootCanvas)
+                rootCanvas = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
+            return rootCanvas;
+        }
+        set => rootCanvas = value;
+    }
 
     void Awake()
     {
         Instance = this;
-        if (!RootCanvas)
-            RootCanvas = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
         DontDestroyOnLoad(this);
     }
 

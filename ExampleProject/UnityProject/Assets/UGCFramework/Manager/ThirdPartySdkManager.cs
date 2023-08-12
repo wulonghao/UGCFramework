@@ -1,4 +1,4 @@
-﻿using LitJson;
+﻿using Newtonsoft.Json.Linq;
 using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
@@ -118,8 +118,8 @@ namespace UGCF.Manager
             //access_token  用户当前临时token值，自主添加的值
             if (!string.IsNullOrEmpty(callBackInfo))
             {
-                JsonData jd = JsonMapper.ToObject(callBackInfo);
-                if (!string.IsNullOrEmpty(jd.TryGetString("errcode")))
+                JToken jd = JObject.Parse(callBackInfo);
+                if (!string.IsNullOrEmpty(jd.Value<string>("errcode")))
                 {
                     TipManager.Instance.OpenTip(TipType.SimpleTip, ConstantUtils.LOGIN_FAIL);
                     return;
@@ -139,17 +139,17 @@ namespace UGCF.Manager
         public void SendWechatPay(string payCode, string orderNum, bool qrCode)
         {
 #if !UNITY_EDITOR
-        JsonData jd = JsonMapper.ToObject(payCode);
-        string appId = jd.TryGetString("appid");
-        string partKey = jd.TryGetString("partnerid");
-        string prePayId = jd.TryGetString("prepayid");
-        string nonceStr = jd.TryGetString("noncestr");
-        string mch_id = jd.TryGetString("mch_id");
-        string price = jd.TryGetString("price");
-        string title = jd.TryGetString("title");
-        string qrUrl = jd.TryGetString("code_url");
-        AndroidJavaClass utils = new AndroidJavaClass(WechatPayStr);
-        utils.CallStatic("SendPay", appId, partKey, prePayId, nonceStr, jd.TryGetString("timestamp"), jd.TryGetString("package"), jd.TryGetString("sign"));
+            JToken jd = JObject.Parse(payCode);
+            string appId = jd.Value<string>("appid");
+            string partKey = jd.Value<string>("partnerid");
+            string prePayId = jd.Value<string>("prepayid");
+            string nonceStr = jd.Value<string>("noncestr");
+            string mch_id = jd.Value<string>("mch_id");
+            string price = jd.Value<string>("price");
+            string title = jd.Value<string>("title");
+            string qrUrl = jd.Value<string>("code_url");
+            AndroidJavaClass utils = new AndroidJavaClass(WechatPayStr);
+            utils.CallStatic("SendPay", appId, partKey, prePayId, nonceStr, jd.Value<string>("timestamp"), jd.Value<string>("package"), jd.Value<string>("sign"));
 #endif
         }
 
@@ -400,7 +400,7 @@ namespace UGCF.Manager
         public string GetAndroid_OAID()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        return Tool.CallStatic<string>("GetOAID");
+            return Tool.CallStatic<string>("GetOAID");
 #else
             return string.Empty;
 #endif
