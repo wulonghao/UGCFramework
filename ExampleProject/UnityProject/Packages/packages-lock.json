@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "com.ourpalm.ilruntime": {
-      "version": "1.6.7",
+    "com.code-philosophy.hybridclr": {
+      "version": "https://gitee.com/focus-creative-games/hybridclr_unity.git",
       "depth": 0,
-      "source": "registry",
+      "source": "git",
       "dependencies": {},
-      "url": "https://packages.unity.cn"
+      "hash": "1f9faf49a3ac4b6b5417188cd7579084d7563514"
     },
     "com.unity.2d.animation": {
       "version": "5.2.0",
