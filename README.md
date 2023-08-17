@@ -6,6 +6,7 @@ unity-HybridCLR客户端框架(UGUI+C#+protocol+HybridCLR)
 通信包含http和socket+tcp两种方式，协议采用protocol buffer</p>
 因为HybridCLR热更形式不同于ILRuntime，所以依据Hybrid的规则，框架部分修改较多，尤其是加载流程</p>
 具体大家可以参照Hybrid官方文档https://hybridclr.doc.code-philosophy.com/docs/intro</p>
+后续，除非HybridCLR被证明有无解的严重问题，否则ILRuntime分支将不再更新</p>
 
 框架包括几个部分：</p>
   1、Bundle资源管理系统（包括所有资源更新）</p>
