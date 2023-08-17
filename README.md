@@ -1,8 +1,8 @@
 # UGCFramework（Unity Game Client Framework）
-unity-ILRuntime客户端框架(UGUI+C#+protocol+ILRuntime)
+unity-HybridCLR客户端框架(UGUI+C#+protocol+HybridCLR)
 
 这是一个基于C＃语言的unity客户端框架，小部分工具基于UGUI，大部分工具不限制UI类型</p>
-代码热更新方面使用的是ILRuntime热更技术</p>
+代码热更新方面使用的是HybridCLR热更技术</p>
 通信包含http和socket+tcp两种方式，协议采用protocol buffer</p>
 
 框架包括几个部分：</p>
@@ -18,7 +18,12 @@ unity-ILRuntime客户端框架(UGUI+C#+protocol+ILRuntime)
   10、组件工具（动画、事件系统、定时器等）</p>
   11、实用性工具（图片处理、图片置灰、修改图片色相、文件下载、定位、文件和字符串加密等等）</p>
   12、UGUI扩展组件(Tab、RadioButton、ScrollRect扩展、计时器、文本处理、各种特殊图片组件等)</p>
-  13、ILRuntime热更系统</p>
+  13、HybridCLR热更系统</p>
+  
+## v3.0.0更新日志 - 2023.8.17
+  1、切出HybridCLR分支，热更新采用HybridCLR</p>
+  2、Json库从LitJson改为NewtonsoftJson
+  3、ILRuntime分支unity版本升级到unity2020.3.48
   
 ## v2.2.0更新日志 - 2021.8.7
   1、优化部分扩展工具</p>
